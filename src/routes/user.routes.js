@@ -1,11 +1,8 @@
 import express from "express";
 const router = express.Router();
+import userController from "../controllers/user.controller.js";
 
-router.get("/signup", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "page rendered success",
-  });
-});
+router.get("/signup", userController.loadSignupPage);
+router.get("/login", userController.loadLoginPage);
 
 export default router;

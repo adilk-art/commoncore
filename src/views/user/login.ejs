@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+
+  <link rel="stylesheet" href="/css/user/login.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="navbar">
+      <a href="/" class="logo-wrap">
+        <img src="/images/logo.png" alt="Common Core" class="logo" />
+      </a>
+    </header>
+
+    <main class="main-content">
+      <section class="auth-card">
+        <h1>Welcome Back</h1>
+        <p class="subtitle">
+          Sign in to continue your shopping experience
+        </p>
+
+        <form class="auth-form">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input id="email" type="email" placeholder="name@example.com" />
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="password">Password</label>
+              <a href="#" class="forgot-link">Forgot Password?</a>
+            </div>
+
+            <div class="input-icon-wrap">
+              <input id="password" type="password" placeholder="••••••••" />
+              <span class="eye-icon">
+                <i class="fa-regular fa-eye"></i>
+              </span>
+            </div>
+          </div>
+
+          <button type="submit" class="primary-btn">Login</button>
+
+          <div class="divider">
+            <span>OR CONTINUE WITH</span>
+          </div>
+
+          <button type="button" class="google-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+            Google
+          </button>
+
+          <p class="bottom-text">
+            Don’t have an account? <a href="#">Create Account</a>
+          </p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="#">ABOUT</a>
+        <a href="#">PRIVACY POLICY</a>
+        <a href="#">CONTACT</a>
+      </div>
+
+      <div class="footer-social">
+        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+
+      <p class="footer-copy">© 2024 COMMON CORE. ALL RIGHTS RESERVED.</p>
+    </footer>
+  </div>
+</body>
+</html>

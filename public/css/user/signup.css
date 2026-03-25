@@ -1,0 +1,230 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f4f5f7;
+  --white: #ffffff;
+  --text: #1f2940;
+  --muted: #7f8aa3;
+  --line: #e7e9ee;
+  --btn: #5a6474;
+  --link: #3b82f6;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Layout */
+.page-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar (CENTER LOGO) */
+.navbar {
+  height: 55px;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+
+  padding: 0 28px; /* spacing from left */
+}
+
+.logo {
+  height: 30px;
+  object-fit: contain;
+}
+
+/* Main */
+.main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 18px;
+}
+
+/* Card */
+.signup-card {
+  width: 100%;
+  max-width: 300px;
+  background: #f8f8f9;
+  border-radius: 18px;
+  padding: 22px 18px 18px;
+  box-shadow: 0 10px 30px rgba(31, 41, 55, 0.05);
+}
+
+/* Title */
+.signup-card h1 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 11px;
+  color: #8a96ad;
+  margin: 8px 0 18px;
+}
+
+/* Form */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 500;
+}
+.form-group input::placeholder {
+  color: #a6a6a6;
+}
+.form-group input {
+  height: 30px;
+  border: 1px solid #eef0f4;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #f1f3f6;
+  font-size: 11px;
+}
+
+.form-group small {
+  font-size: 7px;
+  color: #a0a8b7;
+}
+
+/* Password eye */
+.input-icon-wrap {
+  position: relative;
+}
+
+.input-icon-wrap input {
+  padding-right: 118px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: #9aa3b2;
+}
+
+/* Button */
+.create-btn {
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: var(--btn);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Divider */
+.divider {
+  text-align: center;
+  font-size: 7px;
+  color: #a0a8b7;
+}
+
+/* Google */
+.google-btn {
+  height: 32px;
+  border: 1px solid #e2e6ed;
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.google-btn img {
+  width: 14px;
+}
+
+/* Signin */
+.signin-text {
+  text-align: center;
+  font-size: 10px;
+  color: #7d8798;
+}
+
+.signin-text a {
+  color: var(--link);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  font-size: 8px;
+  color: #aab3c2;
+  letter-spacing: 0.08em;
+}
+
+.footer-social {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.footer-social a {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d9dee8;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #8f98aa;
+}
+
+.footer-copy {
+  font-size: 8px;
+  color: #b7bfcc;
+}
