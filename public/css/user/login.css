@@ -249,3 +249,9 @@ a {
   font-size: 8px;
   color: #b7bfcc;
 }
+.error-msg {
+  display: none;
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 4px;
+}
