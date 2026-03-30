@@ -37,7 +37,7 @@
         <form class="auth-form" method="POST" action="/user/login" id="form">
           <div class="form-group">
             <label for="email">Email Address</label>
-            <input id="email" type="email" name="email"placeholder="name@example.com" />
+            <input id="email" type="email" name="email"placeholder="name@example.com" value="<%=formData?.email||''%>" />
             <span id="emailError" class="error-msg"></span>
           </div>
 
