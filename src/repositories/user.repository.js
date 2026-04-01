@@ -9,3 +9,7 @@ export const createUser = async (userData) => {
 export const findUserByEmail = async (email) => {
   return await User.findOne({ email: email });
 };
+
+export const updateUserByEmail=async(email,updateData)=>{
+  return await User.findOneAndUpdate({email},{set:updateData},{new:true})
+}

@@ -1,0 +1,124 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* White background */
+body {
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+/* Center everything */
+.page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* Wrapper */
+.otp-wrapper {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+}
+
+/* Card */
+.otp-card {
+  background: #f3f4f6;
+  border-radius: 16px;
+  padding: 30px 25px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Logo */
+.logo-container {
+  margin-bottom: 15px;
+}
+
+.logo-container img {
+  width: 120px;
+  height: auto;
+}
+
+/* Title */
+.otp-card h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+/* Description */
+.otp-card p {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+/* Input */
+.otp-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 5px;
+  border: none;
+  outline: none;
+  background: #d9d9d9;
+  border-bottom: 2px solid #7f8aa3;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: 8px;
+}
+
+/* Error */
+.error-msg {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 10px;
+}
+.error-msg.success { color: #2ecc71;}
+.error-msg.error   { color: #e74c3c;}
+/* Verify Button */
+.verify-btn {
+  width: 100%;
+  background: #5d6778;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.verify-btn:hover {
+  background: #4f5868;
+}
+
+/* Timer */
+.timer {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* Resend button */
+.resend-btn {
+  background: none;
+  border: none;
+  color: #6678b1;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.resend-btn:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
