@@ -7,9 +7,20 @@ export const createUser = async (userData) => {
 };
 
 export const findUserByEmail = async (email) => {
-  return await User.findOne({ email: email });
+  return await User.findOne({email});
+};
+export const findUserById = async (id) => {
+  return await User.findById(id);
 };
 
-export const updateUserByEmail=async(email,updateData)=>{
-  return await User.findOneAndUpdate({email},{set:updateData},{new:true})
-}
+export const updateUserByEmail = async (email, updateData) => {
+  return await User.findOneAndUpdate(
+    { email },
+    { $set: updateData },
+    { new: true },
+  );
+};
+
+export const findUserByGoogleId = async (googleId) => {
+  return await User.findOne({ googleId });
+};

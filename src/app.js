@@ -1,8 +1,11 @@
 import express from "express";
 import session from "express-session";
-const app = express();
+import passport from "passport";
+import './config/passport.js'
 import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 import userRoutes from "./routes/user.routes.js";
+
+const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,6 +22,9 @@ app.use(
     },
   }),
 );
+
+app.use(passport.initialize())
+app.use(passport.session())
 app.use("/user", userRoutes);
 
 app.use(notFound);
