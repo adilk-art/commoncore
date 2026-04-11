@@ -1,4 +1,4 @@
-import { registerUser, loginUser } from "../services/auth.services.js";
+import { registerUser, loginUser,forgotPasswordService ,resetPasswordService} from "../services/auth.services.js";
 import { resendOtpService,verifyOtpService,createAndSendOtp } from "../services/otp.service.js";
 import { updateUserByEmail } from "../repositories/user.repository.js";
 import { createUser } from "../repositories/user.repository.js";
@@ -11,7 +11,8 @@ const loadSignupPage = (req, res) => {
 };
 
 const loadLoginPage = (req, res) => {
-  res.render("user/login.ejs", { error: null, formData: {} });
+  const successMessage=req.session.successMessage||null;
+  res.render("user/login.ejs", { error: null, formData: {},successMessage });
 };
 
 const signup = async (req, res) => {
@@ -89,14 +90,55 @@ const verifyOtp=async(req,res)=>{
 
 const login = async (req, res) => {
   let email, password;
+  const successMessage=req.session.successMessage||null;
   try {
     ({ email, password } = req.body);
     const user = await loginUser({ email, password });
     // req.session.userId = user._id;
     res.redirect("/");
   } catch (err) {
-    res.render("user/login.ejs", { error: err.message, formData: { email } });
+    res.render("user/login.ejs", { error: err.message, formData: { email },successMessage });
   }
 };
 
-export default { loadSignupPage, loadLoginPage, signup, loadOtpPage,resendOtp,verifyOtp,login };
+const loadForgotPasswordPage=(req,res)=>{
+  res.render('user/forgot-password.ejs',{error:null})
+
+}
+
+const forgotPassword=async (req,res)=>{
+  const {email}=req.body
+  try{
+    await forgotPasswordService(email)
+    req.session.resetEmail=email;
+    res.redirect(`/user/verify-otp?email=${encodeURIComponent(email)}&purpose=forgot-password`);
+
+  }
+  catch(err){
+  res.render('user/forgot-password.ejs', { error: err.message });
+  }
+}
+
+const loadResetPasswordPage = (req, res) => {
+  const email = req.session.resetEmail;
+  
+
+  if (!email) return res.redirect('/user/forgot-password');
+  
+  res.render('user/reset-password.ejs', { error: null, email }); // ← email passed here
+};
+
+const resetPassword=async(req,res)=>{
+  const {email,password,confirmPassword}=req.body;
+try{
+  await resetPasswordService({email,password,confirmPassword});
+  delete req.session.resetEmail;
+  req.session.successMessage="Password reset successfully..Please login with your new password"
+  res.redirect('/user/login');
+}catch(err){
+  res.render('user/reset-password.ejs',{error:err.message,email})
+
+}
+}
+
+export default { loadSignupPage, loadLoginPage, signup, loadOtpPage,resendOtp,verifyOtp,login,loadForgotPasswordPage,forgotPassword,loadResetPasswordPage,resetPassword };

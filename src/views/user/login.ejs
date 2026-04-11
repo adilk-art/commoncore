@@ -33,6 +33,10 @@
         <p class="subtitle">
           Sign in to continue your shopping experience
         </p>
+        <% if(successMessage) { %>
+          <p class="success-msg" style="display:block; color:#2ecc71"><%= successMessage %></p>
+        <% } %>
+        </p>
 
         <form class="auth-form" method="POST" action="/user/login" id="form">
           <div class="form-group">

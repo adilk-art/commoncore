@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
-import { signupSchema, loginSchema } from "../validators/user.validate.js";
+import { emailSchema,signupSchema, loginSchema,resetPasswordSchema } from "../validators/user.validate.js";
 import { createAndSendOtp } from "./otp.service.js";
 
-import {createUser,findUserByEmail} from "../repositories/user.repository.js";
+import {createUser,findUserByEmail, updateUserByEmail} from "../repositories/user.repository.js";
 
 export const registerUser = async ({name,email,password,confirmPassword,}) => {
   const validate = signupSchema.safeParse({ name,email,password,confirmPassword});
@@ -32,3 +32,28 @@ export const loginUser = async ({ email, password }) => {
   if (!isMatch) throw new Error("Invalid email or password");
   return user;
 };
+
+export const forgotPasswordService=async(email)=>{
+  const result=emailSchema.safeParse(email);
+  if(!result.success){
+    throw new Error(result.error.issues[0]?.message)
+  }
+
+  const user=await findUserByEmail(email);
+  if(!user) throw new Error('No account found with this email');
+  if(!user.password) throw new Error('This account uses google sign-in')
+
+  await createAndSendOtp({email,purpose:'forgot-password'})  
+}
+
+export const resetPasswordService=async({email,password,confirmPassword})=>{
+  const result=resetPasswordSchema.safeParse({password,confirmPassword});
+  if(!result.success){
+    const firstError=result.error.issues[0]?.message;
+    throw new Error(firstError)
+  }
+  const saltRounds=10
+  const hashedPassword=await bcrypt.hash(password,saltRounds)
+  await updateUserByEmail(email,{password:hashedPassword}); 
+
+}

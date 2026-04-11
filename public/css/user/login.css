@@ -255,3 +255,9 @@ a {
   font-size: 12px;
   margin-top: 4px;
 }
+.success-msg {
+  color: #2ecc71;
+  font-size: 12px;
+  margin-bottom: 10px;
+  text-align: center;
+}

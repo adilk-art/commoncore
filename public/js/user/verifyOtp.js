@@ -55,7 +55,12 @@ otpForm.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.success) {
-      window.location.href = "/user/login";
+      if(purpose==='forgot-password'){
+        window.location.href = '/user/reset-password';
+      }else{
+
+        window.location.href = "/user/login";
+      }
     } else {
       otpError.className = "error-msg error";
       otpError.textContent = data.message;

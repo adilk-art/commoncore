@@ -79,7 +79,6 @@ function validatePassword() {
 }
 function validateConfirmPassword() {
   const value = confirmPassword.value;
-  console.log(value);
   if (!value) {
     showError(confirmPasswordError, "Please confirm your password");
     return false;

@@ -10,6 +10,10 @@ router.post("/login", userController.login);
 router.get("/verify-otp",userController.loadOtpPage)
 router.post("/verify-otp",userController.verifyOtp)
 router.post("/resend-otp",userController.resendOtp)
+router.get("/forgot-password",userController.loadForgotPasswordPage)
+router.post("/forgot-password",userController.forgotPassword)
+router.get("/reset-password",userController.loadResetPasswordPage)
+router.post("/reset-password",userController.resetPassword)
 
 router.get('/auth/google',
     passport.authenticate('google',{scope:['profile','email']})
