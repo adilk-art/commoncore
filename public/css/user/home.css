@@ -1,0 +1,96 @@
+/* HERO */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 60px;
+  padding: 50px;
+  background: #fff;
+  border-radius: 20px;
+}
+
+.hero-text {
+  max-width: 480px;
+}
+
+.tag {
+  background: #e9eef5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.hero-text h1 {
+  font-size: 42px;
+  margin: 20px 0;
+  line-height: 1.2;
+}
+
+.hero-text h1 span {
+  color: #9aa6b2;
+}
+
+.hero-text p {
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.hero-text button {
+  padding: 10px 20px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.hero-image img {
+  width: 420px;
+}
+
+/* CATEGORY */
+.categories {
+  padding: 20px 60px;
+}
+
+.categories h2 {
+  margin-bottom: 20px;
+}
+
+.category-grid {
+  display: flex;
+  gap: 20px;
+}
+
+.card {
+  flex: 1;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.card img {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.card span {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* CARD COLORS */
+.tshirt {
+  background: #f4e2c8;
+}
+
+.jeans {
+  background: #e4ebf5;
+}
+
+.hoodies {
+  background: #e9e9e9;
+}

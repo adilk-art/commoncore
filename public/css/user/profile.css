@@ -1,0 +1,165 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f6f6;
+  margin: 0;
+}
+
+/* Layout */
+.account-container {
+  display: flex;
+  padding: 20px 60px;
+  gap: 20px;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  width: 75%;
+}
+
+/* PROFILE TOP (profile page only) */
+.profile-top {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-top img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.profile-top h2 {
+  margin: 10px 0 5px;
+}
+
+/* DETAILS BOX (profile page only) */
+.details {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.details h3 {
+  margin-bottom: 15px;
+}
+
+/* ROW layout */
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+/* Labels (global for this page) */
+label {
+  font-size: 12px;
+  color: gray;
+}
+
+/* BUTTONS (reusable) */
+.btn {
+  background: #333;
+  color: #fff;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+/* ACTION SECTION */
+.actions {
+  margin-top: 20px;
+}
+
+/* ALERT BOX */
+.alert-box {
+  background: #fff3cd;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+.btn-warning {
+  background: orange;
+  padding: 8px 12px;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+/* FORM (edit profile page) */
+.main-content form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px;
+}
+
+/* INPUTS (edit profile page) */
+.main-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* BUTTON (form submit) */
+.main-content button {
+  width: 100%;
+  padding: 10px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.email-value {
+  padding: 10px;
+  background: #f2f2f2;
+  border-radius: 6px;
+  color: #333;
+  user-select: none;
+}
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background: #fff;
+  width: 350px;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}

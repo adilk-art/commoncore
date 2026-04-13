@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Account</title>
+  <link rel="stylesheet" href="/css/user/profile.css">
+  <link rel="stylesheet" href="/css/user/style.css">
+</head>
+<body>
+
+<%- include("../partials/header") %>
+
+<div class="account-container">
+
+  <!-- SIDEBAR (PARTIAL) -->
+  <%- include("../partials/sidebar", { active: "profile" }) %>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <h1>MY ACCOUNT</h1>
+
+    <div class="profile-top">
+      <img src="<%= user.profileImage || '/images/default.png' %>" alt="profile">
+
+      <h2><%= user.name %></h2>
+      <p><%= user.email %></p>
+    </div>
+
+    <div class="details">
+      <h3>Account Details</h3>
+
+      <div class="row">
+        <div>
+          <label>Name</label>
+          <p><%= user.name %></p>
+        </div>
+
+        <div>
+          <label>Email</label>
+          <p><%= user.email %></p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Phone</label>
+          <p><%= user.phone || "Not added" %></p>
+        </div>
+      </div>
+    </div>
+
+    <% if (user.googleId && !user.password) { %>
+      <div class="alert-box">
+        <p>Set a password to enable email login</p>
+        <a href="/user/set-password" class="btn-warning">Set Password</a>
+      </div>
+    <% } %>
+
+    <div class="actions">
+      <a href="/user/profile/edit" class="btn">Edit Profile</a>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

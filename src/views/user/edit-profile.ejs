@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Profile</title>
+
+  <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/profile.css">
+</head>
+<body>
+
+  <%- include("../partials/header") %>
+
+  <div class="account-container">
+
+    <%- include("../partials/sidebar", { active: "profile" }) %>
+
+    <div class="main-content">
+
+      <h2>Edit Profile</h2>
+
+      <% if (typeof error !== "undefined") { %>
+        <p style="color:red;"><%= error %></p>
+      <% } %>
+
+      <!-- PROFILE FORM -->
+      <form action="/user/edit-profile" method="POST" enctype="multipart/form-data">
+
+        <div>
+          <label>Profile Image</label><br>
+          <img src="<%= user.profileImage %>" width="80"><br><br>
+          <input type="file" name="profileImage">
+        </div>
+
+        <div>
+          <label>Name</label>
+          <input type="text" name="name" value="<%= user.name %>" required>
+        </div>
+
+        <div>
+          <label>Email</label>
+          <input type="email" value="<%= user.email %>" readonly>
+        </div>
+
+        <!-- OPEN MODAL BUTTON -->
+        <button type="button" onclick="openEmailModal()" class="btn">
+          Change Email
+        </button>
+
+        <div>
+          <label>Phone</label>
+          <input type="text" name="phone" value="<%= user.phone || '' %>">
+        </div>
+
+        <button type="submit">Save Changes</button>
+
+      </form>
+
+      <!-- MODAL (OUTSIDE FORM) -->
+<div id="emailModal" class="modal">
+
+  <div class="modal-content">
+
+    <span class="close" onclick="closeEmailModal()">&times;</span>
+
+    <!-- STEP 1 -->
+    <div id="stepEmail">
+      <h3>Change Email</h3>
+
+      <input type="email" id="newEmail" placeholder="Enter new email">
+      <p id="emailError" style="color:red;"></p>
+
+      <button type="button" onclick="sendOtp()">
+        Send OTP
+      </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="stepOtp" style="display:none;">
+      <h3>Verify OTP</h3>
+
+      <input type="text" id="otp" placeholder="Enter OTP">
+
+      <button type="button" onclick="verifyOtp()">
+        Verify OTP
+      </button>
+
+      <p id="otpMsg"></p>
+
+      <p id="timerText">Resend OTP in 60s</p>
+
+      <button type="button" id="resendBtn" onclick="resendOtp()" disabled>
+        Resend OTP
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+    </div>
+
+  </div>
+
+ <script src="/js/user/emailModal.js"></script>
+
+</body>
+</html>

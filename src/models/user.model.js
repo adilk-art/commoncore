@@ -10,7 +10,16 @@ const userSchema = new Schema(
     isBlocked: { type: Boolean, default: false },
     googleId: { type: String, unique: true, sparse: true },
     image: { type: String },
-    password: { type: String, required: true },
+    password: {
+      type: String,
+      required: function () {
+        return !this.googleId; // required only if not Google user
+      },
+    },
+    profileImage: {
+      type: String,
+      default: "/images/default.png",
+    },
   },
   {
     timestamps: true, //second argument to the schema which creates createdAt and updatedAt and manages it automatically.

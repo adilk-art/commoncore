@@ -1,0 +1,18 @@
+<nav class="navbar">
+  <div class="logo">COMMON CORE</div>
+
+  <ul class="nav-links">
+    <li>T-Shirts</li>
+    <li>Jeans</li>
+    <li>Hoodies</li>
+    <li>About</li>
+
+    <% if (user) { %>
+      <li><a href="/user/profile">Profile</a></li>
+      <li><a href="/user/logout">Logout</a></li>
+    <% } else { %>
+      <li><a href="/user/login">Login</a></li>
+      <li><a href="/user/signup">Signup</a></li>
+    <% } %>
+  </ul>
+</nav>

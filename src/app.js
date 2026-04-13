@@ -4,7 +4,8 @@ import passport from "passport";
 import './config/passport.js'
 import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 import userRoutes from "./routes/user.routes.js";
-
+import indexRoutes from "./routes/index.routes.js"
+import localsMiddleware from "./middlewares/locals.middleware.js";
 const app = express();
 
 app.use(express.json());
@@ -25,6 +26,9 @@ app.use(
 
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(localsMiddleware)
+
+app.use("/", indexRoutes);
 app.use("/user", userRoutes);
 
 app.use(notFound);
