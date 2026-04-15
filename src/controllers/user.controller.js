@@ -17,6 +17,7 @@ import {
 } from "../repositories/user.repository.js";
 import { createUser } from "../repositories/user.repository.js";
 import { success } from "zod";
+import {updateProfileService} from "../services/user.service.js"
 
 const loadHomePage = (req, res) => {
   try {
@@ -134,6 +135,28 @@ const verifyOtp = async (req, res) => {
       return res.json({ success: true });
     }
 
+   if (purpose === "forgot-password") {
+       const user = await findUserByEmail(email);
+
+      if (!user) {
+        return res.json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      await verifyOtpService({ email, otp, purpose });
+
+      // store email temporarily to allow password reset
+      req.session.resetEmail = email;
+
+      return res.json({
+        success: true,
+        redirect: "/user/reset-password",
+      });
+    }
+
+
     return res.status(400).json({
       success: false,
       message: "Invalid OTP purpose",
@@ -210,9 +233,29 @@ const resetPassword = async (req, res) => {
 const loadProfilePage = (req, res, next) => {
   res.render("user/profile.ejs");
 };
-const loadEditProfile = (req, res) => {
-  res.render("user/edit-profile.ejs");
+
+const loadEditProfile = async(req, res) => {
+  res.render("user/edit-profile.ejs",{error:null});
 };
+
+const EditProfile=async(req,res,next)=>{
+  try{
+    await updateProfileService(
+      req.session.userId,
+      req.body,
+      req.file
+    );
+    res.redirect("/user/profile")
+
+    
+  }catch(error){
+    res.render("user/edit-profile.ejs",{
+      error:error.message
+    })
+  }
+}
+
+
 
 const emailChange = async (req, res) => {
   try {
@@ -278,5 +321,6 @@ export default {
   logout,
   loadSetPassword,
   loadEditProfile,
+  EditProfile,
   emailChange,
 };

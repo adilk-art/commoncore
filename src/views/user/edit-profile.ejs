@@ -18,12 +18,10 @@
 
       <h2>Edit Profile</h2>
 
-      <% if (typeof error !== "undefined") { %>
-        <p style="color:red;"><%= error %></p>
-      <% } %>
+      
 
       <!-- PROFILE FORM -->
-      <form action="/user/edit-profile" method="POST" enctype="multipart/form-data">
+      <form action="/user/profile/edit" method="POST" enctype="multipart/form-data">
 
         <div>
           <label>Profile Image</label><br>
@@ -33,7 +31,8 @@
 
         <div>
           <label>Name</label>
-          <input type="text" name="name" value="<%= user.name %>" required>
+          <input type="text" name="name" id="name" value="<%= user.name %>" >
+          <p class="error-msg" id="nameError" display="none"></p>
         </div>
 
         <div>
@@ -48,8 +47,13 @@
 
         <div>
           <label>Phone</label>
-          <input type="text" name="phone" value="<%= user.phone || '' %>">
+          <input type="text" name="phone" id="phone" value="<%= user.phone || '' %>">
+          <p class="error-msg" id="phoneError" display="none"></p>
+          <% if (typeof error !== "undefined") { %>
+          <p class="error-msg"><%=error%></p>
+        <% } %>
         </div>
+
 
         <button type="submit">Save Changes</button>
 
@@ -102,7 +106,8 @@
 
   </div>
 
- <script src="/js/user/emailModal.js"></script>
+ <script src="/js/user/editProfileModal.js"></script>
+ <script src="/js/user/editProfileValidation.js"></script>
 
 </body>
 </html>

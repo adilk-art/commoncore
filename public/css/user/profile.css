@@ -163,3 +163,18 @@ label {
   cursor: pointer;
   font-size: 20px;
 }
+.error-msg {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  display: none;
+}
+
+
+
+/* Input error state */
+.input-error {
+  border: 1px solid #e74c3c;
+  background: #fff5f5;
+}

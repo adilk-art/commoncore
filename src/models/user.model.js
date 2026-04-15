@@ -20,6 +20,9 @@ const userSchema = new Schema(
       type: String,
       default: "/images/default.png",
     },
+    phone:{
+      type:String,
+    }
   },
   {
     timestamps: true, //second argument to the schema which creates createdAt and updatedAt and manages it automatically.

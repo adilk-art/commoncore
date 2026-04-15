@@ -3,6 +3,7 @@ const router = express.Router();
 import userController from "../controllers/user.controller.js";
 import passport from "passport";
 import { isAutenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/upload.js";
 router.get("/",userController.loadHomePage)
 router.get("/signup",isNotAuthenticated, userController.loadSignupPage);
 router.get("/login",isNotAuthenticated, userController.loadLoginPage);
@@ -20,6 +21,7 @@ router.get("/profile",userController.loadProfilePage)
 router.get("/profile/edit",isAutenticated,userController.loadEditProfile)
 router.post("/profile/email-change",isAutenticated,userController.emailChange)
 router.post("/profile/email-change-verify",isAutenticated,userController.verifyOtp)
+router.post("/profile/edit",isAutenticated,upload.single("profileImage"),userController.EditProfile)
 
 
 router.get("/set-password",userController.loadSetPassword)
