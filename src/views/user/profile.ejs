@@ -11,13 +11,13 @@
 
 <div class="account-container">
 
-  <!-- SIDEBAR (PARTIAL) -->
+  <!-- SIDEBAR -->
   <%- include("../partials/sidebar", { active: "profile" }) %>
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
 
-    <h1>MY ACCOUNT</h1>
+    <h2>MY ACCOUNT</h2>
 
     <div class="profile-top">
       <img src="<%= user.profileImage || '/images/default.png' %>" alt="profile">
@@ -49,15 +49,8 @@
       </div>
     </div>
 
-    <% if (user.googleId && !user.password) { %>
-      <div class="alert-box">
-        <p>Set a password to enable email login</p>
-        <a href="/user/set-password" class="btn-warning">Set Password</a>
-      </div>
-    <% } %>
-
     <div class="actions">
-      <a href="/user/profile/edit" class="btn">Edit Profile</a>
+    <a href="/user/profile/edit" class="btn edit-btn">Edit Profile</a>
     </div>
 
   </div>

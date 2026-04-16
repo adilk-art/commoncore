@@ -4,62 +4,87 @@
   <title>Edit Profile</title>
 
   <link rel="stylesheet" href="/css/user/style.css">
-  <link rel="stylesheet" href="/css/user/profile.css">
+  <link rel="stylesheet" href="/css/user/editProfile.css">
 </head>
 <body>
 
-  <%- include("../partials/header") %>
+<%- include("../partials/header") %>
 
-  <div class="account-container">
+<div class="account-container">
 
-    <%- include("../partials/sidebar", { active: "profile" }) %>
+  <%- include("../partials/sidebar", { active: "profile" }) %>
 
-    <div class="main-content">
+  <div class="main-content">
 
-      <h2>Edit Profile</h2>
+    <h2>Edit Profile</h2>
+    <div class="edit-container">
 
-      
 
-      <!-- PROFILE FORM -->
-      <form action="/user/profile/edit" method="POST" enctype="multipart/form-data">
+      <div class="edit-card">
 
-        <div>
-          <label>Profile Image</label><br>
-          <img src="<%= user.profileImage %>" width="80"><br><br>
-          <input type="file" name="profileImage">
+        <!-- FORM -->
+        <form action="/user/profile/edit" method="POST" enctype="multipart/form-data">
+
+          <!-- PROFILE IMAGE -->
+          <div class="image-section">
+
+          <img src="<%= user.profileImage %>" id="previewImg" class="profile-img">
+
+          <label for="profileImageInput" class="change-btn">
+            Change Photo
+          </label>
+
+          <input type="file" name="profileImage" id="profileImageInput" hidden>
+
         </div>
 
-        <div>
-          <label>Name</label>
-          <input type="text" name="name" id="name" value="<%= user.name %>" >
-          <p class="error-msg" id="nameError" display="none"></p>
-        </div>
+          <!-- NAME -->
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="name" id="name" value="<%= user.name %>">
+            <p class="error-msg" id="nameError"></p>
+          </div>
 
-        <div>
-          <label>Email</label>
-          <input type="email" value="<%= user.email %>" readonly>
-        </div>
+          <!-- EMAIL -->
+          <div class="form-group">
+            <label>Email</label>
 
-        <!-- OPEN MODAL BUTTON -->
-        <button type="button" onclick="openEmailModal()" class="btn">
-          Change Email
-        </button>
+            <div class="email-wrapper">
+              <input type="text" value="<%= user.email %>" readonly class="email-input">
 
-        <div>
-          <label>Phone</label>
-          <input type="text" name="phone" id="phone" value="<%= user.phone || '' %>">
-          <p class="error-msg" id="phoneError" display="none"></p>
+              <span class="change-email-btn" onclick="openEmailModal()">
+                Change
+              </span>
+            </div>
+          </div>
+
+          <!-- PHONE -->
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" name="phone" id="phone" value="<%= user.phone || '' %>">
+            <p class="error-msg" id="phoneError"></p>
+          </div>
+
           <% if (typeof error !== "undefined") { %>
-          <p class="error-msg"><%=error%></p>
-        <% } %>
-        </div>
+            <p class="error-msg" style="display:block;"><%= error %></p>
+          <% } %>
 
+          <div class="form-actions">
+            <button type="submit" class="btn submit-btn">Save Changes</button>
+            <a href="/user/profile" class="btn cancel-btn">Cancel</a>
+            </div>
 
-        <button type="submit">Save Changes</button>
+        </form>
 
-      </form>
+      </div>
 
-      <!-- MODAL (OUTSIDE FORM) -->
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL -->
 <div id="emailModal" class="modal">
 
   <div class="modal-content">
@@ -71,11 +96,9 @@
       <h3>Change Email</h3>
 
       <input type="email" id="newEmail" placeholder="Enter new email">
-      <p id="emailError" style="color:red;"></p>
+      <p id="emailError" class="error-msg"></p>
 
-      <button type="button" onclick="sendOtp()">
-        Send OTP
-      </button>
+      <button type="button" onclick="sendOtp()">Send OTP</button>
     </div>
 
     <!-- STEP 2 -->
@@ -84,9 +107,7 @@
 
       <input type="text" id="otp" placeholder="Enter OTP">
 
-      <button type="button" onclick="verifyOtp()">
-        Verify OTP
-      </button>
+      <button type="button" onclick="verifyOtp()">Verify OTP</button>
 
       <p id="otpMsg"></p>
 
@@ -95,19 +116,14 @@
       <button type="button" id="resendBtn" onclick="resendOtp()" disabled>
         Resend OTP
       </button>
-
     </div>
 
   </div>
 
 </div>
 
-    </div>
-
-  </div>
-
- <script src="/js/user/editProfileModal.js"></script>
- <script src="/js/user/editProfileValidation.js"></script>
+<script src="/js/user/editProfile.js"></script>
+<script src="/js/user/editProfileValidation.js"></script>
 
 </body>
 </html>

@@ -1,5 +1,3 @@
-
-
 function openEmailModal() {
   document.getElementById("emailModal").style.display = "block";
 }
@@ -17,17 +15,36 @@ function resetModal() {
   document.getElementById("otp").value = "";
 
   document.getElementById("otpMsg").innerText = "";
+  document.getElementById("emailError").innerText = "";
+  document.getElementById("emailError").style.display = "none";
 }
 
 let currentEmail = "";
 
 async function sendOtp() {
   currentEmail = document.getElementById("newEmail").value.trim();
+  const emailError = document.getElementById("emailError");
+  const btn = document.querySelector("#stepEmail button");
+
+  emailError.style.display = "none";
+  emailError.innerText = "";
 
   if (!currentEmail) {
-    document.getElementById("otpMsg").innerText = "Email is required";
+    emailError.innerText = "Email is required";
+    emailError.style.display = "block";
     return;
   }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(currentEmail)) {
+    emailError.innerText = "Enter a valid email address";
+    emailError.style.display = "block";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Sending...";
 
   try {
     const res = await fetch("/user/profile/email-change", {
@@ -47,26 +64,42 @@ async function sendOtp() {
       document.getElementById("stepOtp").style.display = "block";
       startTimer();
     } else {
-      document.getElementById("emailError").innerText = data.message;
+      emailError.innerText = data.message;
+      emailError.style.display = "block";
     }
 
   } catch (err) {
-    document.getElementById("emailError").innerText =
-      "Something went wrong. Please try again.";
+    emailError.innerText = "Something went wrong. Please try again.";
+    emailError.style.display = "block";
   }
+
+  btn.disabled = false;
+  btn.innerText = "Send OTP";
 }
 
-
-
 async function verifyOtp() {
-  const otp = document.getElementById("otp").value;
+  const otp = document.getElementById("otp").value.trim();
+  const otpMsg = document.getElementById("otpMsg");
+
+  otpMsg.innerText = "";
+
+  if (!otp) {
+    otpMsg.innerText = "OTP is required";
+    return;
+  }
+
+  if (!/^\d{6}$/.test(otp)) {
+    otpMsg.innerText = "Enter a valid 6-digit OTP";
+    return;
+  }
 
   const res = await fetch("/user/profile/email-change-verify", {
     method: "POST",
-    headers: { "Content-Type": "application/json",
-        "Accept":"application/json"
-     },
-     credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    credentials: "include",
     body: JSON.stringify({
       email: currentEmail,
       otp,
@@ -81,7 +114,7 @@ async function verifyOtp() {
     closeEmailModal();
     location.reload();
   } else {
-    document.getElementById("otpMsg").innerText = data.message;
+    otpMsg.innerText = data.message;
   }
 }
 
@@ -109,5 +142,3 @@ function startTimer() {
     }
   }, 1000);
 }
-
-

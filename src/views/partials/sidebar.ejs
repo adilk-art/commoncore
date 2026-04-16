@@ -2,9 +2,13 @@
 
 <div class="sidebar">
   <ul>
-    <li class="<%= active === 'profile' ? 'active' : '' %>">My Account</li>
+    <li class="<%= active === 'profile' ? 'active' : '' %>">
+      <a href="/user/profile">My Account</a>
+    </li>
+    <li class="<%= active === 'address' ? 'active' : '' %>">
+      <a href="/user/address">Address Book</a>
+    </li>
     <li>My Orders</li>
-    <li>Address Book</li>
     <li>Wallet</li>
     <li>About Us</li>
     <li>Contact Us</li>

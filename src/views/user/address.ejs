@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Address Book</title>
+
+  <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/profile.css">
+  <link rel="stylesheet" href="/css/user/address.css">
+</head>
+
+<body>
+
+  <%- include("../partials/header") %>
+
+  <div class="account-container">
+
+    <%- include("../partials/sidebar", { active: "address" }) %>
+
+    <div class="main-content">
+
+      <div class="page-header">
+        <h2 class="page-title">ADDRESS BOOK</h2>
+
+        <button class="btn add-address-btn" id="addAddressBtn">
+          Add Address
+        </button>
+      </div>
+
+      <% if (typeof error !== "undefined") { %>
+        <p class="error-msg" style="display:block;"><%= error %></p>
+      <% } %>
+
+      <% if (addresses.length === 0) { %>
+
+        <div class="empty-address" id="emptyAddAddressCard">
+          <div class="empty-box">
+            <div class="icon">📍</div>
+            <h3>No addresses found</h3>
+            <p>Add your first delivery address to continue checkout smoothly.</p>
+
+            <button class="btn primary add-address-btn" id="addAddressBtnEmpty">
+              + Add Address
+            </button>
+          </div>
+        </div>
+
+      <% } else { %>
+
+        <div class="address-list" id="addressList">
+
+          <% addresses.forEach(addr => { %>
+
+            <div class="address-card">
+
+              <% if (addr.isDefault) { %>
+                <span class="default-tag">DEFAULT</span>
+              <% } %>
+
+              <h3><%= addr.fullName %></h3>
+
+              <p class="address-text">
+                <%= addr.line1 %>
+                <% if (addr.line2) { %>, <%= addr.line2 %> <% } %>,
+                <%= addr.city %>, <%= addr.state %> - <%= addr.pincode %>
+              </p>
+
+              <p class="phone">+91 <%= addr.phone %></p>
+
+              <div class="actions">
+                <a href="/user/address/edit/<%= addr._id %>" class="btn edit">Edit</a>
+
+                <a href="/user/address/delete/<%= addr._id %>"
+                   class="btn delete"
+                   onclick="openDeleteModal('<%=addr._id%>');return false;">
+                  Delete
+                </a>
+
+                <% if (!addr.isDefault) { %>
+                  <a href="/user/address/default/<%= addr._id %>" class="btn default">
+                    Set Default
+                  </a>
+                <% } %>
+              </div>
+
+            </div>
+
+          <% }) %>
+
+        </div>
+
+      <% } %>
+
+      <div id="addAddressCard" class="add-address-card" style="display:none;">
+
+        <h3>Add New Address</h3>
+
+        <form action="/user/address/add" method="POST" id="addressForm">
+
+          <input type="text" name="fullName" placeholder="Full Name">
+          <p class="error-msg" id="fullNameError"></p>
+          <input type="text" name="phone" placeholder="Phone Number">
+          <p class="error-msg" id="phoneError"></p>
+          <input type="text" name="line1" placeholder="House / Street / Area">
+          <p class="error-msg" id="line1Error"></p>
+          <input type="text" name="line2" placeholder="Landmark (Optional)">
+          <input type="text" name="city" placeholder="City">
+          <p class="error-msg" id="cityError"></p>
+          <input type="text" name="state" placeholder="State">
+          <p class="error-msg" id="stateError"></p>
+          <input type="text" name="pincode" placeholder="Pincode">
+          <p class="error-msg" id="pincodeError"></p>
+
+          <label class="default-check">
+            <input type="checkbox" name="isDefault">
+            Set as Default Address
+          </label>
+
+          <div class="form-actions">
+
+          <button type="submit" class="save-btn">
+            Save Address
+          </button>
+
+          <button type="button" class="btn cancel-btn" id="cancelAddressBtn">
+            
+            Cancel
+          </button>
+
+        </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+ 
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeDeleteModal()">&times;</span>
+
+      <h3>Delete Address</h3>
+      <p>Are you sure you want to delete this address?</p>
+
+      <div class="modal-actions">
+        <button onclick="confirmDelete()" class="btn delete">Yes, Delete</button>
+        <button onclick="closeDeleteModal()" class="btn cancel">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/user/addressValidation.js"></script>
+  <script src="/js/user/address.js"></script>
+
+</body>
+</html>

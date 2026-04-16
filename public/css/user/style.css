@@ -1,4 +1,4 @@
-/* RESET + BASE */
+/* RESET */
 * {
   margin: 0;
   padding: 0;
@@ -11,47 +11,105 @@ body {
   color: #222;
 }
 
-/* NAVBAR */
+/* =========================
+   MODERN NAVBAR (UPGRADED)
+========================= */
+
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 60px;
+  padding: 18px 60px;
   background: #fff;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* LOGO */
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .logo {
-  font-weight: 600;
-  font-size: 18px;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
+/* NAV LINKS */
 .nav-links {
   display: flex;
-  gap: 30px;
+  gap: 28px;
   list-style: none;
   font-size: 14px;
-}
-
-.nav-right {
-  display: flex;
+  font-weight: 500;
+  letter-spacing: 0.3px;
   align-items: center;
-  gap: 15px;
+  color: #4e4e4e;
 }
 
+/* LINK STYLE */
+.nav-links a {
+  text-decoration: none;
+  color: #4e4e4e;
+  position: relative;
+  transition: 0.25s ease;
+  padding: 5px 0;
+}
+
+/* underline animation */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background: #111;
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #000;
+  transform: translateY(-1px);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* LOGIN BUTTON (if used separately) */
 .login-btn {
-  border: 1px solid #ccc;
-  padding: 6px 16px;
+  border: 1px solid #ddd;
+  padding: 6px 14px;
   border-radius: 6px;
   text-decoration: none;
-  color: #000;
+  color: #111;
+  background: transparent;
+  transition: 0.2s ease;
 }
 
-.nav-right i {
-  font-size: 20px;
+.login-btn:hover {
+  background: #111;
+  color: #fff;
+  border-color: #111;
 }
 
+/* ===== FIXED LAYOUT ===== */
+.account-container {
+  display: flex;
+  padding: 20px 60px;
+  gap: 20px;
+}
+
+/* SIDEBAR */
 .sidebar {
-  width: 25%;
+  width: 250px;        /* FIXED WIDTH */
+  flex-shrink: 0;      /* PREVENT SHRINK */
   background: #fff;
   padding: 20px;
   border-radius: 10px;
@@ -59,15 +117,14 @@ body {
 
 .sidebar ul {
   list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
 .sidebar li {
-  padding: 10px;
-  margin-bottom: 5px;
-  border-radius: 5px;
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: 0.2s;
 }
 
 .sidebar li a {
@@ -75,7 +132,72 @@ body {
   color: #222;
 }
 
-.sidebar li.active,
+.sidebar li.active {
+  background: #dcdcdc;
+  font-weight: 500;
+}
+
 .sidebar li:hover {
-  background: #eaeaea;
+  background: #f0f0f0;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;   /* TAKES REMAINING SPACE */
+}
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f5f6f8;
+  font-family: Arial, sans-serif;
+}
+
+/* LAYOUT */
+.account-container {
+  display: flex;
+  padding: 20px 60px;
+  gap: 20px;
+}
+
+.main-content {
+  flex: 1;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+/* BUTTON */
+.btn {
+  background: #333;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+/* ERROR */
+.error-msg {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 5px;
+  display: none;
+}
+.logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 15px;
+  width: auto;
+  object-fit: contain;
 }

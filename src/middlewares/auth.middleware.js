@@ -1,4 +1,4 @@
-export const isAutenticated = (req, res, next) => {
+export const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
     return next();
   }

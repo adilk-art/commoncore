@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Address</title>
+
+  <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/address.css">
+</head>
+<body>
+
+  <%- include("../partials/header") %>
+
+  <div class="account-container">
+
+    <%- include("../partials/sidebar", { active: "address" }) %>
+
+    <div class="main-content">
+
+      <h2 class="page-title">EDIT ADDRESS</h2>
+
+      <!-- ERROR -->
+      <% if (typeof error !== "undefined") { %>
+        <p class="error-msg" style="display:block;"><%= error %></p>
+      <% } %>
+
+      <!-- EDIT FORM -->
+        <div class="add-address-card">
+
+        <h3>Edit Address</h3>
+
+        <form id="addressForm" action="/user/address/update/<%= address._id %>" method="POST">
+
+        <!-- FULL NAME -->
+        <input type="text" name="fullName" value="<%= address.fullName %>" placeholder="Full Name">
+        <p class="error-msg" id="fullNameError"></p>
+
+        <!-- PHONE -->
+        <input type="text" name="phone" value="<%= address.phone %>" placeholder="Phone Number">
+        <p class="error-msg" id="phoneError"></p>
+
+        <!-- LINE 1 -->
+        <input type="text" name="line1" value="<%= address.line1 %>" placeholder="House / Street / Area">
+        <p class="error-msg" id="line1Error"></p>
+
+        <!-- LINE 2 -->
+        <input type="text" name="line2" value="<%= address.line2 %>" placeholder="Landmark (Optional)">
+
+        <!-- CITY -->
+        <input type="text" name="city" value="<%= address.city %>" placeholder="City">
+        <p class="error-msg" id="cityError"></p>
+
+        <!-- STATE -->
+        <input type="text" name="state" value="<%= address.state %>" placeholder="State">
+        <p class="error-msg" id="stateError"></p>
+
+        <!-- PINCODE -->
+        <input type="text" name="pincode" value="<%= address.pincode %>" placeholder="Pincode">
+        <p class="error-msg" id="pincodeError"></p>
+
+        <!-- DEFAULT -->
+        <label class="default-check">
+          <input type="checkbox" name="isDefault"
+            <%= address.isDefault ? "checked" : "" %>>
+          Set as Default Address
+        </label>
+
+        <!-- BUTTONS -->
+        <div class="form-actions">
+          <a href="/user/address" class="btn cancel-btn">Cancel</a>
+          <button type="submit" class="save-btn">Update Address</button>
+        </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- VALIDATION -->
+  <script src="/js/user/addressValidation.js"></script>
+
+</body>
+</html>
