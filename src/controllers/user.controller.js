@@ -186,9 +186,14 @@ const login = async (req, res) => {
   }
 };
 
-const logout = (req, res) => {
+const logout = (req, res, next) => {
   req.session.destroy((err) => {
     if (err) return next(err);
+
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
     res.redirect("/");
   });
 };

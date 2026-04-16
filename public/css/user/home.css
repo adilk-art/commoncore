@@ -47,6 +47,7 @@
 
 .hero-image img {
   width: 620px;
+  border-radius: 15px;
 }
 
 /* CATEGORY */

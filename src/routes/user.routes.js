@@ -22,7 +22,7 @@ router.post("/forgot-password",userController.forgotPassword)
 router.get("/reset-password",userController.loadResetPasswordPage)
 router.post("/reset-password",userController.resetPassword)
 
-router.get("/profile",userController.loadProfilePage)
+router.get("/profile",isAuthenticated,userController.loadProfilePage)
 router.get("/profile/edit",isAuthenticated,userController.loadEditProfile)
 router.post("/profile/email-change",isAuthenticated,userController.emailChange)
 router.post("/profile/email-change-verify",isAuthenticated,userController.verifyOtp)
