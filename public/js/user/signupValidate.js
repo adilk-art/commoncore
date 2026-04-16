@@ -10,6 +10,23 @@ const nameError = document.getElementById("nameError");
 const emailError = document.getElementById("emailError");
 const passwordError = document.getElementById("passwordError");
 const confirmPasswordError = document.getElementById("confirmPasswordError");
+const passwordEye=document.getElementById("passwordEye")
+const confirmPasswordEye=document.getElementById("confirmPassEye")
+
+passwordEye.addEventListener("click",()=>{
+  const isPassword=password.type==="password";
+  password.type=isPassword?"text":"password";
+  passwordEye.innerHTML=isPassword?`<i class="fa-regular fa-eye-slash"></i>`:`<i class="fa-regular fa-eye"></i>`;
+
+})
+confirmPasswordEye.addEventListener("click",()=>{
+  const isPassword=confirmPassword.type==="password";
+  confirmPassword.type=isPassword?"text":"password";
+  confirmPasswordEye.innerHTML=isPassword?`<i class="fa-regular fa-eye-slash"></i>`:`<i class="fa-regular fa-eye"></i>`;
+
+})
+
+
 
 function showError(element, message) {
   element.textContent = message;

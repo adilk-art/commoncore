@@ -4,6 +4,14 @@ const password = document.getElementById("password");
 const emailError = document.getElementById("emailError");
 const passwordError = document.getElementById("passwordError");
 const serverErrorMessage = document.getElementById("serverError");
+const eyeIcon=document.getElementById("eyeIcon");
+
+eyeIcon.addEventListener("click",()=>{
+  const isPassword=password.type==="password";
+  password.type=isPassword?"text":"password";
+  eyeIcon.innerHTML=isPassword?`<i class="fa-regular fa-eye-slash"></i>`:`<i class="fa-regular fa-eye"></i>`;
+})
+
 
 const showError = (element, message) => {
   element.textContent = message;
