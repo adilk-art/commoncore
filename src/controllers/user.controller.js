@@ -3,6 +3,7 @@ import {
   loginUser,
   forgotPasswordService,
   resetPasswordService,
+  prepareSignup
 } from "../services/auth.services.js";
 import {
   resendOtpService,
@@ -36,31 +37,35 @@ const loadLoginPage = (req, res) => {
   res.render("user/login.ejs", { error: null, formData: {}, successMessage });
 };
 
-const signup = async (req, res) => {
-  let name, email, password, confirmPassword;
-  try {
-    ({ name, email, password, confirmPassword } = req.body);
-
-    const { hashedPassword } = await registerUser({
+const initialSignup = async (req, res) => {                //passwordhashing and validation
+try{
+  const {name,email,password,confirmPassword}=req.body;
+    const userData = await prepareSignup({
       name,
       email,
       password,
       confirmPassword,
     });
-    req.session.tempUser = { name, email, password: hashedPassword };
-    console.log(req.session.tempUser);
-    await createAndSendOtp({ email, purpose: "signup" });
 
-    res.redirect(
-      `/user/verify-otp?email=${encodeURIComponent(email)}&purpose=signup`,
-    );
-  } catch (error) {
-    res.render("user/signup.ejs", {
-      error: error.message,
-      formData: { name, email },
-    });
+    req.session.tempUser = userData
+
+    await createAndSendOtp({ 
+      email:userData.email,
+      purpose: "signup" });
+    return res.status(200).json({
+      success:true
+    })
+}    
+catch (error) {
+    return res.status(400).json({
+      errors:error.errors||{general:error.message}
+
+    })
+    
   }
 };
+
+
 
 const loadOtpPage = async (req, res) => {
   const { email, purpose } = req.query;
@@ -312,7 +317,8 @@ const loadSetPassword = async (req, res, next) => {
 export default {
   loadSignupPage,
   loadLoginPage,
-  signup,
+  prepareSignup,
+  initialSignup,
   loadOtpPage,
   resendOtp,
   verifyOtp,

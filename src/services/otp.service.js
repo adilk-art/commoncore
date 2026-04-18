@@ -8,7 +8,6 @@ export const createAndSendOtp=async({email,purpose})=>{
     const otp=generateOtp();
     const expiresAt=new Date(Date.now()+1*60*1000)   //1minutes
     await saveOtp({email,otp,purpose,expiresAt});
-
     await sendOtpEmail({email,otp,purpose})
 }
 

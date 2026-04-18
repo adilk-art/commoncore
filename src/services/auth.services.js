@@ -1,17 +1,56 @@
 import bcrypt from "bcrypt";
-import { emailSchema,signupSchema, loginSchema,resetPasswordSchema } from "../validators/user.validate.js";
+import { emailSchema,signupSchema, loginSchema,resetPasswordSchema } from "../validators/user.validation.js";
 import { createAndSendOtp } from "./otp.service.js";
 
 import {createUser,findUserByEmail, updateUserByEmail} from "../repositories/user.repository.js";
 
-export const registerUser = async ({name,email,password,confirmPassword,}) => {
+export const prepareSignup = async ({ name, email, password, confirmPassword }) => {
+
+  const validate = signupSchema.safeParse({ name, email, password, confirmPassword });
+
+  if (!validate.success) {
+    const errors = {};
+
+    validate.error.issues.forEach(err => {
+      const field = err.path[0];
+      errors[field] = err.message;
+    });
+
+    throw { errors };
+  }
+
+  const existing = await findUserByEmail(email);
+
+  if (existing) {
+    throw {
+      errors: {
+        email: "An account with this email already exists"
+      }
+    };
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  return { name, email, hashedPassword };
+};
+
+export const registerUser = async ({name,email,password,confirmPassword,}) => {        //registeruser
   const validate = signupSchema.safeParse({ name,email,password,confirmPassword});
   if (!validate.success) {
-    const firstError = validate.error.issues[0].message;
-    throw new Error(firstError);
-  }
+  const errors = {};
+
+  validate.error.issues.forEach(err => {
+    const field = err.path[0];
+    errors[field] = err.message;
+  });
+
+  throw { errors }; // error object for frontend 
+}
   const existing = await findUserByEmail(email);
-  if (existing) throw new Error("An account with this email already exists");
+  if (existing) throw {
+    errors: {
+      email: "An account with this email already exists"
+    }
+  };
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   return{name,email,hashedPassword}

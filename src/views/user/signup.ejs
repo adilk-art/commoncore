@@ -6,6 +6,7 @@
     <title>Signup</title>
 
     <link rel="stylesheet" href="/css/user/signup.css" />
+    <link rel="stylesheet" href="/css/user/otp-modal.css" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -39,7 +40,7 @@
             experience
           </p>
 
-          <form class="signup-form" action="/user/signup" method="post" id="signupForm">
+          <form class="signup-form" action="/user/signup" method="post" id="signupForm" novalidate>
             <div class="form-group">
               <label>Full Name</label>
               <input type="text" placeholder="John Doe" name="name" id="name" value="<%=formData?.name || ''%>"/>
@@ -62,7 +63,7 @@
                 </span>
                 
               </div>
-              <small>MINIMUM 6 CHARACTERS WITH AT LEAST ONE NUMBER</small>
+              <small>MINIMUM 8 CHARACTERS WITH AT LEAST ONE NUMBER AND SPECIAL CHARACTER</small>
               <span class="error-msg" id="passwordError"></span>
             </div>
             
@@ -81,9 +82,7 @@
               <label>Referral Code (Optional)</label>
               <input type="text" placeholder="EX: CORE123" />
             </div>
-            <%if(error){%>
-             <p class="error-msg" id="serverError" style="display:block"><%= error %></p>
-            <%}%>
+             <p class="error-msg" id="serverError" style="display:block"></p>
             <button class="create-btn">Create Account</button>
            
             
@@ -112,15 +111,13 @@
           <a href="#">CONTACT</a>
         </div>
 
-        <div class="footer-social">
-          <a href="#"><i class="fa-brands fa-twitter"></i></a>
-          <a href="#"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#"><i class="fa-brands fa-youtube"></i></a>
-        </div>
-
         <p class="footer-copy">© 2024 COMMON CORE. ALL RIGHTS RESERVED.</p>
       </footer>
     </div>
-    <script src="/js/user/signupValidate.js"></script>
+            <%- include("../partials/otp-modal") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/user/otpModal.js"></script>
+    <script src="/js/user/signup.js"></script>
   </body>
 </html>

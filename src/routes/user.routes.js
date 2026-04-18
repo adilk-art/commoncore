@@ -9,7 +9,7 @@ import { upload } from "../middlewares/upload.js";
 router.get("/",userController.loadHomePage)
 router.get("/signup",isNotAuthenticated, userController.loadSignupPage);
 router.get("/login",isNotAuthenticated, userController.loadLoginPage);
-router.post("/signup", userController.signup);
+router.post("/signup/initiate", userController.initialSignup);
 router.post("/login", userController.login);
 router.get("/logout",userController.logout)
 

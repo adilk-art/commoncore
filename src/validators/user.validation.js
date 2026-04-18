@@ -3,9 +3,10 @@ import { z } from "zod";
 export const emailSchema=z.string().email("Please enter a valid email address");
 
 export const passwordSchema = z.string()
-  .min(6, "Password must be atleast 6 characters")
+  .min(8, "Password must be atleast 8 characters")
   .regex(/[0-9]/, "Password must contain atleast one number")
-  .regex(/^\S*$/, "Password cannot contain spaces");
+  .regex(/^\S*$/, "Password cannot contain spaces")
+  .regex(/[@$!%*?&]/, "Must contain at least one special character");
 
 
 
@@ -29,7 +30,7 @@ export const signupSchema = z
 export const loginSchema = z.object({
   email: emailSchema,
 
-  password: z.string().min(6, "Password must be atleast 6 characters"),
+  password: z.string().min(8, "Password must be atleast 8 characters"),
 });
 
 export const resetPasswordSchema = z.object({
