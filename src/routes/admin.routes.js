@@ -7,6 +7,8 @@ const router=express.Router();
 
 router.get("/login",adminController.loadLoginPage);
 router.post("/login",adminController.login);
+router.get("/users",adminController.loadUsersPage);
+router.post("/users/toggle-block/:id",adminController.blockUser)
 
 router.get("/dashboard",isAdminAuth,adminController.loadDashboardPage);
 

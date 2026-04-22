@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Users</title>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/admin/global.css">
   <link rel="stylesheet" href="/css/admin/layout.css">
   <link rel="stylesheet" href="/css/admin/users.css">
-
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
@@ -27,130 +25,172 @@
       <div class="content">
 
         <h2 class="page-title">User Management</h2>
+        <form method="GET" action="/admin/users" class="search-box">  <!--//search -->
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="Search by name..."
+                value="<%= search %>"
+            >
+            <button type="submit">Search</button>
+            <%if(search){%>
+                <a href="/admin/users" class="clear-btn">Clear</a>
 
-        <!-- SEARCH -->
-        <form method="GET" action="/admin/users" class="search-box">
-          <input 
-            type="text" 
-            name="search" 
-            placeholder="Search by email..." 
-            value="<%= search || '' %>"
-          >
-          <button type="submit">Search</button>
-        </form>
+            <%}%>
+            </form>
 
-        <% if (!users || users.length === 0) { %>
+<form method="GET" action="/admin/users" class="sort-toggle">
 
-          <!-- EMPTY STATE -->
-          <div class="empty-state">
-            <i class="fa-solid fa-users"></i>
-            <h2>No Users Found</h2>
-            <p>Users will appear here once they register</p>
-          </div>
+  <!-- preserve search -->
+  <input type="hidden" name="search" value="<%= search %>">
 
-        <% } else { %>
+  <button
+    type="submit"
+    name="sort"
+    value="latest"
+    class="sort-btn <%= sort === 'latest' ? 'active' : '' %>"
+  >
+    <i class="fa-solid fa-arrow-down-wide-short"></i>
+    Latest
+  </button>
 
-          <!-- TABLE -->
-          <div class="table-container">
-            <table>
+  <button
+    type="submit"
+    name="sort"
+    value="oldest"
+    class="sort-btn <%= sort === 'oldest' ? 'active' : '' %>"
+  >
+    <i class="fa-solid fa-arrow-up-wide-short"></i>
+    Oldest
+  </button>
 
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+</form>
 
-              <tbody>
-                <% users.forEach((user, index) => { %>
-                  <tr>
-                    <td><%= index + 1 %></td>
-                    <td><%= user.name || "N/A" %></td>
-                    <td><%= user.email %></td>
 
-                    <td>
-                      <span class="status <%= user.isBlocked ? 'blocked' : 'active' %>">
-                        <%= user.isBlocked ? "Blocked" : "Active" %>
-                      </span>
-                    </td>
+  
+        <div class="table-container">
 
-                    <td>
-                      <%= new Date(user.createdAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                      }) %>
-                    </td>
+ <table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Status</th>
+      <th>Joined</th>
+      <th>Action</th>
+    </tr>
+  </thead>
 
-                    <td>
-                      <button 
-                        class="btn <%= user.isBlocked ? 'unblock' : 'block' %>" 
-                        onclick="toggleUser('<%= user._id %>')"
-                      >
-                        <%= user.isBlocked ? "Unblock" : "Block" %>
-                      </button>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
+  <tbody>
+    <% users.forEach(user => { %>
+      <tr>
+        <td><%= user.name || "N/A" %></td>
+        <td><%= user.email %></td>
 
-            </table>
-          </div>
+        <!-- STATUS -->
+        <td>
+          <span class="status <%= user.isBlocked ? 'blocked' : 'active' %>">
+            <%= user.isBlocked ? "Blocked" : "Active" %>
+          </span>
+        </td>
 
-          <!-- PAGINATION -->
-          <div class="pagination">
+        <!-- JOINED DATE -->
+        <td>
+          <%= new Date(user.createdAt).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          }) %>
+        </td>
 
-  <!-- PREV -->
-  <% if (currentPage > 1) { %>
-    <a href="/admin/users?page=<%= currentPage - 1 %>&search=<%= search %>" class="nav-btn">
-      Prev
-    </a>
-  <% } else { %>
-    <span class="nav-btn disabled">Prev</span>
-  <% } %>
+        <!-- ACTION -->
+        <td>
+          <form method="POST" action="/admin/users/toggle-block/<%= user._id %>">
+            <button
+            type="button" 
+            class="btn <%= user.isBlocked ? 'unblock' : 'block' %>"
+            onclick="openModal('<%=user._id%>',<%=user.isBlocked%>)"
+            >
+              <%= user.isBlocked ? "Unblock" : "Block" %>
+            </button>
+          </form>
+        </td>
 
-  <!-- PAGE NUMBERS -->
-  <% for (let i = 1; i <= totalPages; i++) { %>
-    <a 
-      href="/admin/users?page=<%= i %>&search=<%= search %>" 
-      class="page-btn <%= currentPage === i ? 'active' : '' %>"
-    >
-      <%= i %>
-    </a>
-  <% } %>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+            <form id="blockForm" method="POST">     <!-- dummy form to submit data form frontend -->
+            </form>
 
-  <!-- NEXT -->
-  <% if (currentPage < totalPages) { %>
-    <a href="/admin/users?page=<%= currentPage + 1 %>&search=<%= search %>" class="nav-btn">
-      Next
-    </a>
-  <% } else { %>
-    <span class="nav-btn disabled">Next</span>
-  <% } %>
+            <div id="confirmModal" class="modal">
+            <div class="modal-box">
+                <h3 id="modalTitle">Confirm Action</h3>
+                <p id="modalText"></p>
 
-</div>
+                <div class="modal-actions">
+                <button onclick="closeModal()" class="cancel-btn">Cancel</button>
+                <button onclick="confirmAction()" class="confirm-btn">Yes</button>
+                </div>
+            </div>
+            </div>
 
-        <% } %>
+          
+            
+            <!-- PREV -->
+            <div class="pagination">
+            <% if (currentPage > 1) { %>
+                <a 
+                href="/admin/users?page=<%= currentPage - 1 %>&search=<%= search %>" 
+                class="nav-btn"
+                >
+                Prev
+                </a>
+            <% } else { %>
+                <span class="nav-btn disabled">Prev</span>
+            <% } %>
+
+            <!-- PAGE NUMBERS -->
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a 
+                href="/admin/users?page=<%= i %>&search=<%= search %>" 
+                class="page-btn <%= currentPage === i ? 'active' : '' %>"
+                >
+                <%= i %>
+                </a>
+            <% } %>
+
+            <!-- NEXT -->
+            <% if (currentPage < totalPages) { %>
+                <a 
+                href="/admin/users?page=<%= currentPage + 1 %>&search=<%= search %>" 
+                class="nav-btn"
+                >
+                Next
+                </a>
+            <% } else { %>
+                <span class="nav-btn disabled">Next</span>
+            <% } %>
+
+            </div>
+              <p class="results-text">
+            Showing 
+            <%= (currentPage - 1) * limit + 1 %> 
+            to 
+            <%= Math.min(currentPage * limit, totalUsers) %> 
+            of 
+            <%= totalUsers %> 
+            results
+            </p>
+
+        </div>
 
       </div>
 
     </div>
 
   </div>
-
-  <!-- AJAX BLOCK/UNBLOCK -->
-  <script>
-    async function toggleUser(userId) {
-      await fetch(`/admin/users/toggle-block/${userId}`, {
-        method: "POST"
-      });
-      location.reload();
-    }
-  </script>
+  <script src="/js/admin/users.js"></script>
 
 </body>
 </html>
