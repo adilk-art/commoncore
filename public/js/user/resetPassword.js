@@ -54,9 +54,9 @@ password.addEventListener("blur", validatePassword);
 confirmPassword.addEventListener("blur", validateConfirmPassword);
 
 form.addEventListener("submit", function (e) {
-  const isPasswordValid=validatePassword();
-  const isConfirmPasswordValid=validateConfirmPassword();
-  if(!isPasswordValid||!isConfirmPasswordValid){
-    e.preventDefault()
+  const isPasswordValid = validatePassword();
+  const isConfirmPasswordValid = validateConfirmPassword();
+  if (!isPasswordValid || !isConfirmPasswordValid) {
+    e.preventDefault();
   }
 });

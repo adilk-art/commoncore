@@ -3,13 +3,12 @@ import {
   getUserAddresses,
   updateAddressById,
   deleteAddressById,
-  clearDefault
+  clearDefault,
 } from "../repositories/address.repository.js";
 
 import { addressSchema } from "../validators/address.validation.js";
 
 export const addAddressService = async (userId, body) => {
-
   const parsed = addressSchema.safeParse(body);
   if (!parsed.success) {
     throw new Error(parsed.error.errors[0].message);
@@ -26,7 +25,7 @@ export const addAddressService = async (userId, body) => {
   return await createAddress({
     ...data,
     isDefault,
-    userId
+    userId,
   });
 };
 
@@ -35,7 +34,6 @@ export const getAddressesService = (userId) => {
 };
 
 export const updateAddressService = async (id, userId, body) => {
-
   const parsed = addressSchema.safeParse(body);
   if (!parsed.success) {
     throw new Error(parsed.error.errors[0].message);
@@ -51,7 +49,7 @@ export const updateAddressService = async (id, userId, body) => {
 
   return await updateAddressById(id, {
     ...data,
-    isDefault
+    isDefault,
   });
 };
 

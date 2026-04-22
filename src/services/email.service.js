@@ -7,15 +7,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendOtpEmail = async ({ email, otp }) => {
+export const sendOtpEmail = async ({ email, otp, purpose }) => {
+
   await transporter.sendMail({
     from: `"Common Core" ${process.env.EMAIL_USER}`,
     to: email,
     subject: "Your OTP code",
     html: `
-      <h2>Your OTP is: <strong>${otp}</strong></h2>
-      <p>This code expires in 2 minutes.</p>
+      <h2>Your OTP for ${purpose} is: <strong>${otp}</strong></h2>
+      <p>This code expires in 1 minutes.</p>
     `,
   });
 };
-

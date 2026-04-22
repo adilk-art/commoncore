@@ -1,24 +1,49 @@
-
+import { success } from "zod";
 import generateOtp from "../utils/generateOtp.js";
-import {saveOtp,findOtp,invalidateOtp,markOtpAsUsed} from "../repositories/otp.repository.js"
 import { sendOtpEmail } from "./email.service.js";
 
-export const createAndSendOtp=async({email,purpose})=>{
-    await invalidateOtp({email,purpose})
-    const otp=generateOtp();
-    const expiresAt=new Date(Date.now()+1*60*1000)   //1minutes
-    await saveOtp({email,otp,purpose,expiresAt});
-    await sendOtpEmail({email,otp,purpose})
-}
+export const createAndSendOtp = async ({ email, purpose, session }) => {
+  const otp = generateOtp();
+  session.otpData = {
+    otp,
+    purpose,
+    expiresAt: Date.now() + 60 * 1000,
+    attempts: 0,
+  };
+  await sendOtpEmail({ email, otp, purpose });
+  return { success: true };
+};
 
-export const verifyOtpService=async({email,otp,purpose})=>{
-    const otpRecord=await findOtp({email,purpose});
-    if(!otpRecord) throw new Error("OTP not found,please request a new one")
-    if(new Date()>otpRecord.expiresAt) throw new Error("OTP is expired,request a new one")
-    if(otpRecord.otp!==otp) throw new Error("Invalid OTP.Please try again")
-    markOtpAsUsed(otpRecord._id); //marked as used 
-    return true;
-    }
-export const resendOtpService=async({email,purpose})=>{
-    await createAndSendOtp({email,purpose})
-}
+export const verifyOtpService = async ({ otp, purpose, session }) => {
+  const otpData = session.otpData;
+
+  if (!otpData) {
+    throw { message: "OTP not found. Please try again." };
+  }
+
+  if (otpData.purpose !== purpose) {
+    throw { message: "Invalid OTP request." };
+  }
+
+  if (otpData.expiresAt < Date.now()) {
+    throw { message: "OTP expired. Please resend." };
+  }
+
+  if (otpData.attempts >= 5) {
+    throw { message: "Too many attempts. Request new OTP." };
+  }
+
+  if (otpData.otp !== otp) {
+    otpData.attempts += 1;
+    throw { message: "Invalid OTP" };
+  }
+
+  session.otpData = null;
+
+  return { success: true };
+};
+
+// RESEND
+export const resendOtpService = async ({ email, purpose, session }) => {
+  return await createAndSendOtp({ email, purpose, session });
+};

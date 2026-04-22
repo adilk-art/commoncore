@@ -3,7 +3,7 @@ import {
   loginUser,
   forgotPasswordService,
   resetPasswordService,
-  prepareSignup
+  prepareSignup,
 } from "../services/auth.services.js";
 import {
   resendOtpService,
@@ -18,9 +18,15 @@ import {
 } from "../repositories/user.repository.js";
 import { createUser } from "../repositories/user.repository.js";
 import { success } from "zod";
-import {updateProfileService} from "../services/user.service.js"
+import {
+  updateProfileService,
+  verifyPasswordService,
+  verifyNewEmailService,
+  updateEmailService,
+} from "../services/user.service.js";
+import generateOtp from "../utils/generateOtp.js";
 
-const loadHomePage = (req, res) => {
+const loadHomePage = (req, res, next) => {
   try {
     res.render("user/home.ejs");
   } catch (error) {
@@ -28,18 +34,29 @@ const loadHomePage = (req, res) => {
   }
 };
 
-const loadSignupPage = (req, res) => {
-  res.render("user/signup.ejs", { error: null, formData: {} });
+const loadSignupPage = (req, res, next) => {
+  try {
+    res.render("user/signup.ejs", { error: null, formData: {} });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const loadLoginPage = (req, res) => {
   const successMessage = req.session.successMessage || null;
-  res.render("user/login.ejs", { error: null, formData: {}, successMessage });
+  req.session.successMessage = null;
+
+  res.render("user/login.ejs", {
+    error: null,
+    formData: {},
+    successMessage,
+  });
 };
 
-const initialSignup = async (req, res) => {                //passwordhashing and validation
-try{
-  const {name,email,password,confirmPassword}=req.body;
+const initialSignup = async (req, res) => {                         //passwordhashing and validation
+ 
+  try {
+    const { name, email, password, confirmPassword } = req.body;
     const userData = await prepareSignup({
       name,
       email,
@@ -47,113 +64,90 @@ try{
       confirmPassword,
     });
 
-    req.session.tempUser = userData
+    req.session.tempUser = userData; //email,password,hashedPassword
+    req.session.signupEmail = email;
 
-    await createAndSendOtp({ 
-      email:userData.email,
-      purpose: "signup" });
-    return res.status(200).json({
-      success:true
-    })
-}    
-catch (error) {
+    await createAndSendOtp({ email, purpose: "signup", session: req.session });
+    return res.json({ success: true });
+  } catch (error) {
     return res.status(400).json({
-      errors:error.errors||{general:error.message}
-
-    })
-    
+      errors: error.errors || { general: error.message },
+    });
   }
 };
 
-
-
-const loadOtpPage = async (req, res) => {
-  const { email, purpose } = req.query;
-  res.render("user/otp.ejs", { email, purpose, error: null });
-};
-const resendOtp = async (req, res) => {
-  const { email, purpose } = req.body;
+const resendOtp = async (req, res, next) => {
   try {
-    await resendOtpService({ email, purpose });
-    res.json({ success: true });
+    const { purpose, email } = req.body;
+
+    let targetEmail;
+
+    if (purpose === "signup") {
+      targetEmail = req.session.signupEmail || email;
+    } else if (purpose === "forgot-password") {
+      targetEmail = req.session.resetEmail || email;
+    } else if (purpose === "email-change") {
+      targetEmail = req.session.pendingEmail;
+    }
+
+    if (!targetEmail) {
+      throw new Error("Session expired. Try again.");
+    }
+
+    await createAndSendOtp({
+      email: targetEmail,
+      purpose,
+      session: req.session,
+    });
+
+    res.json({
+      success: true,
+      message: "OTP resent successfully",
+    });
   } catch (err) {
-    res.json({ success: false, message: err.message });
+    next(err);
   }
 };
 
 const verifyOtp = async (req, res) => {
-  const { email, otp, purpose } = req.body;
+  const { otp, purpose } = req.body;
 
   try {
-    if (purpose === "email-change") {
-      const userId = req.session.userId;
-
-      if (!req.session.pendingEmail) {
-        return res.json({
-          success: false,
-          message: "Session expired",
-        });
-      }
-
-      const existing = await findUserByEmail(req.session.pendingEmail);
-
-      if (existing) {
-        return res.json({
-          success: false,
-          message: "Email already taken",
-        });
-      }
-
-      await verifyOtpService({ email, otp, purpose });
-
-      await updateUserById(userId, {
-        email: req.session.pendingEmail,
+    if (!otp || otp.length !== 6) {
+      return res.status(400).json({
+        message: "Enter a valid 6-digit OTP",
       });
-
-      req.session.pendingEmail = null;
-
-      return res.json({ success: true });
     }
 
-    if (purpose === "signup") {
-      //signup
+    await verifyOtpService({
+      otp,
+      purpose,
+      session: req.session,
+    });
 
+    if (purpose === "signup") {
       const tempUser = req.session.tempUser;
 
-      if (!tempUser || tempUser.email !== email) {
-        return res.json({
-          success: false,
-          message: "Signup expired, please signup again",
-        });
+      if (!tempUser) {
+        throw { general: "Session expired. Please signup again." };
       }
 
-      await verifyOtpService({ email, otp, purpose });
-
-      await createUser({
+      const newUser = await createUser({
         name: tempUser.name,
         email: tempUser.email,
         password: tempUser.password,
       });
 
-      delete req.session.tempUser;
-
-      return res.json({ success: true });
+      req.session.tempUser = null;
+      req.session.userId = newUser._id;
+      return res.json({ success: true, redirect: "/" });
     }
 
-   if (purpose === "forgot-password") {
-       const user = await findUserByEmail(email);
-
-      if (!user) {
-        return res.json({
-          success: false,
-          message: "User not found",
-        });
+    if (purpose === "forgot-password") {
+      const email = req.session.resetEmail;
+      if (!email) {
+        throw new Error("Session expired..try again");
       }
-
-      await verifyOtpService({ email, otp, purpose });
-
-      // store email temporarily to allow password reset
-      req.session.resetEmail = email;
 
       return res.json({
         success: true,
@@ -161,15 +155,18 @@ const verifyOtp = async (req, res) => {
       });
     }
 
-
+    if (purpose === "email-change") {
+      await updateEmailService(req.session.userId, req.session.pendingEmail);
+      req.session.pendingEmail = null;
+      return res.json({
+        success: true,
+        redirect: "/user/profile",
+      });
+    }
+  } catch (error) {
+    console.log(error);
     return res.status(400).json({
-      success: false,
-      message: "Invalid OTP purpose",
-    });
-  } catch (err) {
-    return res.status(400).json({
-      success: false,
-      message: err.message,
+      message: error.message || "OTP verification failed",
     });
   }
 };
@@ -195,7 +192,10 @@ const logout = (req, res, next) => {
   req.session.destroy((err) => {
     if (err) return next(err);
 
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
 
@@ -203,20 +203,23 @@ const logout = (req, res, next) => {
   });
 };
 
-const loadForgotPasswordPage = (req, res) => {
+const loadForgotPasswordPage = (req, res, next) => {
   res.render("user/forgot-password.ejs", { error: null });
 };
 
-const forgotPassword = async (req, res) => {
-  const { email } = req.body;
+const forgotPassword = async (req, res, next) => {
   try {
+    const { email } = req.body;
     await forgotPasswordService(email);
     req.session.resetEmail = email;
-    res.redirect(
-      `/user/verify-otp?email=${encodeURIComponent(email)}&purpose=forgot-password`,
-    );
+    await createAndSendOtp({
+      email,
+      purpose: "forgot-password",
+      session: req.session,
+    });
+    res.json({ success: true });
   } catch (err) {
-    res.render("user/forgot-password.ejs", { error: err.message });
+    next(err);
   }
 };
 
@@ -240,60 +243,54 @@ const resetPassword = async (req, res) => {
     res.render("user/reset-password.ejs", { error: err.message, email });
   }
 };
+
+
 const loadProfilePage = (req, res, next) => {
   res.render("user/profile.ejs");
 };
 
-const loadEditProfile = async(req, res) => {
-  res.render("user/edit-profile.ejs",{error:null});
+const loadEditProfile = async (req, res) => {
+  res.render("user/edit-profile.ejs", { error: null });
 };
 
-const EditProfile=async(req,res,next)=>{
-  try{
-    await updateProfileService(
-      req.session.userId,
-      req.body,
-      req.file
-    );
-    res.redirect("/user/profile")
-
-    
-  }catch(error){
-    res.render("user/edit-profile.ejs",{
-      error:error.message
-    })
-  }
-}
-
-
-
-const emailChange = async (req, res) => {
+const EditProfile = async (req, res, next) => {
   try {
-    const { newEmail } = req.body;
-
-    if (!newEmail) {
-      return res.json({ success: false, message: "Email required" });
-    }
-
-    const existing = await findUserByEmail(newEmail);
-
-    if (existing) {
-      return res.json({
-        success: false,
-        message: "Email already exists",
-      });
-    }
-
-    req.session.pendingEmail = newEmail;
-
-    await createAndSendOtp({
-      email: newEmail,
-      purpose: "email-change",
+    await updateProfileService(req.session.userId, req.body, req.file);
+    res.redirect("/user/profile");
+  } catch (error) {
+    res.render("user/edit-profile.ejs", {
+      error: error.message,
     });
+  }
+};
 
+const verfifyPassword = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+    const userId = req.session.userId;
+    await verifyPasswordService(userId, password);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400);
+    next(err);
+  }
+};
+
+const emailChange = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const userId = req.session.userId;
+    await verifyNewEmailService(email, userId);
+    req.session.pendingEmail = email;
+    await createAndSendOtp({
+      email,
+      purpose: "email-change",
+      session: req.session,
+    });
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, message: err.message });
+    res.status(400);
+    return next(err);
   }
 };
 
@@ -319,7 +316,6 @@ export default {
   loadLoginPage,
   prepareSignup,
   initialSignup,
-  loadOtpPage,
   resendOtp,
   verifyOtp,
   login,
@@ -334,4 +330,5 @@ export default {
   loadEditProfile,
   EditProfile,
   emailChange,
+  verfifyPassword,
 };

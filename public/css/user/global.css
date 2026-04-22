@@ -1,0 +1,44 @@
+/* ===== CURSOR RESET ===== */
+* {
+  cursor: default;
+}
+
+a,
+button,
+label,
+select,
+[role="button"],
+.change-btn,
+.cancel-btn,
+.close,
+.eye-toggle-btn,
+.change-email-btn,
+.sidebar li {
+  cursor: pointer;
+}
+
+input,
+textarea {
+  cursor: text;
+}
+
+input[readonly],
+input[disabled] {
+  cursor: default;
+}
+
+/* ===== DISABLE TEXT SELECTION ON NON-INTERACTIVE ELEMENTS ===== */
+h1, h2, h3, h4, h5, h6,
+p, span, div, section,
+li, ul, ol, img,
+label, td, th, tr, table {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ===== RE-ENABLE WHERE NEEDED ===== */
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}

@@ -6,11 +6,10 @@ export const isAuthenticated = (req, res, next) => {
   if (req.xhr || req.headers.accept?.includes("application/json")) {
     return res.status(401).json({
       success: false,
-      message: "Not authenticated"
+      message: "please login to continue"
     });
   }
 
-  // fallback for normal page requests
   return res.redirect("/user/login");
 };
 

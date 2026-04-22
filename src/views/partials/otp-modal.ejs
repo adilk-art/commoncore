@@ -1,23 +1,38 @@
 <div class="otp-modal" id="otpModal">
   <div class="otp-box">
 
-    <h2>Verify OTP</h2>
-    <p id="otpPurpose">Enter the code sent to your email</p>
+    <!-- NORMAL OTP CONTENT -->
+    <div id="otpContent">
 
-    <div class="otp-inputs">
-      <input type="text" maxlength="1" inputmode="numeric" />
-      <input type="text" maxlength="1" inputmode="numeric" />
-      <input type="text" maxlength="1" inputmode="numeric" />
-      <input type="text" maxlength="1" inputmode="numeric" />
-      <input type="text" maxlength="1" inputmode="numeric" />
-      <input type="text" maxlength="1" inputmode="numeric" />
+      <span class="otp-close" onclick="closeOtpModal()">&times;</span>
+
+      <h2>Verify OTP</h2>
+      <p id="otpPurpose">Enter the code sent to your email</p>
+
+      <span id="otpError" class="otp-error"></span>
+
+      <div class="otp-inputs">
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+      </div>
+
+      <button class="verify-btn" onclick="verifyOtp()">Verify</button>
+
+      <div class="otp-footer">
+        <span id="timer">01:00</span>
+        <button id="resendBtn" disabled onclick="resendOtp()">Resend</button>
+      </div>
+
     </div>
 
-    <button class="verify-btn" onclick="verifyOtp()">Verify</button>
-
-    <div class="otp-footer">
-      <span id="timer">01:00</span>
-      <button id="resendBtn" disabled onclick="resendOtp()">Resend</button>
+    <!-- SUCCESS STATE -->
+    <div id="otpSuccess" style="display:none;">
+      <div class="success-check">✔</div>
+      <p id="successContent"></p>
     </div>
 
   </div>

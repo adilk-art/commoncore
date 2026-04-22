@@ -13,7 +13,6 @@ const confirmPasswordError = document.getElementById("confirmPasswordError");
 const passwordEye = document.getElementById("passwordEye");
 const confirmPasswordEye = document.getElementById("confirmPassEye");
 
-
 passwordEye.addEventListener("click", () => {
   const isPassword = password.type === "password";
   password.type = isPassword ? "text" : "password";
@@ -158,12 +157,11 @@ form.addEventListener("submit", async (event) => {
       password: password.value,
       confirmPassword: confirmPassword.value,
     });
-  
-   if (res.data.success) {
-      openOtpModal("signup",email.value);
+
+    if (res.data.success) {
+      openOtpModal("signup", email.value);
     }
   } catch (err) {
-    console.log(err);
     const data = err.response?.data;
     if (data?.errors) {
       Object.keys(data.errors).forEach((field) => {
@@ -176,5 +174,4 @@ form.addEventListener("submit", async (event) => {
       });
     }
   }
-
 });

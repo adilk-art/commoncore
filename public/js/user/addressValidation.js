@@ -1,14 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   const form = document.getElementById("addressForm");
 
-  if (!form) return; // prevents crash on pages without form
+  if (!form) return;
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
 
     // CLEAR ERRORS
-    document.querySelectorAll(".error-msg").forEach(el => {
+    document.querySelectorAll(".error-msg").forEach((el) => {
       el.innerText = "";
       el.style.display = "none";
     });
@@ -56,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
       form.submit();
     }
   });
-
 });
 
 function showError(id, message) {

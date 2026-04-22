@@ -4,10 +4,12 @@ let timeLeft = 60;
 let currentPurpose = "";
 let currentEmail = "";
 
-/* =====================
-   OPEN MODAL
-===================== */
+
+const inputs = document.querySelectorAll(".otp-inputs input");
+const otpError = document.getElementById("otpError");
+
 function openOtpModal(purpose, email) {
+
   currentPurpose = purpose;
   currentEmail = email;
 
@@ -20,20 +22,18 @@ function openOtpModal(purpose, email) {
       : "Enter OTP sent to your email";
 
   resetInputs();
-  startTimer();
+
+  requestAnimationFrame(() => {
+    startTimer();
+  });
 }
 
-/* =====================
-   CLOSE MODAL
-===================== */
 function closeOtpModal() {
   document.getElementById("otpModal").style.display = "none";
   clearInterval(interval);
+  clearOtpError();
 }
 
-/* =====================
-   TIMER
-===================== */
 function startTimer() {
   const timerEl = document.getElementById("timer");
   const resendBtn = document.getElementById("resendBtn");
@@ -42,7 +42,7 @@ function startTimer() {
   timeLeft = 60;
 
   resendBtn.disabled = true;
-  resendBtn.classList.remove("active");
+
 
   interval = setInterval(() => {
     let min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
@@ -54,7 +54,6 @@ function startTimer() {
       clearInterval(interval);
       timerEl.textContent = "00:00";
       resendBtn.disabled = false;
-      resendBtn.classList.add("active");
       return;
     }
 
@@ -62,19 +61,20 @@ function startTimer() {
   }, 1000);
 }
 
-/* =====================
-   OTP INPUT HANDLING
-===================== */
-const inputs = document.querySelectorAll(".otp-inputs input");
-
 inputs.forEach((input, i) => {
   input.addEventListener("input", () => {
+    input.value = input.value.replace(/[^0-9]/g, "");
+
+  
     if (input.value && i < inputs.length - 1) {
       inputs[i + 1].focus();
     }
+
+    clearOtpError();
   });
 
   input.addEventListener("keydown", (e) => {
+
     if (e.key === "Backspace" && !input.value && i > 0) {
       inputs[i - 1].focus();
     }
@@ -82,55 +82,87 @@ inputs.forEach((input, i) => {
 });
 
 function resetInputs() {
-  inputs.forEach(i => i.value = "");
+  inputs.forEach((i) => (i.value = ""));
   inputs[0]?.focus();
 }
 
-/* =====================
-   GET OTP
-===================== */
 function getOtp() {
-  return Array.from(inputs).map(i => i.value).join("");
+  return Array.from(inputs)
+    .map((i) => i.value)
+    .join("");
 }
 
-/* =====================
-   VERIFY OTP
-===================== */
+function showOtpError(message) {
+  if (!otpError) return;
+  otpError.textContent = message;
+  otpError.style.display = "block";
+}
+
+function clearOtpError() {
+  if (!otpError) return;
+  otpError.textContent = "";
+  otpError.style.display = "none";
+}
+
 async function verifyOtp() {
   const otp = getOtp();
 
-  try {
-    const res = await axios.post("/user/signup/verify-otp", {
-      otp,
-      purpose: currentPurpose
-    });
-
-    if (res.data.success) {
-      window.location.href = "/user/login";
-    }
-  } catch (err) {
-    console.log(err.response?.data?.errors);
+  if (otp.length !== 6) {
+    showOtpError("Enter complete OTP");
+    return;
   }
+
+  try {
+    const res = await axios.post("/user/verify-otp", {
+      otp,
+      purpose: currentPurpose,
+    });
+    if (res.data.success) { 
+      document.getElementById("otpContent").style.display = "none";
+      document.getElementById("otpSuccess").style.display = "block";
+      // closeOtpModal();
+     setTimeout(() => {
+  document.getElementById("otpContent").style.display = "none";
+
+  const successBox = document.getElementById("otpSuccess");
+  const message = document.getElementById("successContent");
+
+  successBox.style.display = "block";
+
+  if (currentPurpose === "email-change") {
+    message.textContent = "Email changed successfully";
+  } else {
+    message.textContent = "OTP verified successfully";
+  }
+
+  setTimeout(() => {
+    window.location.href = res.data.redirect;
+  }, 2000);
+
+}, 3000);
+    }
+
+  } catch (err) {
+  const msg = err.response?.data?.message || "Something went wrong";
+  showError(document.getElementById("otpError"), msg);
+}
 }
 
-/* =====================
-   RESEND OTP
-===================== */
 async function resendOtp() {
   try {
-    await axios.post("/user/signup/initiate", {
-      email: currentEmail
+    await axios.post("/user/resend-otp", {
+      email:currentEmail,
+      purpose: currentPurpose,
     });
 
-    startTimer();
+    startTimer(); // restart timer
+
   } catch (err) {
-    console.log(err.response?.data);
+    showOtpError("Failed to resend OTP");
   }
 }
 
-/* =====================
-   GLOBAL EXPORT
-===================== */
+// ===== Make functions global =====
 window.openOtpModal = openOtpModal;
 window.closeOtpModal = closeOtpModal;
 window.verifyOtp = verifyOtp;

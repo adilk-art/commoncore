@@ -246,14 +246,14 @@
 .default-check {
   display: flex;
   align-items: center;
-  gap: 6px; /* control spacing here */
+  gap: 6px;
   margin: 10px 0;
 }
 
 .default-check input {
   margin: 0;
   width: auto;
-  transform: scale(1); /* keeps checkbox normal size */
+  transform: scale(1); 
 }
 .form-actions {
   display: flex;

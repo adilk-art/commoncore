@@ -14,22 +14,20 @@ form.addEventListener("submit", (e) => {
   phoneInput.classList.remove("input-error");
   nameInput.classList.remove("input-error");
 
-  // NAME VALIDATION
   const name = nameInput.value.trim();
 
   if (!name) {
     nameError.innerText = "Name is required";
-    nameError.style.display="block"
+    nameError.style.display = "block";
     nameInput.classList.add("input-error");
     isValid = false;
   } else if (name.length < 1) {
     nameError.innerText = "Name must be at least 3 characters";
-    nameError.style.display="block"
+    nameError.style.display = "block";
     nameInput.classList.add("input-error");
     isValid = false;
   }
 
-  // PHONE VALIDATION
   const phone = phoneInput.value.trim();
 
   if (phone) {
@@ -37,13 +35,12 @@ form.addEventListener("submit", (e) => {
 
     if (!phoneRegex.test(phone)) {
       phoneError.innerText = "Enter valid 10-digit phone number";
-      phoneError.style.display="block"
+      phoneError.style.display = "block";
       phoneInput.classList.add("input-error");
       isValid = false;
     }
   }
 
-  // STOP FORM SUBMIT
   if (!isValid) {
     e.preventDefault();
   }

@@ -5,6 +5,9 @@ const emailError = document.getElementById("emailError");
 const passwordError = document.getElementById("passwordError");
 const serverErrorMessage = document.getElementById("serverError");
 const eyeIcon=document.getElementById("eyeIcon");
+const successMsg=document.getElementById("successMsg");
+console.log(successMsg);
+
 
 eyeIcon.addEventListener("click",()=>{
   const isPassword=password.type==="password";
@@ -22,6 +25,7 @@ function clearError(element) {
   element.style.display = "none";
 }
 function clearServerError() {
+  if(serverErrorMessage)
   serverErrorMessage.style.display = "none";
 }
 
@@ -46,8 +50,8 @@ function validatePassword() {
     showError(passwordError, "Password is required");
     return false;
   }
-  if (value.length < 6) {
-    showError(passwordError, "Password must be atleast 6 characters");
+  if (value.length < 8) {
+    showError(passwordError, "Password must be atleast 8 characters");
     return false;
   }
   clearError(passwordError);
@@ -55,10 +59,15 @@ function validatePassword() {
 }
 
 [email, password].forEach((element) => {
-  element.addEventListener("input", clearServerError);
+  element.addEventListener("input", () => {
+    clearServerError();
+
+    if (successMsg) {
+      successMsg.style.display = "none";
+    }
+  });
 });
-email.addEventListener("blur", validateEmail);
-password.addEventListener("blur", validatePassword);
+
 
 form.addEventListener("submit", (event) => {
   const isEmailValid = validateEmail();
@@ -68,3 +77,5 @@ form.addEventListener("submit", (event) => {
     event.preventDefault();
   }
 });
+
+

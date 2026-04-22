@@ -2,9 +2,11 @@
 <html>
 <head>
   <title>Edit Profile</title>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/otp-modal.css">
   <link rel="stylesheet" href="/css/user/editProfile.css">
+  <link rel="stylesheet" href="/css/user/global.css">
 </head>
 <body>
 
@@ -85,15 +87,30 @@
 </div>
 
 <!-- MODAL -->
-<div id="emailModal" class="modal">
-
+<div id="emailModal" class="email-modal">
   <div class="modal-content">
 
     <span class="close" onclick="closeEmailModal()">&times;</span>
 
-    <!-- STEP 1 -->
-    <div id="stepEmail">
-      <h3>Change Email</h3>
+    <!-- STEP 1: PASSWORD -->
+    <div id="step1">
+      <h3>Confirm Password</h3>
+
+    <div class="input-wrapper">
+      <input type="password" id="confirmPassword" placeholder="Enter current password">
+
+      <span class="eye-toggle-btn" id="confirmPassEye">
+        <i class="fa-solid fa-eye"></i>
+      </span>
+    </div>
+      <p id="passwordError" class="error-msg"></p>
+
+      <button type="button" onclick="verifyPasswordStep()">Continue</button>
+    </div>
+
+    <!-- STEP 2: EMAIL -->
+    <div id="step2" style="display:none;">
+      <h3>Enter New Email</h3>
 
       <input type="email" id="newEmail" placeholder="Enter new email">
       <p id="emailError" class="error-msg"></p>
@@ -101,29 +118,12 @@
       <button type="button" onclick="sendOtp()">Send OTP</button>
     </div>
 
-    <!-- STEP 2 -->
-    <div id="stepOtp" style="display:none;">
-      <h3>Verify OTP</h3>
-
-      <input type="text" id="otp" placeholder="Enter OTP">
-
-      <button type="button" onclick="verifyOtp()">Verify OTP</button>
-
-      <p id="otpMsg"></p>
-
-      <p id="timerText">Resend OTP in 60s</p>
-
-      <button type="button" id="resendBtn" onclick="resendOtp()" disabled>
-        Resend OTP
-      </button>
-    </div>
-
   </div>
-
 </div>
-
+<%- include("../partials/otp-modal") %>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/user/otpModal.js"></script>
 <script src="/js/user/editProfile.js"></script>
 <script src="/js/user/editProfileValidation.js"></script>
-
 </body>
 </html>

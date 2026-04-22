@@ -13,7 +13,6 @@ router.post("/signup/initiate", userController.initialSignup);
 router.post("/login", userController.login);
 router.get("/logout",userController.logout)
 
-router.get("/verify-otp",userController.loadOtpPage)
 router.post("/verify-otp",userController.verifyOtp)
 router.post("/resend-otp",userController.resendOtp)
 
@@ -25,8 +24,8 @@ router.post("/reset-password",userController.resetPassword)
 router.get("/profile",isAuthenticated,userController.loadProfilePage)
 router.get("/profile/edit",isAuthenticated,userController.loadEditProfile)
 router.post("/profile/email-change",isAuthenticated,userController.emailChange)
-router.post("/profile/email-change-verify",isAuthenticated,userController.verifyOtp)
 router.post("/profile/edit",isAuthenticated,upload.single("profileImage"),userController.EditProfile)
+router.post("/profile/verify-password", isAuthenticated, userController.verfifyPassword);  //emailchange
 
 router.get("/address", isAuthenticated, addressController.getAddressPage);
 router.post("/address/add", isAuthenticated, addressController.addAddress);

@@ -7,8 +7,9 @@
 
     <link rel="stylesheet" href="/css/user/signup.css" />
     <link rel="stylesheet" href="/css/user/otp-modal.css" />
+    <link rel="stylesheet" href="/css/user/global.css">
+    
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,7 +17,6 @@
       rel="stylesheet"
     />
 
-    <!-- Icons -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -31,7 +31,6 @@
         </a>
       </header>
 
-      <!-- Main -->
       <main class="main-content">
         <section class="signup-card">
           <h1>Create Account</h1>
@@ -40,7 +39,7 @@
             experience
           </p>
 
-          <form class="signup-form" action="/user/signup" method="post" id="signupForm" novalidate>
+          <form class="signup-form"  id="signupForm" novalidate>
             <div class="form-group">
               <label>Full Name</label>
               <input type="text" placeholder="John Doe" name="name" id="name" value="<%=formData?.name || ''%>"/>
@@ -103,7 +102,6 @@
         </section>
       </main>
 
-      <!-- Footer -->
       <footer class="footer">
         <div class="footer-links">
           <a href="#">ABOUT</a>

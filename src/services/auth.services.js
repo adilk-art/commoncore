@@ -22,6 +22,7 @@ export const prepareSignup = async ({ name, email, password, confirmPassword }) 
   const existing = await findUserByEmail(email);
 
   if (existing) {
+    if(!existing.password){}
     throw {
       errors: {
         email: "An account with this email already exists"
@@ -30,7 +31,7 @@ export const prepareSignup = async ({ name, email, password, confirmPassword }) 
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  return { name, email, hashedPassword };
+  return { name, email, password:hashedPassword };
 };
 
 export const registerUser = async ({name,email,password,confirmPassword,}) => {        //registeruser
@@ -72,17 +73,24 @@ export const loginUser = async ({ email, password }) => {
   return user;
 };
 
+
 export const forgotPasswordService=async(email)=>{
   const result=emailSchema.safeParse(email);
   if(!result.success){
     throw new Error(result.error.issues[0]?.message)
   }
+ 
 
   const user=await findUserByEmail(email);
-  if(!user) throw new Error('No account found with this email');
-  if(!user.password) throw new Error('This account uses google sign-in')
+  if(!user){ 
+    throw new Error('No account found with this email'); 
+}
 
-  await createAndSendOtp({email,purpose:'forgot-password'})  
+if(!user.password){
+  throw new Error('This account uses google sign-in')
+} 
+
+return true;
 }
 
 export const resetPasswordService=async({email,password,confirmPassword})=>{

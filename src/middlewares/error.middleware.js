@@ -4,13 +4,10 @@ export const notFound = (req, res, next) => {
 };
 
 export const errorHandler = (err, req, res, next) => {
-  let statusCode;
+  const statusCode = res.statusCode && res.statusCode !== 200
+    ? res.statusCode
+    : err.statusCode || 500;
 
-  if (res.statusCode !== 200) {
-    statusCode = res.statusCode;
-  } else {
-    statusCode = 500;
-  }
   res.status(statusCode).json({
     success: false,
     message: err.message || "Internal server error",

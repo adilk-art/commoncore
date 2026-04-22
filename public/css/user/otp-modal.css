@@ -4,7 +4,8 @@
   display: none;
   justify-content: center;
   align-items: center;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
   z-index: 99999;
 }
 
@@ -68,11 +69,55 @@
 #resendBtn {
   border: none;
   background: none;
+  color: #000;
+  cursor: pointer;
+}
+
+#resendBtn:disabled {
   color: #999;
   cursor: not-allowed;
 }
-
-#resendBtn.active {
-  color: #000;
+/* Close button */
+.otp-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 18px;
   cursor: pointer;
+  color: #999;
+}
+
+.otp-close:hover {
+  color: #000;
+}
+
+.otp-box {
+  position: relative;
+}
+
+.otp-error {
+  display: none;
+  color: #e74c3c;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.success-check {
+  width: 60px;
+  height: 60px;
+  margin: 20px auto;
+  border-radius: 50%;
+  background: #4CAF50;
+  color: white;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  80% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }

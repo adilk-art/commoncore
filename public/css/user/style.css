@@ -11,9 +11,6 @@ body {
   color: #222;
 }
 
-/* =========================
-   MODERN NAVBAR (UPGRADED)
-========================= */
 
 .navbar {
   display: flex;
@@ -27,7 +24,6 @@ body {
   z-index: 1000;
 }
 
-/* LOGO */
 .logo-wrap {
   display: flex;
   align-items: center;
@@ -40,7 +36,6 @@ body {
   object-fit: contain;
 }
 
-/* NAV LINKS */
 .nav-links {
   display: flex;
   gap: 28px;
@@ -52,7 +47,6 @@ body {
   color: #4e4e4e;
 }
 
-/* LINK STYLE */
 .nav-links a {
   text-decoration: none;
   color: #4e4e4e;
@@ -61,7 +55,6 @@ body {
   padding: 5px 0;
 }
 
-/* underline animation */
 .nav-links a::after {
   content: "";
   position: absolute;
@@ -82,7 +75,6 @@ body {
   width: 100%;
 }
 
-/* LOGIN BUTTON (if used separately) */
 .login-btn {
   border: 1px solid #ddd;
   padding: 6px 14px;
@@ -99,17 +91,15 @@ body {
   border-color: #111;
 }
 
-/* ===== FIXED LAYOUT ===== */
 .account-container {
   display: flex;
   padding: 20px 60px;
   gap: 20px;
 }
 
-/* SIDEBAR */
 .sidebar {
-  width: 250px;        /* FIXED WIDTH */
-  flex-shrink: 0;      /* PREVENT SHRINK */
+  width: 250px;        
+  flex-shrink: 0;      
   background: #fff;
   padding: 20px;
   border-radius: 10px;
@@ -141,9 +131,8 @@ body {
   background: #f0f0f0;
 }
 
-/* MAIN CONTENT */
 .main-content {
-  flex: 1;   /* TAKES REMAINING SPACE */
+  flex: 1; 
 }
 
 /* RESET */

@@ -5,13 +5,11 @@
   font-family: Arial, sans-serif;
 }
 
-/* White background */
 body {
   background: #ffffff;
   min-height: 100vh;
 }
 
-/* Center everything */
 .page-container {
   display: flex;
   align-items: center;
@@ -19,14 +17,12 @@ body {
   min-height: 100vh;
 }
 
-/* Wrapper */
 .otp-wrapper {
   width: 100%;
   max-width: 400px;
   padding: 10px;
 }
 
-/* Card */
 .otp-card {
   background: #f3f4f6;
   border-radius: 16px;
@@ -35,7 +31,6 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* Logo */
 .logo-container {
   margin-bottom: 15px;
 }
@@ -45,14 +40,12 @@ body {
   height: auto;
 }
 
-/* Title */
 .otp-card h2 {
   font-size: 24px;
   margin-bottom: 10px;
   color: #111;
 }
 
-/* Description */
 .otp-card p {
   font-size: 14px;
   color: #444;
@@ -60,7 +53,6 @@ body {
   line-height: 1.4;
 }
 
-/* Input */
 .otp-input {
   width: 100%;
   padding: 12px;
@@ -75,7 +67,6 @@ body {
   margin-bottom: 8px;
 }
 
-/* Error */
 .error-msg {
   font-size: 12px;
   display: block;
@@ -83,6 +74,7 @@ body {
 }
 .error-msg.success { color: #2ecc71;}
 .error-msg.error   { color: #e74c3c;}
+
 /* Verify Button */
 .verify-btn {
   width: 100%;

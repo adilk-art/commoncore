@@ -1,9 +1,8 @@
-/* CONTAINER */
 .edit-container {
   display: flex;
   justify-content: center;
-  align-items: center; /* optional vertical centering */
-  min-height: 70vh; /* gives proper vertical space */
+  align-items: center;
+  min-height: 70vh;
 }
 
 .edit-card {
@@ -11,14 +10,13 @@
   padding: 30px 40px;
   border-radius: 12px;
   width: 600px;
- 
 }
 
-/* IMAGE */
 .image-section {
   text-align: center;
   margin-bottom: 25px;
 }
+
 .profile-img {
   width: 110px;
   height: 110px;
@@ -28,11 +26,6 @@
   margin: 0 auto 10px;
 }
 
-.image-upload {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-}
 .change-btn {
   display: inline-block;
   font-size: 13px;
@@ -41,35 +34,9 @@
 }
 
 .change-btn:hover {
-  text-decoration: none;
-  color: #000000;
-  
-
+  color: #000;
 }
 
-.image-upload img {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.overlay {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 35%;
- 
-  color: #fff;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 50px;
- 
-}
-
-/* FORM */
 form {
   max-width: 500px;
   margin: auto;
@@ -91,9 +58,14 @@ form {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
+  transition: 0.2s ease;
 }
 
-/* EMAIL INLINE BUTTON */
+.form-group input:focus {
+  border-color: #000;
+  outline: none;
+}
+
 .email-wrapper {
   position: relative;
 }
@@ -113,68 +85,15 @@ form {
 }
 
 .change-email-btn:hover {
-  text-decoration: none;
-  color: #000000;
+  color: #000;
 }
 
-/* BUTTON */
-.submit-btn {
-  width: 100%;
-}
-
-/* MODAL */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 9999; /* IMPORTANT: above navbar */
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* dark overlay */
-  backdrop-filter: blur(0.5px);
-}
-
-.modal-content {
-  background: #fff;
-  width: 350px;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-.modal-content input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.modal-content button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  background: #333;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.close {
-  float: right;
-  cursor: pointer;
-  font-size: 20px;
-}
 .form-actions {
   display: flex;
   gap: 10px;
   margin-top: 20px;
 }
 
-/* SAVE BUTTON */
 .submit-btn {
   flex: 1;
   background: #111;
@@ -190,7 +109,6 @@ form {
   background: #333;
 }
 
-/* CANCEL BUTTON */
 .cancel-btn {
   flex: 1;
   display: flex;
@@ -207,28 +125,148 @@ form {
 .cancel-btn:hover {
   background: #d6d6d6;
 }
+
+.error-msg {
+  display: none;
+  font-size: 12px;
+  color: #e74c3c;
+  margin-top: 2px;
+  text-align: center;
+}
+
 #otpMsg {
   margin-top: 10px;
   font-size: 13px;
   text-align: center;
-  color: #e74c3c; /* default error color */
+  color: #e74c3c;
 }
-#resendBtn {
+
+.email-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.modal-content {
+  background: #fff;
+  width: 380px;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.25s ease;
+  text-align: left;
+}
+
+.modal-content h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.modal-content input {
   width: 100%;
-  margin-top: 10px;
   padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  border: none;
+  transition: 0.2s ease;
+}
+
+.modal-content input:focus {
+  border-color: #000;
+  outline: none;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
   background: #111;
   color: #fff;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
-/* DISABLED STATE */
-#resendBtn:disabled {
-  background: #ccc;
-  color: #777;
-  cursor: not-allowed;
-  opacity: 0.7;
+.modal-content button:hover {
+  background: #333;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.modal-content > div {
+  transition: all 0.25s ease;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.visible {
+  opacity: 1;
+  position: relative;
+}
+
+
+#otpSuccess {
+  text-align: center;
+}
+
+.success-check {
+  font-size: 40px;
+  color: #2ecc71;
+  margin-bottom: 10px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding-right: 50px; 
+  box-sizing: border-box;
+}
+
+.eye-toggle-btn {
+  position: absolute;
+  right: 14px; 
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 10;
+}
+.eye-toggle-btn {
+  -webkit-user-select: none;
+  user-select: none;
 }
