@@ -13,7 +13,11 @@ export const login = async (req, res) => {
       return res.render("admin/login", { errors: result.errors });
     }
     req.session.adminId = result.admin._id;
-    return res.redirect("/admin/dashboard");
+    return res.render("admin/dashboard",{
+        stats:null,
+        active:"dashboard",
+        title:"Dashboard"
+    });
   } catch (err) {
     return res.status(500).render("admin/login", {
       errors: { general: "Something went wrong" },

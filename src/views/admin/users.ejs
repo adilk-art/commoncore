@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Users</title>
+
+  <link rel="stylesheet" href="/css/admin/layout.css">
+  <link rel="stylesheet" href="/css/admin/users.css">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <%- include("./partials/header", { title: "Users" }) %>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <%- include("./partials/sidebar", { active: "users" }) %>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <div class="content">
+
+        <h2 class="page-title">User Management</h2>
+
+        <!-- SEARCH -->
+        <form method="GET" action="/admin/users" class="search-box">
+          <input 
+            type="text" 
+            name="search" 
+            placeholder="Search by email..." 
+            value="<%= search || '' %>"
+          >
+          <button type="submit">Search</button>
+        </form>
+
+        <% if (!users || users.length === 0) { %>
+
+          <!-- EMPTY STATE -->
+          <div class="empty-state">
+            <i class="fa-solid fa-users"></i>
+            <h2>No Users Found</h2>
+            <p>Users will appear here once they register</p>
+          </div>
+
+        <% } else { %>
+
+          <!-- TABLE -->
+          <div class="table-container">
+            <table>
+
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% users.forEach((user, index) => { %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= user.name || "N/A" %></td>
+                    <td><%= user.email %></td>
+
+                    <td>
+                      <span class="status <%= user.isBlocked ? 'blocked' : 'active' %>">
+                        <%= user.isBlocked ? "Blocked" : "Active" %>
+                      </span>
+                    </td>
+
+                    <td>
+                      <%= new Date(user.createdAt).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                      }) %>
+                    </td>
+
+                    <td>
+                      <button 
+                        class="btn <%= user.isBlocked ? 'unblock' : 'block' %>" 
+                        onclick="toggleUser('<%= user._id %>')"
+                      >
+                        <%= user.isBlocked ? "Unblock" : "Block" %>
+                      </button>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+
+            </table>
+          </div>
+
+          <!-- PAGINATION -->
+          <div class="pagination">
+
+  <!-- PREV -->
+  <% if (currentPage > 1) { %>
+    <a href="/admin/users?page=<%= currentPage - 1 %>&search=<%= search %>" class="nav-btn">
+      Prev
+    </a>
+  <% } else { %>
+    <span class="nav-btn disabled">Prev</span>
+  <% } %>
+
+  <!-- PAGE NUMBERS -->
+  <% for (let i = 1; i <= totalPages; i++) { %>
+    <a 
+      href="/admin/users?page=<%= i %>&search=<%= search %>" 
+      class="page-btn <%= currentPage === i ? 'active' : '' %>"
+    >
+      <%= i %>
+    </a>
+  <% } %>
+
+  <!-- NEXT -->
+  <% if (currentPage < totalPages) { %>
+    <a href="/admin/users?page=<%= currentPage + 1 %>&search=<%= search %>" class="nav-btn">
+      Next
+    </a>
+  <% } else { %>
+    <span class="nav-btn disabled">Next</span>
+  <% } %>
+
+</div>
+
+        <% } %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- AJAX BLOCK/UNBLOCK -->
+  <script>
+    async function toggleUser(userId) {
+      await fetch(`/admin/users/toggle-block/${userId}`, {
+        method: "POST"
+      });
+      location.reload();
+    }
+  </script>
+
+</body>
+</html>
