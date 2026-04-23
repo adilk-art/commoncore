@@ -66,6 +66,7 @@ export const loginUser = async ({ email, password }) => {
   }
   const user = await findUserByEmail(email);
   if (!user) throw new Error("Invalid email or password");
+  if (user.isBlocked) throw new Error("Your acoount has been blocked by admin");
   if (!user.password) throw new Error('This account uses Google sign in. Please sign in with Google');
 
   const isMatch = await bcrypt.compare(password, user.password);

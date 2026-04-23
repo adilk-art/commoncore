@@ -23,8 +23,12 @@ import {
   verifyPasswordService,
   verifyNewEmailService,
   updateEmailService,
+changePasswordService
 } from "../services/user.service.js";
 import generateOtp from "../utils/generateOtp.js";
+
+
+
 
 const loadHomePage = (req, res, next) => {
   try {
@@ -34,6 +38,8 @@ const loadHomePage = (req, res, next) => {
   }
 };
 
+
+
 const loadSignupPage = (req, res, next) => {
   try {
     res.render("user/signup.ejs", { error: null, formData: {} });
@@ -41,6 +47,8 @@ const loadSignupPage = (req, res, next) => {
     next(error);
   }
 };
+
+
 
 const loadLoginPage = (req, res) => {
   const successMessage = req.session.successMessage || null;
@@ -53,8 +61,8 @@ const loadLoginPage = (req, res) => {
   });
 };
 
+
 const initialSignup = async (req, res) => {                         //passwordhashing and validation
- 
   try {
     const { name, email, password, confirmPassword } = req.body;
     const userData = await prepareSignup({
@@ -75,6 +83,7 @@ const initialSignup = async (req, res) => {                         //passwordha
     });
   }
 };
+
 
 const resendOtp = async (req, res, next) => {
   try {
@@ -108,6 +117,7 @@ const resendOtp = async (req, res, next) => {
     next(err);
   }
 };
+
 
 const verifyOtp = async (req, res) => {
   const { otp, purpose } = req.body;
@@ -171,6 +181,8 @@ const verifyOtp = async (req, res) => {
   }
 };
 
+
+
 const login = async (req, res) => {
   let email, password;
   const successMessage = req.session.successMessage || null;
@@ -188,6 +200,8 @@ const login = async (req, res) => {
   }
 };
 
+
+
 const logout = (req, res, next) => {
   req.session.destroy((err) => {
     if (err) return next(err);
@@ -203,9 +217,13 @@ const logout = (req, res, next) => {
   });
 };
 
+
+
 const loadForgotPasswordPage = (req, res, next) => {
   res.render("user/forgot-password.ejs", { error: null });
 };
+
+
 
 const forgotPassword = async (req, res, next) => {
   try {
@@ -223,6 +241,7 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
+
 const loadResetPasswordPage = (req, res) => {
   const email = req.session.resetEmail;
 
@@ -230,6 +249,7 @@ const loadResetPasswordPage = (req, res) => {
 
   res.render("user/reset-password.ejs", { error: null, email }); // ← email passed here
 };
+
 
 const resetPassword = async (req, res) => {
   const { email, password, confirmPassword } = req.body;
@@ -264,6 +284,7 @@ const EditProfile = async (req, res, next) => {
   }
 };
 
+
 const verfifyPassword = async (req, res, next) => {
   try {
     const { password } = req.body;
@@ -275,6 +296,7 @@ const verfifyPassword = async (req, res, next) => {
     next(err);
   }
 };
+
 
 const emailChange = async (req, res, next) => {
   try {
@@ -294,6 +316,30 @@ const emailChange = async (req, res, next) => {
   }
 };
 
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    await changePasswordService(
+      req.session.userId,
+      currentPassword,
+      newPassword
+    );
+
+    req.session.destroy(() => {});
+
+    return res.json({
+      success: true,
+      message: "Password updated successfully"
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 const loadSetPassword = async (req, res, next) => {
   try {
     const user = await findUserById(req.session.userId);
@@ -310,6 +356,7 @@ const loadSetPassword = async (req, res, next) => {
     next(err);
   }
 };
+
 
 export default {
   loadSignupPage,
@@ -331,4 +378,5 @@ export default {
   EditProfile,
   emailChange,
   verfifyPassword,
+  changePassword
 };

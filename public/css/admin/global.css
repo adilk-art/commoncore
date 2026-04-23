@@ -1,4 +1,3 @@
-/* ===== CURSOR RESET ===== */
 * {
   cursor: default;
 }
@@ -27,7 +26,6 @@ input[disabled] {
   cursor: default;
 }
 
-/* ===== DISABLE TEXT SELECTION ON NON-INTERACTIVE ELEMENTS ===== */
 h1, h2, h3, h4, h5, h6,
 p, span, div, section,
 li, ul, ol, img,
@@ -36,7 +34,6 @@ label, td, th, tr, table {
   -webkit-user-select: none;
 }
 
-/* ===== RE-ENABLE WHERE NEEDED ===== */
 input,
 textarea {
   user-select: text;

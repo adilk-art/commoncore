@@ -2,11 +2,12 @@ import {
   updateUserById,
   findUserById,
   findUserByEmail,
+  saveUser
 } from "../repositories/user.repository.js";
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcrypt";
-import { emailSchema } from "../validators/user.validation.js";
+import { emailSchema, passwordSchema } from "../validators/user.validation.js";
 
 export const updateProfileService = async (userId, body, file) => {
   const { name, phone } = body;
@@ -62,5 +63,37 @@ export const verifyNewEmailService = async (email, userId) => {
 
 export const updateEmailService = async (userId, newEmail) => {
   await updateUserById(userId, { email: newEmail });
+  return true;
+};
+
+export const changePasswordService = async (userId, currentPassword, newPassword) => {
+const validate = passwordSchema.safeParse(currentPassword);
+
+if (!validate.success) {
+  const firstError = validate.error.issues[0].message;
+
+  return res.status(400).json({
+    success: false,
+    message: firstError
+  });
+}
+  const user = await findUserById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isMatch) {
+    throw new Error("Current password is incorrect");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+
+  await saveUser(user);
+
   return true;
 };

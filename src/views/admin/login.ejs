@@ -41,15 +41,19 @@
     <input type="email" name="email" id="email" placeholder="Admin Email" required>
     <p class="error" id="emailError"><%= errors?.email || "" %></p>
 
-    <input type="password" name="password" id="password" placeholder="Secure Password" required>
+    <div class="password-wrapper">
+
+  <input type="password" name="password" id="password" placeholder="Secure Password" required>
+
+  <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+
+  </div>
     <p class="error" id="passwordError"><%= errors?.password || "" %></p>
 
     <p class="error" id="generalError"><%= errors?.general || "" %></p>
 
     <!-- FORGOT PASSWORD -->
-    <div class="forgot-wrapper">
-      <a href="/admin/forgot-password">Forgot password?</a>
-    </div>
+  
 
     <button type="submit">SIGN IN TO DASHBOARD</button>
 

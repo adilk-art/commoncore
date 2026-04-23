@@ -3,6 +3,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
+  margin-top: 10px;
 }
 
 .search-box input {
@@ -317,4 +318,49 @@ tbody tr:hover {
 
 .sort-btn i {
   font-size: 13px;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+/* HEADER */
+.header {
+  height: 60px;
+  flex-shrink: 0; 
+}
+
+/* LAYOUT BELOW HEADER */
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: 0; 
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; 
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  min-height: 0;
 }

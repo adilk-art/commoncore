@@ -8,7 +8,7 @@ export const findAdminByEmail=async(email)=>{
 
 export const getAllUsers = async ({ search, page, limit, sort }) => {
   const query = search
-    ? { name: { $regex: search, $options: "i" } }
+    ? { name: { $regex: `^${search}`, $options: "i" } }
     : {};
 
   const sortOption =

@@ -160,3 +160,27 @@ body {
   margin: -8px 0 10px;
   text-align: left;
 }
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* space for icon */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-90%);
+  cursor: pointer;
+  color: #777;
+  font-size: 14px;
+}
+
+.toggle-password:hover {
+  color: #333;
+}

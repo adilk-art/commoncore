@@ -61,3 +61,15 @@ passwordInput.addEventListener("input", () => {
   document.getElementById("passwordError").innerText = "";
   document.getElementById("generalError").innerText = "";
 });
+
+const password = document.getElementById("password");
+const togglePassword = document.getElementById("togglePassword");
+
+togglePassword.addEventListener("click", () => {
+  const isHidden = password.type === "password";
+
+  password.type = isHidden ? "text" : "password";
+
+  togglePassword.classList.toggle("fa-eye");
+  togglePassword.classList.toggle("fa-eye-slash");
+});

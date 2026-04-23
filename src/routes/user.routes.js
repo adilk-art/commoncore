@@ -5,27 +5,30 @@ import addressController from "../controllers/address.controller.js";
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.js";
+import { noCache } from "../middlewares/noCache.middleware.js";
+router.use(noCache)
 
 router.get("/",userController.loadHomePage)
 router.get("/signup",isNotAuthenticated, userController.loadSignupPage);
 router.get("/login",isNotAuthenticated, userController.loadLoginPage);
-router.post("/signup/initiate", userController.initialSignup);
-router.post("/login", userController.login);
-router.get("/logout",userController.logout)
+router.post("/signup/initiate", isNotAuthenticated,userController.initialSignup);
+router.post("/login",isNotAuthenticated,userController.login);
+router.get("/logout",isAuthenticated,userController.logout)
 
 router.post("/verify-otp",userController.verifyOtp)
 router.post("/resend-otp",userController.resendOtp)
 
-router.get("/forgot-password",userController.loadForgotPasswordPage)
-router.post("/forgot-password",userController.forgotPassword)
-router.get("/reset-password",userController.loadResetPasswordPage)
-router.post("/reset-password",userController.resetPassword)
+router.get("/forgot-password",isNotAuthenticated,userController.loadForgotPasswordPage)
+router.post("/forgot-password",isNotAuthenticated,userController.forgotPassword)
+router.get("/reset-password",isNotAuthenticated,userController.loadResetPasswordPage)
+router.post("/reset-password",isNotAuthenticated,userController.resetPassword)
 
 router.get("/profile",isAuthenticated,userController.loadProfilePage)
 router.get("/profile/edit",isAuthenticated,userController.loadEditProfile)
 router.post("/profile/email-change",isAuthenticated,userController.emailChange)
 router.post("/profile/edit",isAuthenticated,upload.single("profileImage"),userController.EditProfile)
 router.post("/profile/verify-password", isAuthenticated, userController.verfifyPassword);  //emailchange
+router.post("/profile/change-password", isAuthenticated, userController.changePassword);
 
 router.get("/address", isAuthenticated, addressController.getAddressPage);
 router.post("/address/add", isAuthenticated, addressController.addAddress);

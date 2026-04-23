@@ -1,16 +1,24 @@
-export const isAuthenticated = (req, res, next) => {
-  if (req.session && req.session.userId) {
-    return next();
+import User from "../models/user.model.js";
+
+export const isAuthenticated = async (req, res, next) => {
+  if (!req.session?.userId) {
+    return res.redirect("/user/login");
   }
 
-  if (req.xhr || req.headers.accept?.includes("application/json")) {
-    return res.status(401).json({
-      success: false,
-      message: "please login to continue"
-    });
+  const user = await User.findById(req.session.userId);
+
+  if (!user) {
+    req.session.destroy(() => {});
+    return res.redirect("/user/login");
   }
 
-  return res.redirect("/user/login");
+  if (user.isBlocked) {
+    req.session.destroy(() => {});
+    return res.redirect("/user/login");
+  }
+
+  req.user = user;
+  next();
 };
 
 export const isNotAuthenticated = (req, res, next) => {

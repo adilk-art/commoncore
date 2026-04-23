@@ -109,7 +109,6 @@ table td {
   color: #155724;
 }
 
-/* EMPTY STATE OVERRIDE (dashboard specific spacing) */
 .empty-state {
   margin-top: 40px;
 }
@@ -135,14 +134,14 @@ body {
 /* HEADER */
 .header {
   height: 60px;
-  flex-shrink: 0; /* prevents overflow */
+  flex-shrink: 0; 
 }
 
 /* LAYOUT BELOW HEADER */
 .layout {
   display: flex;
   flex: 1;
-  min-height: 0; /* 🔥 IMPORTANT FIX */
+  min-height: 0; 
 }
 
 /* SIDEBAR */
@@ -158,7 +157,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* 🔥 IMPORTANT */
+  min-height: 0; 
 }
 
 /* CONTENT */
@@ -167,7 +166,7 @@ body {
   min-height: 0;
 }
 
-/* LOGOUT AT BOTTOM */
+
 .logout {
   margin-top: auto;
 }

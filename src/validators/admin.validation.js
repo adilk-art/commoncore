@@ -11,5 +11,5 @@ export const adminLoginSchema = z.object({
     .min(1, "Password is required")
     .min(8, "Password must be at least 8 characters")
     .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[!@#$%^&*(),.?\":{}|<>]/, "Password must contain one special character")
+    .regex(/[@$!%*?&]/, "Password must contain one special character")
 });

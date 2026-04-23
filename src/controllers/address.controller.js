@@ -14,6 +14,7 @@ const getAddressPage = async (req, res) => {
   res.render("user/address", { addresses });
 };
 
+
 const addAddress = async (req, res) => {
   try {
     await addAddressService(req.session.userId, req.body);
@@ -23,10 +24,13 @@ const addAddress = async (req, res) => {
   }
 };
 
+
 const deleteAddress = async (req, res) => {
   await deleteAddressService(req.params.id);
   res.redirect("/user/address");
 };
+
+
 
 const setDefaultAddress = async (req, res) => {
   await setDefaultAddressService(req.params.id, req.session.userId);
@@ -38,6 +42,7 @@ const getEditAddressPage = async (req, res) => {
   const address = await getAddressById(req.params.id);
   res.render("user/editAddress.ejs", { address });
 };
+
 
 const updateAddress = async (req, res) => {
   try {
@@ -54,5 +59,6 @@ const updateAddress = async (req, res) => {
     });
   }
 };
+
 
 export default {getAddressPage,addAddress,deleteAddress,setDefaultAddress,getEditAddressPage,updateAddress}

@@ -28,3 +28,8 @@ export const updateUserById = async (userId, data) => {
 export const findUserByGoogleId = async (googleId) => {
   return await User.findOne({ googleId });
 };
+
+
+export const saveUser = (user) => {
+  return user.save();
+};

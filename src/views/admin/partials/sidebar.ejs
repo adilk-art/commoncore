@@ -1,5 +1,5 @@
 <aside class="sidebar">
-  <div class="title-text">COMMON CORE</div>
+  <div class="title-text">CONTROL PANEL</div>
 
   <nav>
     <a
@@ -13,25 +13,25 @@
       <i class="fa fa-users"></i> Users
     </a>
     <a
-      href="/admin/products"
+      href=""
       class="<%= active === 'products' ? 'active' : '' %>"
     >
       <i class="fa fa-box"></i> Products
     </a>
 
-    <a href="/admin/orders" class="<%= active === 'orders' ? 'active' : '' %>">
+    <a href="" class="<%= active === 'orders' ? 'active' : '' %>">
       <i class="fa fa-list"></i> Orders
     </a>
 
     <a
-      href="/admin/coupons"
+      href=""
       class="<%= active === 'coupons' ? 'active' : '' %>"
     >
       <i class="fa fa-tags"></i> Coupons
     </a>
 
     <a
-      href="/admin/settings"
+      href=""
       class="<%= active === 'settings' ? 'active' : '' %>"
     >
       <i class="fa fa-gear"></i> Settings
@@ -39,6 +39,8 @@
   </nav>
 
   <div class="logout">
-    <a href="/admin/logout"> <i class="fa fa-sign-out"></i> Logout </a>
-  </div>
+  <a href="javascript:void(0)" onclick="openLogoutModal()">
+    <i class="fa fa-sign-out"></i> Logout
+  </a>
+</div>
 </aside>

@@ -2,9 +2,12 @@ import { adminLoginService } from "../services/admin/auth.service.js";
 import { getAllUsersService,toggleUserBlockService } from "../services/admin/admin.service.js";
 import User from "../models/user.model.js";
 
+
 export const loadLoginPage = async (req, res) => {
   res.render("admin/login.ejs", { errors: null });
 };
+
+
 
 export const login = async (req, res) => {
   try {
@@ -27,9 +30,15 @@ export const login = async (req, res) => {
   }
 };
 
+
 export const loadDashboardPage = (req, res) => {
-  res.send("admin dashboard");
+  res.render("admin/dashboard.ejs", {
+      stats: null,
+      active: "dashboard",
+      title: "Dashboard",
+    });
 };
+
 
 export const loadUsersPage = async (req, res) => {
   const search = req.query.search || "";
@@ -49,9 +58,21 @@ export const loadUsersPage = async (req, res) => {
   });
 };
 
+
 export const blockUser=async(req,res)=>{
     const {id}=req.params;
     await toggleUserBlockService(id);
     res.redirect(req.get("Referrer") || "/admin/users");
 
+}
+
+
+export const logout=(req,res,next)=>{
+  req.session.destroy((err)=>{
+    if(err){
+      return next(err)
+    }
+    res.clearCookie("connect.sid");
+    return res.redirect("/admin/login")
+  })
 }

@@ -110,7 +110,6 @@ body {
   padding: 20px;
 }
 
-/* EMPTY STATE (global reusable) */
 .empty-state {
   height: 70vh;
   display: flex;

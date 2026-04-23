@@ -81,3 +81,81 @@ document.getElementById("confirmPassEye").addEventListener("click", () => {
     icon.classList.add("fa-eye");
   }
 });
+
+
+function pwd_openModal() {
+  document.getElementById("pwd_modal").style.display = "flex";
+}
+
+function pwd_closeModal() {
+  document.getElementById("pwd_modal").style.display = "none";
+
+  document.getElementById("pwd_current").value = "";
+  document.getElementById("pwd_new").value = "";
+  document.getElementById("pwd_confirm").value = "";
+  document.getElementById("pwd_error").textContent = "";
+}
+
+function pwd_validate(password) {
+  const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
+  return regex.test(password);
+}
+
+async function pwd_changePassword() {
+  const current = document.getElementById("pwd_current").value;
+  const newPass = document.getElementById("pwd_new").value;
+  const confirm = document.getElementById("pwd_confirm").value;
+
+  const error = document.getElementById("pwd_error");
+  error.textContent = "";
+
+  if (!current || !newPass || !confirm) {
+    error.textContent = "All fields are required";
+    return;
+  }
+
+  if (!pwd_validate(newPass)) {
+    error.textContent =
+      "Min 8 chars, 1 number and 1 special character required";
+    return;
+  }
+
+  if (newPass !== confirm) {
+    error.textContent = "Passwords do not match";
+    return;
+  }
+
+  try {
+    const res = await axios.post("/user/profile/change-password", {
+      currentPassword: current,
+      newPassword: newPass
+    });
+
+    if (res.data.success) {
+      pwd_closeModal();
+      document.getElementById("successModal").style.display = "flex";
+    }
+
+  } catch (err) {
+    error.textContent =
+      err.response?.data?.message || "Error updating password";
+  }
+}
+
+  function goToLogin() {
+    window.location.href = "/user/login"; 
+  }
+
+  function togglePwd(inputId, icon) {
+    const input = document.getElementById(inputId);
+
+    if (input.type === "password") {
+      input.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    } else {
+      input.type = "password";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    }
+  }
