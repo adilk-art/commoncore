@@ -15,11 +15,11 @@ passport.use(
             const googleId=profile.id;
             const name=profile.displayName;
 
-            let user=await findUserByGoogleId(googleId);
+            let user=await findUserByGoogleId(googleId);  //existing google-login user
             if(user) return done(null,user);
 
-            user=await findUserByEmail(email);
-            if(user){
+            user=await findUserByEmail(email);    //already logged-in user with password-
+            if(user){                             //(linking normal acc with adding googleId)
                 user.googleId=googleId;
                 await user.save();
                 return done(null,user);

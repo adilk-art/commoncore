@@ -1,0 +1,87 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f6f8;
+}
+
+
+.blocked-wrapper {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card styled like your homepage cards */
+.blocked-card {
+  width: 420px;
+  background: #fff;
+  padding: 40px 30px;
+  text-align: center;
+  border-radius: 20px; /* same soft radius as hero */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+/* Icon */
+.icon {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+/* Heading matches hero style */
+.blocked-card h1 {
+  font-size: 32px;
+  margin: 20px 0;
+  color: #333;
+  line-height: 1.2;
+}
+
+/* Paragraph style similar to hero-text p */
+.blocked-card p {
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.sub-text {
+  color: #888;
+  font-size: 13px;
+}
+
+/* Buttons styled like hero button */
+.actions {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Primary button (matches dark hero button) */
+.primary {
+  background: #333;
+  color: #fff;
+}
+
+.primary:hover {
+  opacity: 0.85;
+}
+
+.secondary {
+  background: #e9eef5;  /* same as tag background */
+  color: #333;
+}
+
+.secondary:hover {
+  background: #dfe6e9;
+}

@@ -8,16 +8,15 @@ export const isAuthenticated = async (req, res, next) => {
   const user = await User.findById(req.session.userId);
 
   if (!user) {
-    req.session.destroy(() => {});
+    delete req.session?.userId
     return res.redirect("/user/login");
   }
 
   if (user.isBlocked) {
-    req.session.destroy(() => {});
-    return res.redirect("/user/login");
+   delete req.session?.userId
+    return res.render("user/blocked.ejs");
   }
 
-  req.user = user;
   next();
 };
 

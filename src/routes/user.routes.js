@@ -28,6 +28,7 @@ router.get("/profile/edit",isAuthenticated,userController.loadEditProfile)
 router.post("/profile/email-change",isAuthenticated,userController.emailChange)
 router.post("/profile/edit",isAuthenticated,upload.single("profileImage"),userController.EditProfile)
 router.post("/profile/verify-password", isAuthenticated, userController.verfifyPassword);  //emailchange
+
 router.post("/profile/change-password", isAuthenticated, userController.changePassword);
 
 router.get("/address", isAuthenticated, addressController.getAddressPage);
@@ -43,8 +44,19 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
     passport.authenticate('google',{failureRedirect:"/user/login"}),
     (req,res)=>{
-        req.session.userId=req.user._id;
-        res.redirect('/');
+        if(!req.user.isBlocked){
+            req.session.userId=req.user._id;
+            res.redirect('/');
+        }else{
+            req.logout(function (err) {
+                if (err) {
+                    return next(err);
+                }
+                });
+           return res.render("user/login",{error:"Your account has been Blocked by admin",successMessage:null,formData:null})
+           
+        }
+        
     }
 );
 

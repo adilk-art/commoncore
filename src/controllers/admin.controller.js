@@ -1,6 +1,7 @@
 import { adminLoginService } from "../services/admin/auth.service.js";
 import { getAllUsersService,toggleUserBlockService } from "../services/admin/admin.service.js";
 import User from "../models/user.model.js";
+import Admins from "../models/admin.model.js";
 
 
 export const loadLoginPage = async (req, res) => {
@@ -54,7 +55,7 @@ export const loadUsersPage = async (req, res) => {
   res.render("admin/users.ejs", {
     ...result,
     search,
-    sort
+    sort,
   });
 };
 
@@ -67,12 +68,14 @@ export const blockUser=async(req,res)=>{
 }
 
 
-export const logout=(req,res,next)=>{
-  req.session.destroy((err)=>{
-    if(err){
-      return next(err)
-    }
-    res.clearCookie("connect.sid");
-    return res.redirect("/admin/login")
-  })
-}
+export const logout = (req, res, next) => {
+  delete req.session.adminId;
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+
+  res.redirect("/");
+};

@@ -81,8 +81,11 @@ a {
 /* Title */
 .signup-card h1 {
   text-align: center;
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #4e5566
 }
 
 .subtitle {
@@ -108,8 +111,10 @@ a {
 .form-group label {
   font-size: 11px;
   font-weight: 500;
+  color: #5a5e68
 }
 .form-group input::placeholder {
+  font-size: x-small;
   color: #a6a6a6;
 }
 .form-group input {
@@ -122,8 +127,9 @@ a {
 }
 
 .form-group small {
-  font-size: 7px;
+  font-size: 8px;
   color: #a0a8b7;
+  text-align: center;
 }
 
 /* Password eye */
@@ -240,4 +246,9 @@ a {
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: 0.2px;
+}
+.form-group input:focus {
+  border-color: #5a6474;
+  outline: 1px solid rgba(255, 255, 255, 0.25);
+
 }

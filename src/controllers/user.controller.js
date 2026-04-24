@@ -203,20 +203,17 @@ const login = async (req, res) => {
 
 
 const logout = (req, res, next) => {
-  req.session.destroy((err) => {
-    if (err) return next(err);
+  delete req.session.userId;
 
-    res.setHeader(
-      "Cache-Control",
-      "no-store, no-cache, must-revalidate, proxy-revalidate",
-    );
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
 
-    res.redirect("/");
-  });
+  res.redirect("/");
 };
-
 
 
 const loadForgotPasswordPage = (req, res, next) => {
@@ -327,7 +324,7 @@ export const changePassword = async (req, res, next) => {
       newPassword
     );
 
-    req.session.destroy(() => {});
+    delete req.session.userId;
 
     return res.json({
       success: true,

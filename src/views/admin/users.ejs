@@ -27,7 +27,7 @@
       <div class="content">
 
         <h2 class="page-title">User Management</h2>
-        <form method="GET" action="/admin/users" class="search-box">  <!--//search -->
+          <form method="GET" action="/admin/users" class="search-box">  <!--//search -->
             <input 
                 type="text" 
                 name="search" 
@@ -45,7 +45,6 @@
 
 <form method="GET" action="/admin/users" class="sort-toggle">
 
-  <!-- preserve search -->
   <input type="hidden" name="search" value="<%= search %>">
   <input type="hidden" name="page" value="<%= currentPage %>">
 
