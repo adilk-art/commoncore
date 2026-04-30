@@ -1,14 +1,14 @@
 import { adminLoginService } from "../services/admin/auth.service.js";
-import { getAllUsersService,toggleUserBlockService } from "../services/admin/admin.service.js";
+import {
+  getAllUsersService,
+  toggleUserBlockService,
+} from "../services/admin/admin.service.js";
 import User from "../models/user.model.js";
 import Admins from "../models/admin.model.js";
-
 
 export const loadLoginPage = async (req, res) => {
   res.render("admin/login.ejs", { errors: null });
 };
-
-
 
 export const login = async (req, res) => {
   try {
@@ -31,15 +31,13 @@ export const login = async (req, res) => {
   }
 };
 
-
 export const loadDashboardPage = (req, res) => {
   res.render("admin/dashboard.ejs", {
-      stats: null,
-      active: "dashboard",
-      title: "Dashboard",
-    });
+    stats: null,
+    active: "dashboard",
+    title: "Dashboard",
+  });
 };
-
 
 export const loadUsersPage = async (req, res) => {
   const search = req.query.search || "";
@@ -49,7 +47,7 @@ export const loadUsersPage = async (req, res) => {
   const result = await getAllUsersService({
     search,
     page,
-    sort
+    sort,
   });
 
   res.render("admin/users.ejs", {
@@ -59,23 +57,25 @@ export const loadUsersPage = async (req, res) => {
   });
 };
 
-
-export const blockUser=async(req,res)=>{
-    const {id}=req.params;
-    await toggleUserBlockService(id);
-    res.redirect(req.get("Referrer") || "/admin/users");
-
-}
-
+export const blockUser = async (req, res) => {
+  const { id } = req.params;
+  await toggleUserBlockService(id);
+  res.redirect(req.get("Referrer") || "/admin/users");
+};
 
 export const logout = (req, res, next) => {
-  delete req.session.adminId;
-  res.setHeader(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate",
-  );
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
+  req.session.destroy((err) => {
+    if (err) return next(err);
 
-  res.redirect("/");
+    res.clearCookie("admin.sid");
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
+    return res.redirect("/admin/login");
+  });
 };

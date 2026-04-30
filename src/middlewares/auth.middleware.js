@@ -13,8 +13,11 @@ export const isAuthenticated = async (req, res, next) => {
   }
 
   if (user.isBlocked) {
-   delete req.session?.userId
-    return res.render("user/blocked.ejs");
+   return req.session.destroy((err) => {
+        if (err) return next(err);
+
+        return res.status(403).render("user/blocked.ejs");
+      });
   }
 
   next();

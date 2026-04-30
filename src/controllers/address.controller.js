@@ -3,17 +3,16 @@ import {
   getAddressesService,
   deleteAddressService,
   setDefaultAddressService,
-  updateAddressService
+  updateAddressService,
 } from "../services/address.service.js";
 
 import { getAddressById } from "../repositories/address.repository.js";
-
+import { success } from "zod";
 
 const getAddressPage = async (req, res) => {
   const addresses = await getAddressesService(req.session.userId);
   res.render("user/address", { addresses });
 };
-
 
 const addAddress = async (req, res) => {
   try {
@@ -24,41 +23,44 @@ const addAddress = async (req, res) => {
   }
 };
 
-
 const deleteAddress = async (req, res) => {
-  await deleteAddressService(req.params.id);
-  res.redirect("/user/address");
+  try {
+    await deleteAddressService(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 };
 
-
-
-const setDefaultAddress = async (req, res) => {
-  await setDefaultAddressService(req.params.id, req.session.userId);
-  res.redirect("/user/address");
+const setDefaultAddress = async (req, res, next) => {
+  try {
+    await setDefaultAddressService(req.params.id, req.session.userId);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
 };
-
 
 const getEditAddressPage = async (req, res) => {
   const address = await getAddressById(req.params.id);
   res.render("user/editAddress.ejs", { address });
 };
 
-
-const updateAddress = async (req, res) => {
+const updateAddress = async (req, res, next) => {
   try {
-    await updateAddressService(
-      req.params.id,
-      req.session.userId,
-      req.body
-    );
-    res.redirect("/user/address");
+    console.log(`${req.params.id} and ${req.session.userId} and ${req.body}`);
+    await updateAddressService(req.params.id, req.session.userId, req.body);
+    res.json({ success: true });
   } catch (err) {
-    res.render("user/editAddress", {
-      error: err.message,
-      address: req.body
-    });
+    next(err);
   }
 };
 
-
-export default {getAddressPage,addAddress,deleteAddress,setDefaultAddress,getEditAddressPage,updateAddress}
+export default {
+  getAddressPage,
+  addAddress,
+  deleteAddress,
+  setDefaultAddress,
+  getEditAddressPage,
+  updateAddress,
+};

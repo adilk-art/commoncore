@@ -22,7 +22,7 @@
     <div class="profile-top">
       <img src="<%= user.profileImage || '/images/default.png' %>" alt="profile">
 
-      <h2><%= user.name %></h2>
+      <h3><%= user.name %></h3>
       <p><%= user.email %></p>
     </div>
 
@@ -48,9 +48,9 @@
         </div>
       </div>
     </div>
+    <a href="/user/profile/edit" class="btn edit-btn">Edit Profile</a>
 
     <div class="actions">
-    <a href="/user/profile/edit" class="btn edit-btn">Edit Profile</a>
     </div>
 
   </div>

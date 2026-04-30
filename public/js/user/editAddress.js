@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form) return;
 
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    // e.preventDefault();
 
     // CLEAR ERRORS
     document.querySelectorAll(".error-msg").forEach((el) => {
@@ -52,7 +52,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (isValid) {
-      form.submit();
+      const formData = new FormData(form);
+      console.log(formData);
+      const data = Object.fromEntries(formData.entries());
+
+      data.isDefault = form.isDefault.checked;
+
+      const addressId = formData.get("addressId");
+      try {
+        const res = await axios.patch(
+          `/user/address/update/${addressId}`,
+          data,
+        );
+        window.location.href = "/user/address";
+      } catch (err) {
+        errors.forEach((e) => {
+          const errors = err.response.data.errors;
+          const field = e.path[0];
+          const message = e.message;
+
+          showError(field + "Error", message);
+        });
+      }
     }
   });
 });

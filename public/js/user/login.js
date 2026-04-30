@@ -6,7 +6,6 @@ const passwordError = document.getElementById("passwordError");
 const serverErrorMessage = document.getElementById("serverError");
 const eyeIcon=document.getElementById("eyeIcon");
 const successMsg=document.getElementById("successMsg");
-console.log(successMsg);
 
 
 eyeIcon.addEventListener("click",()=>{

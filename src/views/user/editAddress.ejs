@@ -29,32 +29,33 @@
 
         <h3>Edit Address</h3>
 
-        <form id="addressForm" action="/user/address/update/<%= address._id %>" method="POST">
+        <form id="addressForm" >
+        <input type="hidden" name="addressId" value="<%= address._id %>">
 
         <input type="text" name="fullName" value="<%= address.fullName %>" placeholder="Full Name">
-        <p class="error-msg" id="fullNameError"></p>
+        <span class="error-msg" id="fullNameError"></span>
 
         <input type="text" name="phone" value="<%= address.phone %>" placeholder="Phone Number">
-        <p class="error-msg" id="phoneError"></p>
+        <span class="error-msg" id="phoneError"></span>
 
         
         <input type="text" name="line1" value="<%= address.line1 %>" placeholder="House / Street / Area">
-        <p class="error-msg" id="line1Error"></p>
+        <span class="error-msg" id="line1Error"></span>
 
     
         <input type="text" name="line2" value="<%= address.line2 %>" placeholder="Landmark (Optional)">
 
  
         <input type="text" name="city" value="<%= address.city %>" placeholder="City">
-        <p class="error-msg" id="cityError"></p>
+        <span class="error-msg" id="cityError"></span>
 
   
         <input type="text" name="state" value="<%= address.state %>" placeholder="State">
-        <p class="error-msg" id="stateError"></p>
+        <span class="error-msg" id="stateError"></span>
 
    
         <input type="text" name="pincode" value="<%= address.pincode %>" placeholder="Pincode">
-        <p class="error-msg" id="pincodeError"></p>
+        <span class="error-msg" id="pincodeError"></span>
 
   
         <label class="default-check">
@@ -76,8 +77,11 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="/js/user/logout.js"></script>
-  <script src="/js/user/addressValidation.js"></script>
+  <script src="/js/user/editAddress.js"></script>
+   <script src="/js/user/address.js"></script>
+
 
 </body>
 </html>

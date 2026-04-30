@@ -22,7 +22,7 @@
       <div class="page-header">
         <h2 class="page-title">ADDRESS BOOK</h2>
 
-        <button class="btn add-address-btn" id="addAddressBtn">
+        <button class="add-btn" id="addAddressBtn">
           Add Address
         </button>
       </div>
@@ -39,7 +39,7 @@
             <h3>No addresses found</h3>
             <p>Add your first delivery address to continue checkout smoothly.</p>
 
-            <button class="btn primary add-address-btn" id="addAddressBtnEmpty">
+            <button class="add-btn" id="addAddressBtnEmpty">
               + Add Address
             </button>
           </div>
@@ -70,14 +70,14 @@
               <div class="actions">
                 <a href="/user/address/edit/<%= addr._id %>" class="btn edit">Edit</a>
 
-                <a href="/user/address/delete/<%= addr._id %>"
+                <a href="#"
                    class="btn delete"
                    onclick="openDeleteModal('<%=addr._id%>');return false;">
                   Delete
                 </a>
 
                 <% if (!addr.isDefault) { %>
-                  <a href="/user/address/default/<%= addr._id %>" class="btn default">
+                  <a href="#" onclick="setDefault(`<%=addr._id%>`)" class="btn default">
                     Set Default
                   </a>
                 <% } %>
@@ -98,18 +98,18 @@
         <form action="/user/address/add" method="POST" id="addressForm">
 
           <input type="text" name="fullName" placeholder="Full Name">
-          <p class="error-msg" id="fullNameError"></p>
+          <span class="error-msg" id="fullNameError"></span>
           <input type="text" name="phone" placeholder="Phone Number">
-          <p class="error-msg" id="phoneError"></p>
+          <span class="error-msg" id="phoneError"></span>
           <input type="text" name="line1" placeholder="House / Street / Area">
-          <p class="error-msg" id="line1Error"></p>
+          <span class="error-msg" id="line1Error"></span>
           <input type="text" name="line2" placeholder="Landmark (Optional)">
           <input type="text" name="city" placeholder="City">
-          <p class="error-msg" id="cityError"></p>
+          <span class="error-msg" id="cityError"></span>
           <input type="text" name="state" placeholder="State">
-          <p class="error-msg" id="stateError"></p>
+          <span class="error-msg" id="stateError"></span>
           <input type="text" name="pincode" placeholder="Pincode">
-          <p class="error-msg" id="pincodeError"></p>
+          <span class="error-msg" id="pincodeError"></span>
 
           <label class="default-check">
             <input type="checkbox" name="isDefault">
@@ -151,8 +151,10 @@
 
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
  <script src="/js/user/logout.js"></script>
-  <script src="/js/user/addressValidation.js"></script>
+  <script src="/js/user/editAddress.js"></script>
   <script src="/js/user/address.js"></script>
 
 </body>

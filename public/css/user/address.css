@@ -88,12 +88,21 @@
   margin-top: 10px;
   padding: 10px;
   width: 100%;
-  background: #111;
+  background: #4e5566;
   color: #fff;
   border: none;
   border-radius: 6px;
 }
+.add-btn{
+    margin-top: 10px;
+  padding: 10px;
+  width: 120px;
+  background: #4e5566;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
 
+}
 .default-check {
   display: flex;
   align-items: center;
@@ -189,12 +198,12 @@
 }
 
 .btn.primary {
-  background: #111;
+  background: #4e5566;
   color: #fff;
   padding: 10px 16px;
   border-radius: 6px;
-  border: none;
-  cursor: pointer;
+
+ cursor: pointer;
 }
 .add-address-card {
   max-width: 500px;
@@ -264,7 +273,7 @@
 .save-btn {
   flex: 1;
   padding: 10px;
-  background: #111;
+  background: #4e5566;
   color: #fff;
   border: none;
   border-radius: 6px;

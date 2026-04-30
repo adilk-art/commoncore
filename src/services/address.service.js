@@ -34,6 +34,7 @@ export const getAddressesService = (userId) => {
 };
 
 export const updateAddressService = async (id, userId, body) => {
+  
   const parsed = addressSchema.safeParse(body);
   if (!parsed.success) {
     throw new Error(parsed.error.errors[0].message);

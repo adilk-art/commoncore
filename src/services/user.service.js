@@ -12,7 +12,13 @@ import { emailSchema, passwordSchema } from "../validators/user.validation.js";
 export const updateProfileService = async (userId, body, file) => {
   const { name, phone } = body;
   if (!name) {
-    throw new Error("Name is required");
+    const err=new Error("validation error");
+    err.status=400
+    err.errors={
+      msg:"Name is required",
+
+    }
+    throw err
   }
   if (phone && !/^[0-9]\d{9}$/.test(phone)) {
     throw new Error("Invalid phone number");

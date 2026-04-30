@@ -7,6 +7,7 @@ import userRoutes from "./routes/user.routes.js";
 import indexRoutes from "./routes/index.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import localsMiddleware from "./middlewares/locals.middleware.js";
+import { adminSession, userSession } from "./config/session.js";
 const app = express();
 
 app.use(express.json());
@@ -15,20 +16,20 @@ app.set("view engine", "ejs");
 app.set("views", "./src/views");
 app.use(express.static("public"));
 
-app.use(session({
-    name: "user.sid",
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: Number(process.env.SESSION_EXPIRY),
-    },
-  }),
-);
+app.use((req, res, next) => {
+  if (!req.path.startsWith("/admin")) {
+    return userSession(req, res, next);
+  }
+  next();
+});
 
-app.use(passport.initialize());
-app.use(passport.session());
+app.use("/user", passport.initialize());
+app.use("/user", passport.session());
+
+app.use("/admin", adminSession);
+
 app.use(localsMiddleware);
+
 
 app.use("/", indexRoutes);
 app.use("/user", userRoutes);

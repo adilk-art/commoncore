@@ -23,12 +23,9 @@ import {
   verifyPasswordService,
   verifyNewEmailService,
   updateEmailService,
-changePasswordService
+  changePasswordService,
 } from "../services/user.service.js";
 import generateOtp from "../utils/generateOtp.js";
-
-
-
 
 const loadHomePage = (req, res, next) => {
   try {
@@ -38,8 +35,6 @@ const loadHomePage = (req, res, next) => {
   }
 };
 
-
-
 const loadSignupPage = (req, res, next) => {
   try {
     res.render("user/signup.ejs", { error: null, formData: {} });
@@ -47,8 +42,6 @@ const loadSignupPage = (req, res, next) => {
     next(error);
   }
 };
-
-
 
 const loadLoginPage = (req, res) => {
   const successMessage = req.session.successMessage || null;
@@ -61,8 +54,8 @@ const loadLoginPage = (req, res) => {
   });
 };
 
-
-const initialSignup = async (req, res) => {                         //passwordhashing and validation
+const initialSignup = async (req, res) => {
+  //passwordhashing and validation
   try {
     const { name, email, password, confirmPassword } = req.body;
     const userData = await prepareSignup({
@@ -83,7 +76,6 @@ const initialSignup = async (req, res) => {                         //passwordha
     });
   }
 };
-
 
 const resendOtp = async (req, res, next) => {
   try {
@@ -117,7 +109,6 @@ const resendOtp = async (req, res, next) => {
     next(err);
   }
 };
-
 
 const verifyOtp = async (req, res) => {
   const { otp, purpose } = req.body;
@@ -181,8 +172,6 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-
-
 const login = async (req, res) => {
   let email, password;
   const successMessage = req.session.successMessage || null;
@@ -200,27 +189,30 @@ const login = async (req, res) => {
   }
 };
 
-
-
 const logout = (req, res, next) => {
-  delete req.session.userId;
+  req.session.destroy((err) => {
+    if (err) {
+      err.statusCode = 500;
+      err.message = "Logout failed";
+      return next(err);
+    }
 
-  res.setHeader(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate",
-  );
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
+    res.clearCookie("user.sid");
 
-  res.redirect("/");
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
+    res.redirect("/");
+  });
 };
-
 
 const loadForgotPasswordPage = (req, res, next) => {
   res.render("user/forgot-password.ejs", { error: null });
 };
-
-
 
 const forgotPassword = async (req, res, next) => {
   try {
@@ -238,7 +230,6 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
-
 const loadResetPasswordPage = (req, res) => {
   const email = req.session.resetEmail;
 
@@ -246,7 +237,6 @@ const loadResetPasswordPage = (req, res) => {
 
   res.render("user/reset-password.ejs", { error: null, email }); // ← email passed here
 };
-
 
 const resetPassword = async (req, res) => {
   const { email, password, confirmPassword } = req.body;
@@ -261,7 +251,6 @@ const resetPassword = async (req, res) => {
   }
 };
 
-
 const loadProfilePage = (req, res, next) => {
   res.render("user/profile.ejs");
 };
@@ -273,14 +262,14 @@ const loadEditProfile = async (req, res) => {
 const EditProfile = async (req, res, next) => {
   try {
     await updateProfileService(req.session.userId, req.body, req.file);
-    res.redirect("/user/profile");
-  } catch (error) {
-    res.render("user/edit-profile.ejs", {
-      error: error.message,
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
     });
+  } catch (error) {
+    next(error);
   }
 };
-
 
 const verfifyPassword = async (req, res, next) => {
   try {
@@ -293,7 +282,6 @@ const verfifyPassword = async (req, res, next) => {
     next(err);
   }
 };
-
 
 const emailChange = async (req, res, next) => {
   try {
@@ -313,7 +301,6 @@ const emailChange = async (req, res, next) => {
   }
 };
 
-
 export const changePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -321,21 +308,19 @@ export const changePassword = async (req, res, next) => {
     await changePasswordService(
       req.session.userId,
       currentPassword,
-      newPassword
+      newPassword,
     );
 
     delete req.session.userId;
 
     return res.json({
       success: true,
-      message: "Password updated successfully"
+      message: "Password updated successfully",
     });
-
   } catch (err) {
     next(err);
   }
 };
-
 
 const loadSetPassword = async (req, res, next) => {
   try {
@@ -353,7 +338,6 @@ const loadSetPassword = async (req, res, next) => {
     next(err);
   }
 };
-
 
 export default {
   loadSignupPage,
@@ -375,5 +359,5 @@ export default {
   EditProfile,
   emailChange,
   verfifyPassword,
-  changePassword
+  changePassword,
 };

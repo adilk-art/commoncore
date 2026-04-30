@@ -16,6 +16,20 @@
   text-align: center;
   margin-bottom: 25px;
 }
+#errorSelectError,
+#imageSelectError {
+  display: block;
+  margin-top: 8px;
+
+  font-size: 13px;
+  color: #e53935;              /* red error color */
+
+  font-weight: 500;
+  line-height: 1.4;
+
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
 
 .profile-img {
   width: 110px;
@@ -61,6 +75,47 @@ form {
   transition: 0.2s ease;
 }
 
+.error-msg {
+  font-size: 12px;
+  color: red;
+  margin: 0;       
+  padding: 0;
+  line-height: 1.2;
+  display: none; 
+}
+.success-msg {
+  display: none;
+  align-items: center;
+  gap: 8px;
+
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  color: #2e7d32;
+
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 12px;
+
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: all 0.3s ease;
+}
+
+.success-msg.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.success-msg i {
+  font-size: 16px;
+  color: #2e7d32;
+}
+
+.success-msg .msg-text {
+  font-weight: 500;
+}
 .form-group input:focus {
   border-color: #000;
   outline: none;
@@ -96,7 +151,7 @@ form {
 
 .submit-btn {
   flex: 1;
-  background: #111;
+  background: #4e5566;
   color: #fff;
   padding: 10px;
   border: none;
@@ -505,4 +560,115 @@ form {
 
 .pwd_eye:hover {
   color: #333;
+}
+
+/* modal background */
+.crop-modal {
+  display: none;              /* ✅ hidden by default */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* when opened */
+.crop-modal.active {
+  display: flex;
+}
+
+/* modal box */
+.crop-modal .modal-content {
+  position: relative; 
+  width: 700px;
+  max-width: 95vw;
+
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+
+  box-sizing: border-box;
+  overflow: hidden;          /* prevents overflow */
+   z-index: 10; 
+   padding-top: 40px;
+}
+
+/* crop area */
+.crop-wrapper {
+  width: 100%;
+  height: 400px;
+  position: relative;
+}
+
+.crop-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.cropper-container {
+  max-width: 100%;
+  z-index: 1;
+}
+
+/* close button */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+
+  color: #000;
+  background: #fff;       
+  padding: 4px 10px;
+  border-radius: 50%;
+
+  z-index: 99999;    
+}
+
+/* base */
+.profile-success-msg {
+  display: none;
+  align-items: center;
+  gap: 8px;
+
+  margin: 15px 0;
+  padding: 12px 16px;
+
+  background: #e6f9f0;
+  color: #1a7f5a;
+  border: 1px solid #b6f0d6;
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+/* icon */
+.profile-success-msg i {
+  font-size: 16px;
+  color: #1a7f5a;
+}
+
+/* visible state */
+.profile-success-msg.show-success {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+.profile-action-hide {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }

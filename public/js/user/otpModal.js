@@ -1,5 +1,4 @@
 let interval;
-let timeLeft = 60;
 
 let currentPurpose = "";
 let currentEmail = "";
@@ -39,12 +38,12 @@ function startTimer() {
   const resendBtn = document.getElementById("resendBtn");
 
   clearInterval(interval);
-  timeLeft = 60;
+  let timeLeft = 59;
 
   resendBtn.disabled = true;
 
 
-  interval = setInterval(() => {
+  const update=() => {
     let min = String(Math.floor(timeLeft / 60)).padStart(2, "0");
     let sec = String(timeLeft % 60).padStart(2, "0");
 
@@ -52,13 +51,15 @@ function startTimer() {
 
     if (timeLeft <= 0) {
       clearInterval(interval);
-      timerEl.textContent = "00:00";
       resendBtn.disabled = false;
+      timerEl.textContent = "00:00";
       return;
     }
 
     timeLeft--;
-  }, 1000);
+  };
+  update()
+  interval=setInterval(update,1000)
 }
 
 inputs.forEach((input, i) => {
@@ -125,19 +126,12 @@ async function verifyOtp() {
   document.getElementById("otpContent").style.display = "none";
 
   const successBox = document.getElementById("otpSuccess");
-  const message = document.getElementById("successContent");
-
-  successBox.style.display = "block";
-
-  if (currentPurpose === "email-change") {
-    message.textContent = "Email changed successfully";
-  } else {
-    message.textContent = "OTP verified successfully";
-  }
+ 
+    successBox.style.display = "block";
 
   setTimeout(() => {
     window.location.href = res.data.redirect;
-  }, 2000);
+  }, 500);
 
 }, 3000);
     }

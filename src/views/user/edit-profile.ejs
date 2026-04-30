@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Edit Profile</title>
+  <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/css/user/style.css">
   <link rel="stylesheet" href="/css/user/otp-modal.css">
@@ -25,7 +26,7 @@
       <div class="edit-card">
 
         <!-- FORM -->
-        <form action="/user/profile/edit" method="POST" enctype="multipart/form-data">
+        <form id="editProfileForm" enctype="multipart/form-data">
 
           <!-- PROFILE IMAGE -->
           <div class="image-section">
@@ -37,6 +38,7 @@
           </label>
 
           <input type="file" name="profileImage" id="profileImageInput" hidden>
+           <p id="imageSelectError" class="error-msg"></p>
 
         </div>
 
@@ -81,10 +83,16 @@
             <p class="error-msg" style="display:block;"><%= error %></p>
           <% } %>
 
-          <div class="form-actions">
+          <p id="profileUpdateSuccessMsg" class="profile-success-msg">
+            <i class="fa-solid fa-circle-check"></i>
+            <span class="profile-success-text"></span>
+          </p>
+
+          <p class="error-msg" id="serverErr"></p>
+          <div class="form-actions" id="profileActionBtns">
             <button type="submit" class="btn submit-btn">Save Changes</button>
             <a href="/user/profile" class="btn cancel-btn">Cancel</a>
-            </div>
+          </div>
 
         </form>
 
@@ -95,6 +103,22 @@
   </div>
 
 </div>
+                                             
+<div id="cropModal" class="crop-modal">
+  <div class="modal-content">
+
+    <span class="close-btn" onclick="closeCropModal()">&times;</span>
+
+    <div class="crop-wrapper">
+      <img id="cropImage">
+    </div>
+
+    <button type="button" onclick="cropImage()">Crop & Use</button>
+
+  </div>
+</div>
+
+
 
 <!-- MODAL -->
 <div id="emailModal" class="email-modal">
@@ -196,10 +220,11 @@
 
 
 <%- include("../partials/otp-modal") %>
+<script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
  <script src="/js/user/logout.js"></script>
 <script src="/js/user/otpModal.js"></script>
 <script src="/js/user/editProfile.js"></script>
-<script src="/js/user/editProfileValidation.js"></script>
+<!-- <script src="/js/user/editProfileValidation.js"></script> -->
 </body>
 </html>

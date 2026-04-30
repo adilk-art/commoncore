@@ -25,18 +25,18 @@ router.post("/reset-password",isNotAuthenticated,userController.resetPassword)
 
 router.get("/profile",isAuthenticated,userController.loadProfilePage)
 router.get("/profile/edit",isAuthenticated,userController.loadEditProfile)
-router.post("/profile/email-change",isAuthenticated,userController.emailChange)
-router.post("/profile/edit",isAuthenticated,upload.single("profileImage"),userController.EditProfile)
+router.patch("/profile/email-change",isAuthenticated,userController.emailChange)
+router.patch("/profile/edit",isAuthenticated,upload.single("profileImage"),userController.EditProfile)
 router.post("/profile/verify-password", isAuthenticated, userController.verfifyPassword);  //emailchange
 
 router.post("/profile/change-password", isAuthenticated, userController.changePassword);
 
 router.get("/address", isAuthenticated, addressController.getAddressPage);
 router.post("/address/add", isAuthenticated, addressController.addAddress);
-router.get("/address/delete/:id", isAuthenticated, addressController.deleteAddress);
-router.get("/address/default/:id", isAuthenticated, addressController.setDefaultAddress);
+router.delete("/address/delete/:id", isAuthenticated, addressController.deleteAddress);
+router.patch("/address/default/:id", isAuthenticated, addressController.setDefaultAddress);
 router.get("/address/edit/:id", isAuthenticated, addressController.getEditAddressPage);
-router.post("/address/update/:id", isAuthenticated, addressController.updateAddress);
+router.patch("/address/update/:id", isAuthenticated, addressController.updateAddress);
 
 router.get('/auth/google',
     passport.authenticate('google',{scope:['profile','email']})
