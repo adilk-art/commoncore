@@ -4,9 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
-    // e.preventDefault();
-
-    // CLEAR ERRORS
+    e.preventDefault();
     document.querySelectorAll(".error-msg").forEach((el) => {
       el.innerText = "";
       el.style.display = "none";
@@ -53,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isValid) {
       const formData = new FormData(form);
-      console.log(formData);
       const data = Object.fromEntries(formData.entries());
 
       data.isDefault = form.isDefault.checked;

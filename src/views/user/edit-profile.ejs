@@ -38,7 +38,7 @@
           </label>
 
           <input type="file" name="profileImage" id="profileImageInput" hidden>
-           <p id="imageSelectError" class="error-msg"></p>
+           <span id="imageSelectError" class="error-msg"></span>
 
         </div>
 
@@ -46,7 +46,7 @@
           <div class="form-group">
             <label>Name</label>
             <input type="text" name="name" id="name" value="<%= user.name %>">
-            <p class="error-msg" id="nameError"></p>
+            <span class="error-msg" id="nameError"></span>
           </div>
 
           <!-- EMAIL -->
@@ -55,7 +55,6 @@
 
             <div class="email-wrapper">
               <input type="text" value="<%= user.email %>" readonly class="email-input">
-
               <span class="change-email-btn" onclick="openEmailModal()">
                 Change
               </span>
@@ -66,18 +65,30 @@
           <div class="form-group">
             <label>Phone</label>
             <input type="text" name="phone" id="phone" value="<%= user.phone || '' %>">
-            <p class="error-msg" id="phoneError"></p>
+            <span class="error-msg" id="phoneError"></span>
           </div>
-          <% if (user.password) { %>
-            <div class="form-group">
-            <label>Password</label>
-        <div class="password-link">
-          <i class="fa-solid fa-lock"></i>
-          <a href="javascript:void(0)" onclick="pwd_openModal()">
-            Change Password
-          </a>
-        </div>
-      <% } %>
+  <% if (user.password) { %>
+  <div class="form-group">
+    <label>Password</label>
+    <div class="password-link">
+      <i class="fa-solid fa-lock"></i>
+      <a href="javascript:void(0)" onclick="pwd_openModal()">
+        Change Password
+      </a>
+    </div>
+  </div>
+
+<% } else if (user.googleId) { %>
+  <div class="form-group">
+    <label>Password</label>
+    <div class="google-auth-msg">
+      <i class="fa-solid fa-lock"></i>
+      <span>
+        You are logged in via Google. Password management is handled by Google.
+      </span>
+    </div>
+  </div>
+<% } %>
 
           <% if (typeof error !== "undefined") { %>
             <p class="error-msg" style="display:block;"><%= error %></p>
@@ -225,6 +236,5 @@
  <script src="/js/user/logout.js"></script>
 <script src="/js/user/otpModal.js"></script>
 <script src="/js/user/editProfile.js"></script>
-<!-- <script src="/js/user/editProfileValidation.js"></script> -->
 </body>
 </html>
