@@ -2,23 +2,24 @@ import {
   updateUserById,
   findUserById,
   findUserByEmail,
-  saveUser
+  saveUser,
 } from "../repositories/user.repository.js";
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcrypt";
 import { emailSchema, passwordSchema } from "../validators/user.validation.js";
+import { createUpload } from "../middlewares/upload.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const updateProfileService = async (userId, body, file) => {
   const { name, phone } = body;
   if (!name) {
-    const err=new Error("validation error");
-    err.status=400
-    err.errors={
-      msg:"Name is required",
-
-    }
-    throw err
+    const err = new Error("validation error");
+    err.status = 400;
+    err.errors = {
+      msg: "Name is required",
+    };
+    throw err;
   }
   if (phone && !/^[0-9]\d{9}$/.test(phone)) {
     throw new Error("Invalid phone number");
@@ -30,14 +31,11 @@ export const updateProfileService = async (userId, body, file) => {
   };
   if (file) {
     const user = await findUserById(userId);
-    if (user.profileImage && user.profileImage !== "/images/default.png") {
-      const oldPath = path.join("public", user.profileImage);
-
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
+    if (user.profileImageId) {
+      await cloudinary.uploader.destroy(user.profileImageId);
     }
-    updateData.profileImage = "/uploads/" + file.filename;
+    updateData.profileImage = file.path; //just a delivety url to show/access the image
+    updateData.profileImageId = file.filename; //public id to identify image in cloudinary..
   }
   return await updateUserById(userId, updateData);
 };
@@ -72,17 +70,21 @@ export const updateEmailService = async (userId, newEmail) => {
   return true;
 };
 
-export const changePasswordService = async (userId, currentPassword, newPassword) => {
-const validate = passwordSchema.safeParse(currentPassword);
+export const changePasswordService = async (
+  userId,
+  currentPassword,
+  newPassword,
+) => {
+  const validate = passwordSchema.safeParse(currentPassword);
 
-if (!validate.success) {
-  const firstError = validate.error.issues[0].message;
+  if (!validate.success) {
+    const firstError = validate.error.issues[0].message;
 
-  return res.status(400).json({
-    success: false,
-    message: firstError
-  });
-}
+    return res.status(400).json({
+      success: false,
+      message: firstError,
+    });
+  }
   const user = await findUserById(userId);
 
   if (!user) {

@@ -4,8 +4,9 @@ import userController from "../controllers/user.controller.js";
 import addressController from "../controllers/address.controller.js";
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/upload.js";
+import { createUpload } from "../middlewares/upload.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
+const uploadProfile = createUpload("profile-images");
 router.use(noCache)
 
 router.get("/",userController.loadHomePage)
@@ -26,7 +27,7 @@ router.post("/reset-password",isNotAuthenticated,userController.resetPassword)
 router.get("/profile",isAuthenticated,userController.loadProfilePage)
 router.get("/profile/edit",isAuthenticated,userController.loadEditProfile)
 router.patch("/profile/email-change",isAuthenticated,userController.emailChange)
-router.patch("/profile/edit",isAuthenticated,upload.single("profileImage"),userController.EditProfile)
+router.patch("/profile/edit",isAuthenticated,uploadProfile.single("profileImage"),userController.EditProfile)
 router.post("/profile/verify-password", isAuthenticated, userController.verfifyPassword);  //emailchange
 
 router.post("/profile/change-password", isAuthenticated, userController.changePassword);

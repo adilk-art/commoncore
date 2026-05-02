@@ -20,6 +20,9 @@ const userSchema = new Schema(
       type: String,
       default: "/images/default.png",
     },
+    profileImageId:{
+      type: String,
+    },
     phone:{
       type:String,
     }

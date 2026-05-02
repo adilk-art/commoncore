@@ -78,7 +78,7 @@ form.addEventListener("submit", async (e) => {
     }
   } catch (err) {
     const data = err.response?.data;
-    serverErr.textContent = data?.errors?.msg || "Something went wrong";
+    serverErr.textContent = data?.errors.msg|| "Something went wrong";
     serverErr.style.display = "block";
   }
 });
