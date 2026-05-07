@@ -1,10 +1,10 @@
-import { adminLoginService } from "../services/admin/auth.service.js";
+import { adminLoginService } from "../../services/admin/auth.service.js";
 import {
   getAllUsersService,
   toggleUserBlockService,
-} from "../services/admin/admin.service.js";
-import User from "../models/user.model.js";
-import Admins from "../models/admin.model.js";
+} from "../../services/admin/admin.service.js";
+import User from "../../models/user.model.js";
+import Admins from "../../models/admin.model.js";
 
 export const loadLoginPage = async (req, res) => {
   res.render("admin/login.ejs", { errors: null });

@@ -8,7 +8,10 @@
 
 body {
   background: #f4f6fb;
+  overflow: hidden;
 }
+
+
 
 /* LAYOUT */
 .layout {
@@ -110,8 +113,9 @@ body {
   padding: 20px;
 }
 
+
 .empty-state {
-  height: 70vh;
+
   display: flex;
   flex-direction: column;
   justify-content: center;

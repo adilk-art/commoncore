@@ -1,5 +1,5 @@
 import { success } from "zod";
-import generateOtp from "../utils/generateOtp.js";
+import generateOtp from "../../utils/generateOtp.js";
 import { sendOtpEmail } from "./email.service.js";
 
 export const createAndSendOtp = async ({ email, purpose, session }) => {

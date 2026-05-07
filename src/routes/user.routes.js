@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
-import userController from "../controllers/user.controller.js";
-import addressController from "../controllers/address.controller.js";
+import userController from "../controllers/user/user.controller.js";
+import addressController from "../controllers/user/address.controller.js";
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";

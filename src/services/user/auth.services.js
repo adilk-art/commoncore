@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
-import { emailSchema,signupSchema, loginSchema,resetPasswordSchema } from "../validators/user.validation.js";
+import { emailSchema,signupSchema, loginSchema,resetPasswordSchema } from "../../validators/user.validation.js";
 import { createAndSendOtp } from "./otp.service.js";
 
-import {createUser,findUserByEmail, updateUserByEmail} from "../repositories/user.repository.js";
+import {createUser,findUserByEmail, updateUserByEmail} from "../../repositories/user.repository.js";
 
 export const prepareSignup = async ({ name, email, password, confirmPassword }) => {
 

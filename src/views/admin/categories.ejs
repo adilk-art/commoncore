@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <head>
+
+  <%- include("./partials/head", {
+    title: "Categories"
+  }) %>
+
+  <link rel="stylesheet"
+  href="/css/admin/categories.css">
+
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <%- include("./partials/header", { title: "Categories" }) %>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <%- include("./partials/sidebar", { active: "categories" }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <div class="content">
+
+        <!-- TOP -->
+        <div class="page-top">
+
+          <div>
+            <p class="breadcrumb">
+              Admin Dashboard > Category Management
+            </p>
+
+            <h2 class="page-title">
+              Category Management
+            </h2>
+          </div>
+
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Total Categories</p>
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+
+            <h3>3</h3>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Active Categories</p>
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <h3>3</h3>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Hidden Categories</p>
+              <i class="fa-solid fa-eye-slash"></i>
+            </div>
+
+            <h3>0</h3>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Total Products</p>
+              <i class="fa-solid fa-box"></i>
+            </div>
+
+            <h3>142</h3>
+          </div>
+
+        </div>
+
+        <!-- CATEGORY GRID -->
+        <div class="category-grid">
+
+          <!-- LEFT -->
+          <div class="table-container">
+
+            <div class="table-header">
+
+              <h3>Product Categories</h3>
+
+              <!-- SEARCH -->
+              <form
+                method="GET"
+                action="/admin/categories"
+                class="search-box"
+              >
+
+                <input
+                  type="text"
+                  name="search"
+                  placeholder="Search categories..."
+                  value="<%= search || '' %>"
+                >
+
+              </form>
+
+            </div>
+
+            <!-- TABLE -->
+            <table>
+
+              <thead>
+                <tr>
+                  <th>Category Name</th>
+                  <th>Size Type</th>
+                  <th>Status</th>
+                  <th>Products Count</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+<tbody>
+
+  <% if(categories.length > 0){ %>
+
+    <% categories.forEach(category => { %>
+
+      <tr>
+
+        <td>
+          <%= category.name %>
+        </td>
+
+        <td>
+          <%= category.sizeType %>
+        </td>
+
+        <td>
+
+          <span class="status <%= category.isActive ? 'active' : 'hidden' %>">
+
+            <%= category.isActive ? 'Active' : 'Hidden' %>
+
+          </span>
+
+        </td>
+
+        <td>
+          <%= category.productCount || 0 %>
+        </td>
+
+        <td class="actions">
+
+          <button class="icon-btn">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+
+          <button class="icon-btn">
+
+            <i class="fa-solid <%= category.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+
+          </button>
+
+        </td>
+
+      </tr>
+
+    <% }) %>
+
+  <% } else { %>
+
+    <tr>
+
+      <td colspan="5" class="empty-row">
+
+        <div class="empty-state">
+
+          <i class="fa-solid fa-layer-group"></i>
+
+          <p>No categories found</p>
+
+        </div>
+
+      </td>
+
+    </tr>
+
+  <% } %>
+
+</tbody>
+
+</table>
+
+
+
+<div class="pagination">
+
+  <!-- PREV -->
+  <% if (currentPage > 1) { %>
+
+    <a
+      href="/admin/categories?page=<%= currentPage - 1 %>"
+      class="nav-btn"
+    >
+      Prev
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Prev
+    </span>
+
+  <% } %>
+
+  <!-- PAGE NUMBERS -->
+  <% for (let i = 1; i <= totalPages; i++) { %>
+
+    <a
+      href="/admin/categories?page=<%= i %>"
+      class="page-btn <%= currentPage === i ? 'active' : '' %>"
+    >
+      <%= i %>
+    </a>
+
+  <% } %>
+
+  <!-- NEXT -->
+  <% if (currentPage < totalPages) { %>
+
+    <a
+      href="/admin/categories?page=<%= currentPage + 1 %>"
+      class="nav-btn"
+    >
+      Next
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Next
+    </span>
+
+  <% } %>
+
+</div>
+ </div>
+
+
+          <!-- RIGHT -->
+          <div class="side-card">
+
+            <h3>
+              <i class="fa-solid fa-circle-plus"></i>
+              Add New Category
+            </h3>
+
+            <form
+              class="category-form"
+              id="categoryForm"
+            >
+
+              <div class="form-group">
+
+                <label>Category Name</label>
+
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  placeholder="e.g. T-Shirts"
+                >
+                <span class="error" id="nameError"></span>   
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Size Type</label>
+
+                <select name="sizeType" id="sizeType">
+
+                  <option value="">
+                    Select size type
+                  </option>
+
+                  <option value="Alpha">
+                    Alpha
+                  </option>
+
+                  <option value="Numeric">
+                    Numeric
+                  </option>
+
+                </select>
+
+                 <span class="error" id="sizeTypeError"></span>
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Status</label>
+
+                <select name="isActive" id="isActive">
+
+                  <option value="true">
+                    Active
+                  </option>
+
+                  <option value="false">
+                    Hidden
+                  </option>
+
+                </select>
+
+              </div>
+                <span class="error" id="validationError"></span>   
+
+
+              <button
+                type="submit"
+                class="save-btn"
+              >
+                Save Category
+              </button>
+
+              <button
+                type="reset"
+                class="discard-btn"
+              >
+                Discard Changes
+              </button>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <%- include("./partials/scripts") %>
+  <script src="/js/admin/categories.js"></script>
+</body>
+</html>

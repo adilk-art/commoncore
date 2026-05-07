@@ -4,9 +4,9 @@ import {
   deleteAddressService,
   setDefaultAddressService,
   updateAddressService,
-} from "../services/address.service.js";
+} from "../../services/user/address.service.js";
 
-import { getAddressById } from "../repositories/address.repository.js";
+import { getAddressById } from "../../repositories/address.repository.js";
 import { success } from "zod";
 
 const getAddressPage = async (req, res) => {

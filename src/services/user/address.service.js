@@ -4,9 +4,9 @@ import {
   updateAddressById,
   deleteAddressById,
   clearDefault,
-} from "../repositories/address.repository.js";
+} from "../../repositories/address.repository.js";
 
-import { addressSchema } from "../validators/address.validation.js";
+import { addressSchema } from "../../validators/address.validation.js";
 
 export const addAddressService = async (userId, body) => {
   const parsed = addressSchema.safeParse(body);

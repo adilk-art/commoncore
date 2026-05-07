@@ -4,19 +4,19 @@ import {
   forgotPasswordService,
   resetPasswordService,
   prepareSignup,
-} from "../services/auth.services.js";
+} from "../../services/user/auth.services.js";
 import {
   resendOtpService,
   verifyOtpService,
   createAndSendOtp,
-} from "../services/otp.service.js";
+} from "../../services/user/otp.service.js";
 import {
   findUserByEmail,
   findUserById,
   updateUserByEmail,
   updateUserById,
-} from "../repositories/user.repository.js";
-import { createUser } from "../repositories/user.repository.js";
+} from "../../repositories/user.repository.js";
+import { createUser } from "../../repositories/user.repository.js";
 import { success } from "zod";
 import {
   updateProfileService,
@@ -24,8 +24,8 @@ import {
   verifyNewEmailService,
   updateEmailService,
   changePasswordService,
-} from "../services/user.service.js";
-import generateOtp from "../utils/generateOtp.js";
+} from "../../services/user/user.service.js";
+import generateOtp from "../../utils/generateOtp.js";
 
 const loadHomePage = (req, res, next) => {
   try {

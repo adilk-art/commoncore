@@ -3,13 +3,13 @@ import {
   findUserById,
   findUserByEmail,
   saveUser,
-} from "../repositories/user.repository.js";
+} from "../../repositories/user.repository.js";
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcrypt";
-import { emailSchema, passwordSchema } from "../validators/user.validation.js";
-import { createUpload } from "../middlewares/upload.js";
-import cloudinary from "../config/cloudinary.js";
+import { emailSchema, passwordSchema } from "../../validators/user.validation.js";
+import { createUpload } from "../../middlewares/upload.js";
+import cloudinary from "../../config/cloudinary.js";
 
 export const updateProfileService = async (userId, body, file) => {
   const { name, phone } = body;
