@@ -11,7 +11,7 @@ export const getUserAddresses=(userId)=>{
 export const getAddressById=(id)=>Address.findById(id);
 
 export const updateAddressById=(id,data)=>{
-    return Address.findByIdAndUpdate(id,data,{new:true});
+    return Address.findByIdAndUpdate(id,data,{returnDocument:"after"});
 }
 
 export const deleteAddressById=(id)=>Address.findByIdAndDelete(id);

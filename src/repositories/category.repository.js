@@ -14,10 +14,30 @@ export const getAllCategories = async () => {
   return await Category.find().sort({ createdAt: -1 });
 };
 
-export const getPaginatedCategories = async (skip, limit) => {
-  return await Category.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+export const getPaginatedCategories = async (filter,skip,limit,sortOrder) => {
+  return await Category.find(filter).sort({ createdAt: sortOrder }).skip(skip).limit(limit);
 };
 
-export const getCategoryCount = async () => {
+export const getCategoryCount = async (filter={}) => {
+  return await Category.countDocuments(filter);
+};
+
+export const updateCategoryById = async (id, data) => {
+
+  return Category.findByIdAndUpdate(
+    id,
+    data,
+    { returnDocument: "after" }
+  );
+};
+export const getTotalCategoryCount = async () => {
   return await Category.countDocuments();
+};
+
+export const getActiveCategoryCount = async () => {
+  return await Category.countDocuments({ isActive: true });
+};
+
+export const getHiddenCategoryCount = async () => {
+  return await Category.countDocuments({ isActive: false });
 };

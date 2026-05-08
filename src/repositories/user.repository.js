@@ -17,7 +17,7 @@ export const updateUserByEmail = async (email, updateData) => {
   return await User.findOneAndUpdate(
     { email },
     { $set: updateData },
-    { new: true },
+    { returnDocument: "after" },
   );
 };
 

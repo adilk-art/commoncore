@@ -188,6 +188,8 @@ tbody tr:hover {
   margin-top: 10px;
   font-size: 13px;
   color: #666;
+  margin-right: auto;
+  margin-left: 12px;
 }
 
 .modal {
@@ -363,4 +365,9 @@ body {
 .content {
   flex: 1;
   min-height: 0;
+}
+.breadcrumb {
+  font-size: 11px;
+  color: #8b8b8b;
+  margin-bottom: 4px;
 }

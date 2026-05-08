@@ -25,7 +25,9 @@
     <div class="main">
 
       <div class="content">
-
+         <p class="breadcrumb">
+              Admin Dashboard > Users
+            </p>
         <h2 class="page-title">User Management</h2>
           <form method="GET" action="/admin/users" class="search-box">  <!--//search -->
             <input 
@@ -71,8 +73,7 @@
 </form>
 
 
-  
-        <div class="table-container">
+ <div class="table-container">
 
  <table>
   <thead>
@@ -143,6 +144,15 @@
             
             <!-- PREV -->
             <div class="pagination">
+              <p class="results-text">
+              Showing 
+              <%= (currentPage - 1) * limit + 1 %> 
+              to 
+              <%= Math.min(currentPage * limit, totalUsers) %> 
+              of 
+              <%= totalUsers %> 
+              results
+              </p>
             <% if (currentPage > 1) { %>
                 <a 
                 href="/admin/users?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%=sort%>" 
@@ -177,16 +187,7 @@
             <% } %>
             </div>
 
-              <p class="results-text">
-            Showing 
-            <%= (currentPage - 1) * limit + 1 %> 
-            to 
-            <%= Math.min(currentPage * limit, totalUsers) %> 
-            of 
-            <%= totalUsers %> 
-            results
-            </p>
-
+             
         </div>
 
       </div>

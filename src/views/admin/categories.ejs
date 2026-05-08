@@ -54,7 +54,7 @@
               <i class="fa-solid fa-layer-group"></i>
             </div>
 
-            <h3>3</h3>
+            <h3><%= totalCategories %></h3>
           </div>
 
           <div class="stat-card">
@@ -63,7 +63,7 @@
               <i class="fa-solid fa-circle-check"></i>
             </div>
 
-            <h3>3</h3>
+            <h3><%= activeCategories %></h3>
           </div>
 
           <div class="stat-card">
@@ -72,17 +72,17 @@
               <i class="fa-solid fa-eye-slash"></i>
             </div>
 
-            <h3>0</h3>
+            <h3><%= hiddenCategories %></h3>
           </div>
 
-          <div class="stat-card">
+          <!-- <div class="stat-card">
             <div class="stat-top">
               <p>Total Products</p>
               <i class="fa-solid fa-box"></i>
             </div>
 
             <h3>142</h3>
-          </div>
+          </div> -->
 
         </div>
 
@@ -96,21 +96,54 @@
 
               <h3>Product Categories</h3>
 
+<form method="GET" action="/admin/categories" class="sort-toggle">
+
+  <input type="hidden" name="search" value="<%= search %>">
+  <input type="hidden" name="page" value="<%= currentPage %>">
+
+  <button
+    type="submit"
+    name="sort"
+    value="latest"
+    class="sort-btn <%=sort==='latest'?'active':'' %> "
+  >
+    <i class="fa-solid fa-arrow-down-wide-short"></i>
+    Latest
+  </button>
+
+  <button
+    type="submit"
+    name="sort"
+    value="oldest"
+    class="sort-btn <%=sort==='oldest'?'active':'' %> "
+  >
+    <i class="fa-solid fa-arrow-up-wide-short"></i>
+    Oldest
+  </button>
+
+</form>
               <!-- SEARCH -->
-              <form
-                method="GET"
-                action="/admin/categories"
-                class="search-box"
+              <form method="GET" action="/admin/categories" class="search-box">
+              <input type="hidden" name="sort" value="<%=sort%>">
+              <input
+                type="text"
+                name="search"
+                placeholder="Search categories..."
+                value="<%= search || '' %>"
               >
 
-                <input
-                  type="text"
-                  name="search"
-                  placeholder="Search categories..."
-                  value="<%= search || '' %>"
-                >
 
-              </form>
+              <button type="submit" class="search-btn">
+                <i class="fa fa-search"></i>
+              </button>
+
+              <% if (search) { %>
+                <a href="/admin/categories" class="clear-btn">
+                  Clear
+                </a>
+              <% } %>
+
+            </form>
 
             </div>
 
@@ -122,7 +155,7 @@
                   <th>Category Name</th>
                   <th>Size Type</th>
                   <th>Status</th>
-                  <th>Products Count</th>
+                  <!-- <th>Products Count</th> -->
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -145,7 +178,7 @@
 
         <td>
 
-          <span class="status <%= category.isActive ? 'active' : 'hidden' %>">
+          <span class="status <%= category.isActive ? 'active' : 'hide' %>">
 
             <%= category.isActive ? 'Active' : 'Hidden' %>
 
@@ -153,17 +186,28 @@
 
         </td>
 
-        <td>
+        <!-- <td>
           <%= category.productCount || 0 %>
-        </td>
+        </td> -->
 
         <td class="actions">
 
-          <button class="icon-btn">
+          <button 
+          type="button" 
+          class="icon-btn edit-btn"
+          data-id="<%= category._id %>"
+          data-name="<%= category.name %>"
+          data-sizetype="<%= category.sizeType %>"
+          data-active="<%= category.isActive %>"
+          >
             <i class="fa-solid fa-pen"></i>
           </button>
 
-          <button class="icon-btn">
+          <button 
+            class="icon-btn toggle-status-btn"
+            data-id="<%= category._id %>"
+            data-active="<%= category.isActive %>"
+          >
 
             <i class="fa-solid <%= category.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
 
@@ -200,15 +244,22 @@
 </table>
 
 
-
 <div class="pagination">
+   <p class="results-text">
+      Showing 
+      <%= (currentPage - 1) * limit + 1 %> 
+      to 
+      <%= Math.min(currentPage * limit, totalCategories) %> 
+      of 
+      <%= totalCategories %> 
+      results
+      </p>
 
   <!-- PREV -->
   <% if (currentPage > 1) { %>
 
     <a
-      href="/admin/categories?page=<%= currentPage - 1 %>"
-      class="nav-btn"
+href="/admin/categories?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort%>"      class="nav-btn"
     >
       Prev
     </a>
@@ -225,7 +276,7 @@
   <% for (let i = 1; i <= totalPages; i++) { %>
 
     <a
-      href="/admin/categories?page=<%= i %>"
+      href="/admin/categories?page=<%= i %>&search=<%= search || '' %>&sort=<%=sort%>"
       class="page-btn <%= currentPage === i ? 'active' : '' %>"
     >
       <%= i %>
@@ -237,7 +288,7 @@
   <% if (currentPage < totalPages) { %>
 
     <a
-      href="/admin/categories?page=<%= currentPage + 1 %>"
+      href="/admin/categories?page=<%= currentPage + 1 %>&search=<%= search || '' %>"
       class="nav-btn"
     >
       Next
@@ -256,7 +307,7 @@
 
 
           <!-- RIGHT -->
-          <div class="side-card">
+          <div class="side-card" id="addCard">
 
             <h3>
               <i class="fa-solid fa-circle-plus"></i>
@@ -343,6 +394,73 @@
             </form>
 
           </div>
+
+          <!-- edit category card -->
+
+ <div class="side-card hidden" id="editCard">
+
+  <h3>
+    <i class="fa-solid fa-pen"></i>
+    Edit Category
+  </h3>
+
+  <form class="category-form" id="editCategoryForm">
+
+    <div class="form-group">
+
+      <label>Category Name</label>
+
+      <input
+        type="text"
+        id="editName"
+        placeholder="e.g. T-Shirts"
+      >
+    <span class="error" id="editNameError"></span>   
+
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Size Type</label>
+
+      <select id="editSizeType">
+
+        <option value="Alpha">Alpha</option>
+        <option value="Numeric">Numeric</option>
+
+      </select>
+    <span class="error" id="editSizeTypeError"></span>   
+
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Status</label>
+
+      <select id="editIsActive">
+
+        <option value="true">Active</option>
+        <option value="false">Hidden</option>
+
+      </select>
+
+    </div>
+    
+    <span class="error" id="editValidationError"></span>   
+
+    <button type="submit" class="save-btn">
+      Update Category
+    </button>
+
+    <button type="button" id="cancelEdit" class="discard-btn">
+      Cancel
+    </button>
+
+  </form>
+
+</div>
 
         </div>
 

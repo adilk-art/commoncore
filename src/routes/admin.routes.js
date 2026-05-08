@@ -18,5 +18,7 @@ router.get("/logout",isAdminAuth,adminController.logout);
 
 router.get("/categories",isAdminAuth,categoryController.loadCategoryPage);
 router.post("/categories/add-category",isAdminAuth,categoryController.addCategory);
+router.patch("/categories/update/:id",isAdminAuth,categoryController.updateCategory)
+router.patch("/categories/toggle-status/:id", categoryController.changeStatus);
 
 export default router;
