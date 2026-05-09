@@ -201,11 +201,10 @@ document
 
         setTimeout(() => {
           window.location.reload();
-        }, 500);
+        }, 1500);
       }
 
     } catch (err) {
-      console.log(err);
       utils.showToast(
         err.response?.data?.message || "Error updating status",
         "error"

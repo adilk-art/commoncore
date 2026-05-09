@@ -63,14 +63,10 @@ form.addEventListener("submit", async (e) => {
 
     if (res.data.success) {
       const successBox = document.getElementById("profileUpdateSuccessMsg");
-      const actionBtns = document.getElementById("profileActionBtns");
-
-      successBox.classList.add("show-success");
-      successBox.querySelector(".profile-success-text").textContent =
-        res.data.message || "Profile updated successfully";
+      const actionBtns = document.getElementById("profileActionBtns");      
       imageSelectError.textContent = "";
-      actionBtns.style.display = "none";
-      actionBtns.classList.add("profile-action-hide");
+  
+     utils.showToast("Profile changed successfully")
 
       setTimeout(() => {
         window.location.href = "/user/profile";
@@ -294,6 +290,7 @@ async function pwd_changePassword() {
     if (res.data.success) {
       pwd_closeModal();
       document.getElementById("successModal").style.display = "flex";
+
     }
   } catch (err) {
     error.textContent =

@@ -36,7 +36,6 @@ router.get("/address", isAuthenticated, addressController.getAddressPage);
 router.post("/address/add", isAuthenticated, addressController.addAddress);
 router.delete("/address/delete/:id", isAuthenticated, addressController.deleteAddress);
 router.patch("/address/default/:id", isAuthenticated, addressController.setDefaultAddress);
-router.get("/address/edit/:id", isAuthenticated, addressController.getEditAddressPage);
 router.patch("/address/update/:id", isAuthenticated, addressController.updateAddress);
 
 router.get('/auth/google',

@@ -19,7 +19,7 @@ const addAddress = async (req, res) => {
     await addAddressService(req.session.userId, req.body);
     res.redirect("/user/address");
   } catch (err) {
-    res.render("user/address", { error: err.message, addresses: [] });
+    next(err)
   }
 };
 
@@ -41,14 +41,9 @@ const setDefaultAddress = async (req, res, next) => {
   }
 };
 
-const getEditAddressPage = async (req, res) => {
-  const address = await getAddressById(req.params.id);
-  res.render("user/editAddress.ejs", { address });
-};
 
 const updateAddress = async (req, res, next) => {
   try {
-    console.log(`${req.params.id} and ${req.session.userId} and ${req.body}`);
     await updateAddressService(req.params.id, req.session.userId, req.body);
     res.json({ success: true });
   } catch (err) {
@@ -61,6 +56,5 @@ export default {
   addAddress,
   deleteAddress,
   setDefaultAddress,
-  getEditAddressPage,
   updateAddress,
 };

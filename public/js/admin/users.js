@@ -2,17 +2,17 @@ let selectedUserId = null;
 let isBlockedState = false;
 
 function openModal(userId, isBlocked) {
-
   selectedUserId = userId;
   isBlockedState = isBlocked;
-
   document.getElementById("confirmModal").style.display = "flex";
 
- console.log(isBlocked)
+  console.log(isBlocked);
 
-  const text = isBlocked? "Do you want to unblock this user?" : "Do you want to block this user?";
+  const text = isBlocked
+    ? "Do you want to unblock this user?"
+    : "Do you want to block this user?";
 
-    document.getElementById("modalText").innerText = text;
+  document.getElementById("modalText").innerText = text;
 }
 
 function closeModal() {

@@ -82,7 +82,7 @@
 }
 
 .table-header h3 {
-  font-size: 16px;
+  font-size: 18px;
   color: #1f2937;
 }
 .sort-toggle {
@@ -160,7 +160,7 @@ thead {
 th {
   text-align: left;
   padding: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: #6b7280;
 }
 

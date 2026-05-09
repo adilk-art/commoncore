@@ -30,6 +30,10 @@ export const updateCategoryById = async (id, data) => {
     { returnDocument: "after" }
   );
 };
+
+export const getCategoriesExceptCurrent=async(id,name)=>{
+  return await Category.findOne({_id:{$ne:id},name:new RegExp(`^${name}$`,"i")});
+}
 export const getTotalCategoryCount = async () => {
   return await Category.countDocuments();
 };
