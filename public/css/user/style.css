@@ -1,0 +1,282 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: #f5f6f8;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+}
+
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 60px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  z-index: 1000;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  align-items: center;
+  color: #4e5566;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #4e5566;
+  position: relative;
+  transition: 0.25s ease;
+  padding: 5px 0;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background: #111;
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #000;
+  transform: translateY(-1px);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.login-btn {
+  border: 1px solid #ddd;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #111;
+  background: transparent;
+  transition: 0.2s ease;
+}
+
+.login-btn:hover {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.account-container {
+  display: flex;
+  padding: 20px 60px;
+  gap: 20px;
+}
+
+.sidebar {
+  width: 250px;        
+  flex-shrink: 0;      
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.sidebar li a {
+  text-decoration: none;
+  color: #4e5566;}
+
+.sidebar li.active {
+  background: #dcdcdc;
+  font-weight: 500;
+}
+
+.sidebar li:hover {
+  background: #f0f0f0;
+}
+
+.main-content {
+  flex: 1; 
+}
+.main-content h2,h3{
+
+  color: #4e5566;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600; 
+}
+.main-content p{
+
+  color: #41434c;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* font-weight: 600;  */
+}
+
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f5f6f8;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* LAYOUT */
+.account-container {
+  display: flex;
+  padding: 20px 60px;
+  gap: 20px;
+
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+/* BUTTON */
+.btn {
+  background:#4e5566;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+/* ERROR */
+.error-msg {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 5px;
+  display: none;
+}
+.logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 15px;
+  width: auto;
+  object-fit: contain;
+}
+
+
+.user-logout-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(15, 15, 20, 0.6);
+  backdrop-filter: blur(8px);
+
+  z-index: 1000;
+}
+
+.user-logout-modal-box {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 14px;
+  width: 340px;
+  text-align: center;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.user-logout-title {
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+.user-logout-text {
+  font-size: 14px;
+  color: #666;
+}
+
+.user-logout-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.user-logout-cancel {
+  background: #e5e7eb;
+  color: #222;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.user-logout-cancel:hover {
+  background: #636363;
+  color: #fff;
+}
+
+.user-logout-confirm {
+  background: #ef4444;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.user-logout-confirm:hover {
+  background: #dc2626;
+}
+:root {
+  --nav-height: 100px;
+}
+
+.sidebar {
+   min-height: calc(100vh - var(--nav-height));
+}
+
+

@@ -1,0 +1,53 @@
+<nav class="navbar">
+  <a href="/" class="logo-wrap">
+        <img src="/images/logo.png" alt="Common Core" class="logo" />
+  </a>
+
+  <ul class="nav-links">
+    <li>T-Shirts</li>
+    <li>Jeans</li>
+    <li>Hoodies</li>
+    <li>About</li>
+
+    <% if (user) { %>
+  <li><a href="/user/profile">Profile</a></li>
+
+  <li>
+    <a href="javascript:void(0)" onclick="openUserLogoutModal()">
+  Logout
+</a>
+  </li>
+
+<% } else { %>
+  <li><a href="/user/login">Login</a></li>
+  <li><a href="/user/signup">Signup</a></li>
+<% } %>
+  </ul>
+</nav>
+<div id="userLogoutModal" class="user-logout-modal">
+  <div class="user-logout-modal-box">
+
+    <h3 class="user-logout-title">Confirm Logout</h3>
+    <p class="user-logout-text">Are you sure you want to logout?</p>
+
+    <div class="user-logout-actions">
+
+      <button onclick="closeUserLogoutModal()" class="user-logout-cancel">
+        Cancel
+      </button>
+
+      <a href="/user/logout" class="user-logout-confirm">
+        Logout
+      </a>
+
+    </div>
+
+  </div>
+</div>
+<script>
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+</script>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Verification</title>
+    <link rel="stylesheet" href="/css/user/otp.css" />
+  </head>
+  <body>
+    <div class="page-container">
+      <div class="otp-wrapper">
+        <div class="otp-card">
+          <!-- Logo -->
+          <div class="logo-container">
+            <img src="/images/logo.png" alt="Logo" />
+          </div>
+
+          <h2>Enter the OTP</h2>
+          <p>
+            We've sent a 6-digit confirmation code <%=email%>. Please enter it
+            below to complete your account setup.
+          </p>
+
+          <form action="/user/verify-otp" method="POST" id="otpForm">
+            <input
+              type="hidden"
+              name="email"
+              id="hiddenEmail"
+              value="<%= email %>"
+            />
+            <input
+              type="hidden"
+              name="purpose"
+              id="hiddenPurpose"
+              value="<%= purpose %>"
+            />
+
+            <!-- OTP input -->
+            <div class="form-group">
+              <input
+                type="text"
+                name="otp"
+                id="otp"
+                maxlength="6"
+                placeholder="Enter 6-digit OTP"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+                class="otp-input"
+              />
+              <span class="error-msg" id="otpError"></span>
+            </div>
+
+            <button type="submit" class="verify-btn">Verify OTP</button>
+
+            <p class="timer">
+              <span id="countdown">Resend OTP in 01:00</span>
+            </p>
+
+            <button type="button" class="resend-btn" id="resendBtn" disabled>
+              Resend OTP
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="/js/user/verifyOtp.js"></script>
+  </body>
+</html>

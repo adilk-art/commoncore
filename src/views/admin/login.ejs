@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Login</title>
+
+  <link rel="stylesheet" href="/css/admin/login.css">
+  <link rel="stylesheet" href="/css/admin/global.css">
+
+  <!-- Modern font -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="admin-header">
+    <div class="logo">
+      <img src="/images/logo.png" alt="Logo">
+    </div>
+    <div class="header-title">Admin Dashboard</div>
+  </header>
+
+  <!-- LOGIN WRAPPER -->
+  <div class="login-container">
+
+<div class="login-card">
+
+  <!-- ADMIN IDENTITY -->
+  <div class="admin-icon">
+    <i class="fa-solid fa-user-shield"></i>
+  </div>
+
+  <h2>Admin Login</h2>
+  <p class="sub-text">Secure access to dashboard</p>
+
+  <form method="POST" action="/admin/login" id="form" novalidate>
+
+    <input type="email" name="email" id="email" placeholder="Admin Email" required>
+    <p class="error" id="emailError"><%= errors?.email || "" %></p>
+
+    <div class="password-wrapper">
+
+  <input type="password" name="password" id="password" placeholder="Secure Password" required>
+
+  <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+
+  </div>
+    <p class="error" id="passwordError"><%= errors?.password || "" %></p>
+
+    <p class="error" id="generalError"><%= errors?.general || "" %></p>
+
+    <!-- FORGOT PASSWORD -->
+  
+
+    <button type="submit">SIGN IN TO DASHBOARD</button>
+
+  </form>
+
+</div>
+
+  </div>
+  <script src="/js/admin/login.js"></script>
+
+</body>
+</html>

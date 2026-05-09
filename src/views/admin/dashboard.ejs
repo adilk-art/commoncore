@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+
+  <link rel="stylesheet" href="/css/admin/layout.css">
+  <link rel="stylesheet" href="/css/admin/logout-modal.css">
+  <link rel="stylesheet" href="/css/admin/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+  <!-- HEADER (FULL WIDTH) -->
+  <%- include("./partials/header") %>
+  
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <%- include("./partials/sidebar", { active: "dashboard" }) %>
+    <%- include("./partials/logout-modal") %>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+      
+      <div class="content">
+
+        <!-- PAGE TITLE (moved here) -->
+        <h2 class="page-title">Dashboard</h2>
+
+        <% if (!stats) { %>
+          <div class="empty-state">
+            <i class="fa-solid fa-chart-simple"></i>
+            <h3>No Data Yet</h3>
+            <p>Start by adding products or managing orders</p>
+          </div>
+        <% } %>
+
+      </div>
+
+    </div>
+
+  </div>
+  <script src="/js/admin/logout.js"></script>
+</body>
+</html>

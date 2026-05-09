@@ -1,0 +1,172 @@
+
+/* DASHBOARD WRAPPER */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* TOP CARDS */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card h4 {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 6px;
+}
+
+.card h2 {
+  font-size: 22px;
+  color: #222;
+}
+
+/* CHART / ANALYTICS BOX */
+.chart-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  min-height: 300px;
+}
+
+/* GRID SECTION (charts + side widgets) */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+/* SMALL WIDGET BOX */
+.widget {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* TABLE SECTION */
+.table-box {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table thead {
+  background: #f5f7fb;
+}
+
+table th {
+  text-align: left;
+  padding: 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+table td {
+  padding: 10px;
+  font-size: 13px;
+  color: #333;
+  border-top: 1px solid #eee;
+}
+
+/* STATUS BADGE */
+.status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.empty-state {
+  margin-top: 40px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* FULL HEIGHT FIX */
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+/* HEADER */
+.header {
+  height: 60px;
+  flex-shrink: 0; 
+}
+
+/* LAYOUT BELOW HEADER */
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: 0; 
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; 
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  min-height: 0;
+}
+
+
+.logout {
+  margin-top: auto;
+}

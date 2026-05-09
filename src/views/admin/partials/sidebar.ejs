@@ -1,0 +1,57 @@
+<aside class="sidebar">
+  <div class="title-text">CONTROL PANEL</div>
+
+  <nav>
+    <a
+      href="/admin/dashboard"
+      class="<%= active === 'dashboard' ? 'active' : '' %>"
+    >
+      <i class="fa fa-chart-line"></i> Dashboard
+    </a>
+
+    <a href="/admin/users" class="<%= active === 'users' ? 'active' : '' %>">
+      <i class="fa fa-users"></i> Users
+    </a>
+
+    <a
+      href="#"
+      class="<%= active === 'categories' ? 'active' : '' %>"
+    >
+      <i class="fa fa-layer-group"></i> Categories
+    </a>
+
+    <a
+      href="#"
+      class="<%= active === 'products' ? 'active' : '' %>"
+    >
+      <i class="fa fa-box"></i> Products
+    </a>
+
+    <a
+      href="#"
+      class="<%= active === 'orders' ? 'active' : '' %>"
+    >
+      <i class="fa fa-list"></i> Orders
+    </a>
+
+    <a
+      href="#"
+      class="<%= active === 'coupons' ? 'active' : '' %>"
+    >
+      <i class="fa fa-tags"></i> Coupons
+    </a>
+
+    <a
+      href="#"
+      class="<%= active === 'settings' ? 'active' : '' %>"
+    >
+      <i class="fa fa-gear"></i> Settings
+    </a>
+  </nav>
+
+  <div class="logout">
+    <a href="javascript:void(0)" onclick="openLogoutModal()">
+      <i class="fa fa-sign-out"></i> Logout
+    </a>
+  </div>
+</aside>
