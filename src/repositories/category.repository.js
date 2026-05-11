@@ -14,6 +14,8 @@ export const getAllCategories = async () => {
   return await Category.find().sort({ createdAt: -1 });
 };
 
+
+
 export const getPaginatedCategories = async (filter,skip,limit,sortOrder) => {
   return await Category.find(filter).sort({ createdAt: sortOrder }).skip(skip).limit(limit);
 };

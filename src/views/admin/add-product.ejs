@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Add Product"
+  }) %>
+
+  <link rel="stylesheet" href="/css/admin/add-product.css">
+
+</head>
+
+<body>
+
+  <%- include("./partials/header", { title: "Add Product" }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", { active: "products" }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+
+          <div>
+            <p class="breadcrumb">
+              Product Management > Add New Product
+            </p>
+
+            <h2 class="page-title">
+              Add New Product
+            </h2>
+          </div>
+
+        </div>
+
+        <div class="form-card">
+
+          <form class="product-form" id="form" method="post">
+            <div class="form-row">
+
+            <!-- PRODUCT NAME -->
+            <div class="form-group">
+
+              <label>Product Name</label>
+
+              <input
+                type="text"
+                name="name"
+                id="name"
+                placeholder="Enter product name"
+              >
+              <small id="nameError" class="error"></small>
+
+            </div>
+            <div class="form-group">
+
+                <label>Category</label>
+
+                <select name="category" id="category">
+
+                <option value="">Select Category</option>
+
+                <% categories.forEach(category => { %>
+                    <option value="<%= category._id %>">
+                    <%= category.name %>
+                    </option>
+                <% }) %>
+
+                </select>
+                <small id="categoryError" class="error"></small>
+
+              </div>
+
+
+
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+
+              <label>Description</label>
+
+              <textarea
+                name="description"
+                rows="2"
+                id="description"
+                placeholder="Enter product description"
+              ></textarea>
+              <small id="descriptionError" class="error"></small>
+
+            </div>
+
+            <!-- ROW -->
+            
+
+
+
+            <!-- ROW -->
+            <div class="form-row three-cols">
+
+              <div class="form-group">
+
+                <label>Fit</label>
+
+                <select name="fit" id="fit">
+
+                  <option value="">
+                    Select Fit
+                  </option>
+                  <option value="slim">
+                    Slim Fit
+                  </option>
+                  <option value="regular">
+                    Regular Fit
+                  </option>
+                  <option value="oversized">
+                    Oversized Fit
+                  </option>
+
+                </select>
+                <small id="fitError" class="error"></small>
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Material</label>
+
+                <input
+                  type="text"
+                  name="material"
+                  id="material"
+                  placeholder="Enter material"
+                >
+                <small id="materialError" class="error"></small>
+
+              </div>
+              <div class="form-group">
+                    <label>Wash Care</label>
+
+                    <select id="washCare" name="washCare">
+
+                        <option value="Machine wash cold, do not bleach, medium iron">
+                        Machine wash cold, do not bleach, medium iron
+                        </option>
+
+                        <option value="Gentle machine wash, mild detergent, do not tumble dry">
+                        Gentle machine wash, mild detergent, do not tumble dry
+                        </option>
+
+                        <option value="Hand wash only, do not wring, dry flat">
+                        Hand wash only, do not wring, dry flat
+                        </option>
+
+                        <option value="Dry clean only">
+                        Dry clean only
+                        </option>
+
+                        <option value="Machine wash cold, quick dry, low iron if needed">
+                        Machine wash cold, quick dry, low iron if needed
+                        </option>
+                    </select>
+
+                    <small id="washCareError" class="error"></small>
+                    </div>
+
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+
+            <label>Base Price</label>
+
+            <input
+            type="number"
+            name="basePrice"
+            id="basePrice"
+            placeholder="Enter base price"
+            min="0"
+            >
+            <small id="basePriceError" class="error"></small>
+            </div>
+
+              
+
+              <div class="form-group">
+
+                <label>Status</label>
+
+                <select name="isActive" id="isActive">
+
+                  
+                  <option value="true">
+                    Active
+                  </option>
+
+                  <option value="false">
+                    Hidden
+                  </option>
+
+                </select>
+                <small id="isActiveError" class="error"></small>
+
+
+              </div>
+              
+            </div>
+
+            <!-- NOTE -->
+            <p class="info-text">
+
+              Sizes, Images and Colors are managed separately as variants.
+              After saving, you can add variants in the Manage Variants page.
+
+            </p>
+            <small id="validationError" class="error"></small>
+
+            <!-- ACTIONS -->
+            <div class="form-actions">
+
+              <a href="/admin/products" class="cancel-btn">
+                Cancel
+              </a>
+
+              <button type="submit" class="save-btn">
+                Save Product
+              </button>
+
+              <!-- <button
+                type="submit"
+                class="variant-btn"
+              >
+                Save & Continue to Variants
+              </button> -->
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+  <script src="/js/admin/products.js"></script>
+
+</body>
+</html>

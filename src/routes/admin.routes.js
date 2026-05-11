@@ -1,6 +1,7 @@
 import express from "express";
 import * as adminController from "../controllers/admin/admin.controller.js";
 import * as categoryController from "../controllers/admin/category.controller.js"
+import * as productController from "../controllers/admin/product.controller.js"
 import { isAdminAuth,isAdminNotAuth } from "../middlewares/adminAuth.middleware.js";
 import userController from "../controllers/user/user.controller.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
@@ -18,7 +19,11 @@ router.get("/logout",isAdminAuth,adminController.logout);
 
 router.get("/categories",isAdminAuth,categoryController.loadCategoryPage);
 router.post("/categories/add-category",isAdminAuth,categoryController.addCategory);
-router.patch("/categories/update/:id",isAdminAuth,categoryController.updateCategory)
+router.patch("/categories/update/:id",isAdminAuth,categoryController.updateCategory);
 router.patch("/categories/toggle-status/:id", categoryController.changeStatus);
+
+router.get("/products",isAdminAuth,productController.loadProductPage);
+router.get("/products/add",isAdminAuth,productController.loadAddProductPage);
+router.post("/products/add",isAdminAuth,productController.addProduct);
 
 export default router;

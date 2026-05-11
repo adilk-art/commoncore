@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Products"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/products.css"
+  >
+
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <%- include("./partials/header", {
+    title: "Products"
+  }) %>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <%- include("./partials/sidebar", {
+      active: "products"
+    }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <div class="content">
+
+        <!-- PAGE TOP -->
+        <div class="page-top">
+
+            <div>
+                <p class="breadcrumb">
+                Admin Dashboard > Products
+                </p>
+
+                <h2 class="page-title">
+                Product Management
+                </h2>
+            </div>
+
+            <a href="/admin/products/add" class="add-product-btn">
+                <i class="fa-solid fa-plus"></i>
+                Add Product
+            </a>
+
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Total Products</p>
+
+              <i class="fa-solid fa-box"></i>
+
+            </div>
+
+            <h3>142</h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Active Products</p>
+
+              <i class="fa-solid fa-circle-check"></i>
+
+            </div>
+
+            <h3>128</h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Hidden Products</p>
+
+              <i class="fa-solid fa-eye-slash"></i>
+
+            </div>
+
+            <h3>14</h3>
+
+          </div>
+
+        </div>
+
+        <!-- TABLE CONTAINER -->
+        <div class="table-container">
+
+          <div class="table-header">
+
+            <h3>
+              Products
+            </h3>
+
+            <!-- SORT -->
+            <form class="sort-toggle">
+
+              <button
+                type="button"
+                class="sort-btn active"
+              >
+
+                <i class="fa-solid fa-arrow-down-wide-short"></i>
+
+                Latest
+
+              </button>
+
+              <button
+                type="button"
+                class="sort-btn"
+              >
+
+                <i class="fa-solid fa-arrow-up-wide-short"></i>
+
+                Oldest
+
+              </button>
+
+            </form>
+
+            <!-- SEARCH -->
+            <form class="search-box">
+
+              <input
+                type="text"
+                placeholder="Search products..."
+              >
+
+              <button type="button" class="search-btn">
+
+                <i class="fa fa-search"></i>
+
+              </button>
+
+              <button
+                type="button"
+                class="clear-btn"
+              >
+                Clear
+              </button>
+
+            </form>
+
+          </div>
+
+          <!-- TABLE -->
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>Image</th>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Fit</th>
+                <th>Status</th>
+                <th>Total Stock</th>
+                
+                <th>Actions</th>
+
+              </tr>
+
+            </thead>
+<tbody>
+
+  <% if(products.length > 0){ %>
+
+    <% products.forEach(product => { %>
+
+      <tr>
+
+        <!-- IMAGE -->
+        <td>
+
+        img
+
+        </td>
+
+        <!-- NAME -->
+        <td>
+
+          <div class="product-info">
+
+            <h4>
+              <%= product.name %>
+            </h4>
+
+            
+
+          </div>
+
+        </td>
+
+        <!-- CATEGORY -->
+        <td>
+          <%= product.categoryId.name %>
+        </td>
+
+        <!-- FIT -->
+        <td>
+          <%= product.fit %>
+        </td>
+
+        <!-- STATUS -->
+        <td>
+
+          <span class="status <%= product.isActive ? 'active' : 'hide' %>">
+
+            <%= product.isActive ? 'Active' : 'Hidden' %>
+
+          </span>
+
+        </td>
+
+        <!-- DATE -->
+        <td>
+
+           stck
+
+        </td>
+       
+
+        <!-- ACTIONS -->
+        <td class="actions">
+
+          <a
+            href="/admin/products/edit/<%= product._id %>"
+            class="icon-btn"
+          >
+
+            <i class="fa-solid fa-pen"></i>
+
+          </a>
+
+          <button class="icon-btn">
+
+            <i class="fa-solid <%= product.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+
+          </button>
+
+        </td>
+
+      </tr>
+
+    <% }) %>
+
+  <% } else { %>
+
+    <tr>
+
+      <td colspan="7" class="empty-row">
+
+        <div class="empty-state">
+
+          <i class="fa-solid fa-box-open"></i>
+
+          <h3>
+            No Products Found
+          </h3>
+
+          <p>
+            Products you add will appear here
+          </p>
+
+        </div>
+
+      </td>
+
+    </tr>
+
+  <% } %>
+
+</tbody>
+
+          </table>
+
+          <!-- PAGINATION -->
+          <div class="pagination">
+
+            <p class="results-text">
+              Showing 1 to 5 of 142 results
+            </p>
+
+            <span class="nav-btn disabled">
+              Prev
+            </span>
+
+            <a class="page-btn active">
+              1
+            </a>
+
+            <a class="page-btn">
+              2
+            </a>
+
+            <a class="page-btn">
+              3
+            </a>
+
+            <a class="nav-btn">
+              Next
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="/js/admin/products.js"></script>
+
+</body>
+</html>
