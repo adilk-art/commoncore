@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
 
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .add-product-btn {
@@ -39,7 +39,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  margin-bottom: 25px;
+  margin-bottom: 18px;
 }
 
 .stat-card {
@@ -155,45 +155,73 @@
 }
 
 /* SORT */
-.sort-toggle {
-  display: flex;
-  gap: 10px;
+.sort-box {
   margin-left: auto;
 }
 
-.sort-btn {
+.sort-dropdown {
+  position: relative;
+}
+
+.sort-trigger {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 
-  padding: 8px 14px;
+  padding: 10px 14px;
 
-  border-radius: 999px;
-  border: 1px solid #d6d6d6;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
 
   background: #fff;
+  color: #374151;
 
   font-size: 14px;
   font-weight: 500;
-  color: #444;
 
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.sort-btn:hover {
-  background: #f4f5f7;
-  transform: translateY(-1px);
+.sort-trigger:hover {
+  background: #f9fafb;
 }
 
-.sort-btn.active {
-  background: #5a6474;
-  color: #fff;
-  border-color: #5a6474;
+.sort-menu {
+  position: absolute;
+  top: 110%;
+  right: 0;
+
+  min-width: 180px;
+
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+
+  padding: 6px;
+
+  display: none;
+  z-index: 10;
 }
 
-.sort-btn i {
-  font-size: 13px;
+.sort-dropdown:hover .sort-menu {
+  display: block;
+}
+
+.sort-menu a {
+  display: block;
+
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  text-decoration: none;
+  color: #374151;
+  font-size: 14px;
+}
+
+.sort-menu a:hover {
+  background: #f3f4f6;
 }
 
 /* TABLE */
@@ -208,13 +236,13 @@ thead {
 
 th {
   text-align: left;
-  padding: 14px 12px;
+  padding: 12px 12px;
   font-size: 13px;
   color: #666;
 }
 
 td {
-  padding: 14px 12px;
+  padding: 11px 12px;
   font-size: 14px;
   border-top: 1px solid #eee;
   color: #333;
@@ -339,7 +367,7 @@ tbody tr:hover {
   font-weight: 500;
 }
 
-/* NAV BTN */
+
 .nav-btn {
   padding: 6px 10px;
   border-radius: 6px;
@@ -403,4 +431,73 @@ tbody tr:hover {
 }
 .empty-row td {
   border-top: none;
+}
+.icon-action {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #374151;
+
+  border-radius: 8px;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  position: relative;
+}
+
+/* icon */
+.icon-action i {
+  font-size: 14px;
+}
+
+/* hover effect */
+.icon-action:hover {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+  transform: translateY(-2px);
+}
+
+/* click effect */
+.icon-action:active {
+  transform: scale(0.95);
+}
+
+/* tooltip */
+.icon-action::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+
+  background: #111827;
+  color: #fff;
+
+  padding: 5px 8px;
+  font-size: 11px;
+
+  border-radius: 6px;
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: all 0.15s ease;
+}
+
+/* show tooltip */
+.icon-action:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }

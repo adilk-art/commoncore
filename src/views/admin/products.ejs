@@ -29,6 +29,7 @@
     }) %>
 
     <%- include("./partials/logout-modal") %>
+    <%- include("../partials/confirm-modal") %>
 
     <!-- MAIN -->
     <div class="main">
@@ -112,52 +113,46 @@
             </h3>
 
             <!-- SORT -->
-            <form class="sort-toggle">
+            <form method="GET" class="sort-box">
+              <input type="hidden" name="search" value="<%= search || '' %>">
 
-              <button
-                type="button"
-                class="sort-btn active"
-              >
+              <div class="sort-dropdown">
+                <button type="button" class="sort-trigger">
+                  <i class="fa-solid fa-arrow-down-wide-short"></i>
+                  <span>sort</span>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
 
-                <i class="fa-solid fa-arrow-down-wide-short"></i>
-
-                Latest
-
-              </button>
-
-              <button
-                type="button"
-                class="sort-btn"
-              >
-
-                <i class="fa-solid fa-arrow-up-wide-short"></i>
-
-                Oldest
-
-              </button>
-
+                <div class="sort-menu">
+                  <a href="?sort=latest">Latest</a>
+                  <a href="?sort=oldest">Oldest</a>
+                  <a href="?sort=az">Name A-Z</a>
+                  <a href="?sort=za">Name Z-A</a>
+                </div>
+              </div>
             </form>
 
             <!-- SEARCH -->
-            <form class="search-box">
+            <form method="GET" action="/admin/products" class="search-box">
 
               <input
                 type="text"
+                name="search"
+                value="<%= search || '' %>"
                 placeholder="Search products..."
               >
 
-              <button type="button" class="search-btn">
+              <button type="submit" class="search-btn">
 
                 <i class="fa fa-search"></i>
 
               </button>
+              <%if(search){%>
 
-              <button
-                type="button"
-                class="clear-btn"
-              >
-                Clear
-              </button>
+                  <a href="/admin/products" class="clear-btn">
+                  Clear
+                </a>
+              <%}%>
 
             </form>
 
@@ -178,6 +173,7 @@
                 <th>Total Stock</th>
                 
                 <th>Actions</th>
+                
 
               </tr>
 
@@ -244,19 +240,17 @@
         <!-- ACTIONS -->
         <td class="actions">
 
-          <a
-            href="/admin/products/edit/<%= product._id %>"
-            class="icon-btn"
-          >
-
+          <a href="/admin/products/edit/<%=product._id%>" class="icon-action" data-tooltip="Edit Product">
             <i class="fa-solid fa-pen"></i>
-
           </a>
 
-          <button class="icon-btn">
+          <button class="icon-action" data-tooltip="Disable/Enable" onclick="openConfirmModal('Do you want to change product status',()=>window.changeProductStatus('<%=product._id%>'))">
 
             <i class="fa-solid <%= product.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
 
+          </button>
+          <button class="icon-action" data-tooltip="Manage Variants">
+            <i class="fa-solid fa-layer-group"></i>
           </button>
 
         </td>
@@ -299,28 +293,39 @@
           <div class="pagination">
 
             <p class="results-text">
-              Showing 1 to 5 of 142 results
+              Showing <%=skip+1%>  to <%=Math.min(currentPage*limit,productCount)%> of <%=productCount%> results
             </p>
 
-            <span class="nav-btn disabled">
-              Prev
-            </span>
+            <%if(currentPage>1){%>
 
-            <a class="page-btn active">
-              1
-            </a>
+              <a
+               href="/admin/products?page=<%=currentPage-1%>" class="nav-btn"
+               >
+                Prev
+              </a>
+            <%}else{%>
+              <span class="nav-btn disabled">
+                Prev
+              </span>
+            <%}%>
 
-            <a class="page-btn">
-              2
-            </a>
 
-            <a class="page-btn">
-              3
-            </a>
+            <%for(let i=1;i<=totalPages;i++){%>
 
-            <a class="nav-btn">
+              <a href="/admin/products?page=<%=i%>"  class="page-btn <%= currentPage === i ? 'active' : '' %>">
+
+                <%=i%>
+
+              </a>
+
+            <%}%>
+            <%if(currentPage < totalPages){%>
+            <a class="nav-btn" href="/admin/products?page=<%= Number(currentPage)+1 %>">
               Next
             </a>
+            <%}else{%>
+              <span class="nav-btn disabled">Next</span>
+            <%}%>
 
           </div>
 
@@ -332,9 +337,9 @@
 
   </div>
 
+  
   <%- include("./partials/scripts") %>
-
+  
   <script src="/js/admin/products.js"></script>
-
 </body>
 </html>

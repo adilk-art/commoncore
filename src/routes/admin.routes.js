@@ -25,5 +25,8 @@ router.patch("/categories/toggle-status/:id", categoryController.changeStatus);
 router.get("/products",isAdminAuth,productController.loadProductPage);
 router.get("/products/add",isAdminAuth,productController.loadAddProductPage);
 router.post("/products/add",isAdminAuth,productController.addProduct);
+router.get("/products/edit/:id",isAdminAuth,productController.loadEditProductPage);
+router.patch("/products/edit/:id",isAdminAuth,productController.editProduct);
+router.patch("/products/status/:id",isAdminAuth,productController.changeProductStatus);
 
 export default router;

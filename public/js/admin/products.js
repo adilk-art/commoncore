@@ -1,4 +1,7 @@
+
 const form = document.getElementById("form");
+
+
 const nameInput = document.getElementById("name");
 const descriptionInput = document.getElementById("description");
 const categoryInput = document.getElementById("category");
@@ -7,6 +10,7 @@ const materialInput = document.getElementById("material");
 const basePriceInput = document.getElementById("basePrice");
 const isActiveInput = document.getElementById("isActive");
 const washCareInput = document.getElementById("washCare");
+
 
 const showError = (id, msg) => {
   document.getElementById(id).textContent = msg;
@@ -31,7 +35,7 @@ form.addEventListener("submit", async(e) => {
   clearErrors();
   let hasError = false;
 
-  const name = nameInput.value.trim();
+  const name = nameInput.value.trim().replace(/\s+/g," ");
   const description = descriptionInput.value.trim();
   const category = categoryInput.value;
   const fit = fitInput.value;
@@ -40,18 +44,17 @@ form.addEventListener("submit", async(e) => {
   const isActive = isActiveInput.value;
   const washCare = washCareInput.value;
 
-  const nameRegex = /^[a-zA-Z0-9\s\-]+$/;
-
   if (!name) {
-    showError("nameError", "Product name is required");
-    hasError = true;
-  } else if (name.length < 2) {
-    showError("nameError", "Product name must be atleast 2 characters");
-    hasError = true;
-  } else if (!nameRegex.test(name)) {
-    showError("nameError", "Invalid product name");
-    hasError = true;
-  }
+  showError("nameError", "Product name is required");
+  hasError = true;
+} else if (name.length < 3) {
+  showError("nameError", "Product name must be at least 3 characters");
+  hasError = true;
+} else if (!/[a-zA-Z]/.test(name)) {
+  showError("nameError", "Product name must contain at least one letter");
+  hasError = true;
+}
+
 
   if (!description || description.length < 5) {
     showError("descriptionError", "Description must be atleast 5 characters");
@@ -68,10 +71,13 @@ form.addEventListener("submit", async(e) => {
     hasError = true;
   }
 
-  if (!material || material.length < 3) {
-    showError("materialError", "Material is required");
-    hasError = true;
-  }
+if (!material || material.length < 3) {
+  showError("materialError", "Material is required");
+  hasError = true;
+} else if (!/[a-zA-Z]/.test(material)) {
+  showError("materialError", "Enter a valid material");
+  hasError = true;
+}
 
   if (!basePrice || basePrice < 1) {
     showError("basePriceError", "Please provide base price");
@@ -89,29 +95,75 @@ form.addEventListener("submit", async(e) => {
 
   if (hasError) return;
 
-  try {
-  const res = await axios.post("/admin/products/add", {
-    name,
-    description,
-    category,
-    fit,
-    material,
-    basePrice,
-    isActive,
-    washCare
-  });
-
-  if (res.data.success) {
-    utils.showToast(res.data.message);
-
-    setTimeout(() => {
-      window.location.href = "/admin/products";
-    }, 1000);
+  const productId=form.dataset.id;
+  let res;
+  if(productId){
+    try {
+      res = await axios.patch(`/admin/products/edit/${productId}`, {
+      name,
+      description,
+      category,
+      fit,
+      material,
+      basePrice,
+      isActive,
+      washCare
+    });
+  
+    if (res.data.success) {
+      utils.showToast(res.data.message);
+  
+      setTimeout(() => {
+        window.location.href = "/admin/products";
+      }, 1000);
+    }
+  
+  } catch (err) {
+   showError("validationError", err.response?.data?.message);
   }
 
-} catch (err) {
-    
- showError("validationError", err.response?.data?.message);
+  }else{
+     try{
+
+       res = await axios.post("/admin/products/add", {
+       name,
+       description,
+       category,
+       fit,
+       material,
+       basePrice,
+       isActive,
+       washCare
+     });
+     if (res.data.success) {
+       utils.showToast(res.data.message);
+   
+       setTimeout(() => {
+         window.location.href = "/admin/products";
+       }, 1000);
+     }
+     }catch(err){
+      showError("validationError", err.response?.data?.message);
+     }
+
+  }
+});
+
+form.addEventListener("input",(e)=>{
+  clearErrors()
+})
+
+window.changeProductStatus=async(id)=>{
+  try{
+    const res=await axios.patch(`/admin/products/status/${id}`);
+    if(res.data.success){
+      utils.showToast(res.data.message);
+      setTimeout(()=>{
+        window.location.href="/admin/products"
+      },1000)
+    }
+  }catch(err){
+    utils.showToast(err.response?.data?.message||"something went wrong")
+  }
 
 }
-});

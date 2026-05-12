@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Edit Product"
+  }) %>
+
+  <link rel="stylesheet" href="/css/admin/add-product.css">
+
+</head>
+
+<body>
+
+  <%- include("./partials/header", { title: "Edit Product" }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", { active: "products" }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+
+          <div>
+            <p class="breadcrumb">
+              Product Management > Edit Product
+            </p>
+
+            <h2 class="page-title">
+              Edit Product
+            </h2>
+          </div>
+
+        </div>
+
+        <div class="form-card">
+
+          <form class="product-form" id="form" data-id="<%=product._id%>" method="post">
+
+  <div class="form-row">
+
+    <div class="form-group">
+      <label>Product Name</label>
+
+      <input
+        type="text"
+        name="name"
+        id="name"
+        value="<%= product.name %>"
+        placeholder="Enter product name"
+      >
+
+      <small id="nameError" class="error"></small>
+    </div>
+
+    <div class="form-group">
+      <label>Category</label>
+
+      <select name="category" id="category">
+        <option value="">Select Category</option>
+
+        <% categories.forEach(category => { %>
+          <option
+            value="<%= category._id %>"
+            <%= product.categoryId.toString() === category._id.toString() ? "selected" : "" %>
+          >
+            <%= category.name %>
+          </option>
+        <% }) %>
+
+      </select>
+
+      <small id="categoryError" class="error"></small>
+    </div>
+
+  </div>
+
+
+  <div class="form-group">
+
+    <label>Description</label>
+
+    <textarea
+      name="description"
+      rows="2"
+      id="description"
+      placeholder="Enter product description"
+    ><%= product.description %></textarea>
+
+    <small id="descriptionError" class="error"></small>
+
+  </div>
+
+
+  <div class="form-row three-cols">
+
+    <div class="form-group">
+
+      <label>Fit</label>
+
+      <select name="fit" id="fit">
+        <option value="">Select Fit</option>
+
+        <option value="slim" <%= product.fit === "slim" ? "selected" : "" %>>
+          Slim Fit
+        </option>
+
+        <option value="regular" <%= product.fit === "regular" ? "selected" : "" %>>
+          Regular Fit
+        </option>
+
+        <option value="oversized" <%= product.fit === "oversized" ? "selected" : "" %>>
+          Oversized Fit
+        </option>
+      </select>
+
+      <small id="fitError" class="error"></small>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Material</label>
+
+      <input
+        type="text"
+        name="material"
+        id="material"
+        value="<%= product.material %>"
+        placeholder="Enter material"
+      >
+
+      <small id="materialError" class="error"></small>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Wash Care</label>
+
+      <select id="washCare" name="washCare">
+
+        <option value="Machine wash cold, do not bleach, medium iron"
+          <%= product.washCare === "Machine wash cold, do not bleach, medium iron" ? "selected" : "" %>>
+          Machine wash cold, do not bleach, medium iron
+        </option>
+
+        <option value="Gentle machine wash, mild detergent, do not tumble dry"
+          <%= product.washCare === "Gentle machine wash, mild detergent, do not tumble dry" ? "selected" : "" %>>
+          Gentle machine wash, mild detergent, do not tumble dry
+        </option>
+
+        <option value="Hand wash only, do not wring, dry flat"
+          <%= product.washCare === "Hand wash only, do not wring, dry flat" ? "selected" : "" %>>
+          Hand wash only, do not wring, dry flat
+        </option>
+
+        <option value="Dry clean only"
+          <%= product.washCare === "Dry clean only" ? "selected" : "" %>>
+          Dry clean only
+        </option>
+
+        <option value="Machine wash cold, quick dry, low iron if needed"
+          <%= product.washCare === "Machine wash cold, quick dry, low iron if needed" ? "selected" : "" %>>
+          Machine wash cold, quick dry, low iron if needed
+        </option>
+
+      </select>
+
+      <small id="washCareError" class="error"></small>
+
+    </div>
+
+  </div>
+
+
+  <div class="form-row">
+
+    <div class="form-group">
+
+      <label>Base Price</label>
+
+      <input
+        type="number"
+        name="basePrice"
+        id="basePrice"
+        value="<%= product.basePrice %>"
+        placeholder="Enter base price"
+        min="0"
+      >
+
+      <small id="basePriceError" class="error"></small>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Status</label>
+
+      <select name="isActive" id="isActive">
+
+        <option value="true" <%= product.isActive ? "selected" : "" %>>
+          Active
+        </option>
+
+        <option value="false" <%= !product.isActive ? "selected" : "" %>>
+          Hidden
+        </option>
+
+      </select>
+
+      <small id="isActiveError" class="error"></small>
+
+    </div>
+
+  </div>
+
+
+  <small id="validationError" class="validation-error"></small>
+
+
+  <div class="form-actions">
+
+    <a href="/admin/products" class="cancel-btn">
+      Cancel
+    </a>
+
+    <button type="submit" class="save-btn">
+      Update Product
+    </button>
+
+  </div>
+
+</form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+  <script src="/js/admin/products.js"></script>
+
+</body>
+</html>
