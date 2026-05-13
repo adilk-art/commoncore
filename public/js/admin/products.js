@@ -29,6 +29,8 @@ const clearErrors = () => {
     "validationError",
   ].forEach((id) => showError(id, ""));
 };
+if(form){
+
 
 form.addEventListener("submit", async(e) => {
   e.preventDefault();
@@ -148,22 +150,38 @@ if (!material || material.length < 3) {
 
   }
 });
-
-form.addEventListener("input",(e)=>{
-  clearErrors()
-})
-
-window.changeProductStatus=async(id)=>{
-  try{
-    const res=await axios.patch(`/admin/products/status/${id}`);
-    if(res.data.success){
-      utils.showToast(res.data.message);
-      setTimeout(()=>{
-        window.location.href="/admin/products"
-      },1000)
-    }
-  }catch(err){
-    utils.showToast(err.response?.data?.message||"something went wrong")
-  }
-
 }
+if(form){
+
+  form.addEventListener("input",(e)=>{
+    clearErrors()
+  })
+}
+
+document.addEventListener("click", (e) => {        //global event listener
+  const btn = e.target.closest(".status-btn");    //getting the closest element near the target(delegation)
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+
+  openConfirmModal("Change product status?", () => {
+    changeProductStatus(id);
+  });
+});
+
+const changeProductStatus = async (id) => {
+  try {
+    const res = await axios.patch(`/admin/products/status/${id}`);
+
+    if (res.data.success) {
+      utils.showToast(res.data.message);
+      setTimeout(() => 
+      {
+        window.location.href="/admin/products"
+      }
+        , 1000);
+    }
+  } catch (err) {
+    utils.showToast("Something went wrong");
+  }
+};

@@ -10,8 +10,8 @@ export const createProduct=async(data)=>{
     return await Product.create(data)
 };
 
-export const countProducts=async()=>{
-    return await Product.countDocuments()
+export const countProducts=async(filter)=>{
+    return await Product.countDocuments(filter)
 }
 
 export const findProductByCategoryId=async(categoryId)=>{

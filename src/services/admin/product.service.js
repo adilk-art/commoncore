@@ -6,9 +6,9 @@ import { getAllCategories } from "../../repositories/category.repository.js";
 export const getAllProductsService=async(page,search)=>{
     const limit=5;
     const skip=limit*(page-1);
-    const filter = search ? { name: { $regex: search, $options: "i" } } : {};
+    const filter = search ? { name: { $regex: `^${search}`, $options: "i" } } : {};
     const products= await getAllProducts(limit,skip,filter);
-    const productCount=await countProducts();
+    const productCount=await countProducts(filter);
     const totalPages=Math.ceil(productCount/limit);
     return {
         products,totalPages,productCount,skip,limit

@@ -134,6 +134,7 @@
 
             <!-- SEARCH -->
             <form method="GET" action="/admin/products" class="search-box">
+              <input type="hidden" name="page" value="<%=currentPage%>">
 
               <input
                 type="text"
@@ -244,7 +245,7 @@
             <i class="fa-solid fa-pen"></i>
           </a>
 
-          <button class="icon-action" data-tooltip="Disable/Enable" onclick="openConfirmModal('Do you want to change product status',()=>window.changeProductStatus('<%=product._id%>'))">
+          <button class="icon-action status-btn" data-tooltip="Disable/Enable" data-id="<%=product._id%>">
 
             <i class="fa-solid <%= product.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
 
@@ -290,6 +291,9 @@
           </table>
 
           <!-- PAGINATION -->
+           <% if (totalPages>1) { %>
+
+
           <div class="pagination">
 
             <p class="results-text">
@@ -299,7 +303,7 @@
             <%if(currentPage>1){%>
 
               <a
-               href="/admin/products?page=<%=currentPage-1%>" class="nav-btn"
+               href="/admin/products?page=<%=currentPage-1%>&search=<%=search%>" class="nav-btn"
                >
                 Prev
               </a>
@@ -312,7 +316,7 @@
 
             <%for(let i=1;i<=totalPages;i++){%>
 
-              <a href="/admin/products?page=<%=i%>"  class="page-btn <%= currentPage === i ? 'active' : '' %>">
+              <a href="/admin/products?page=<%=i%>&search=<%=search%>"  class="page-btn <%= currentPage === i ? 'active' : '' %>">
 
                 <%=i%>
 
@@ -320,7 +324,7 @@
 
             <%}%>
             <%if(currentPage < totalPages){%>
-            <a class="nav-btn" href="/admin/products?page=<%= Number(currentPage)+1 %>">
+            <a class="nav-btn" href="/admin/products?page=<%= Number(currentPage)+1 %>&search=<%=search%>">
               Next
             </a>
             <%}else{%>
@@ -328,6 +332,7 @@
             <%}%>
 
           </div>
+          <% } %>
 
         </div>
 
