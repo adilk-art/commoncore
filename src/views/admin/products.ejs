@@ -69,7 +69,7 @@
 
             </div>
 
-            <h3>142</h3>
+            <h3><%=totalProducts%></h3>
 
           </div>
 
@@ -83,7 +83,7 @@
 
             </div>
 
-            <h3>128</h3>
+            <h3><%=activeProducts%></h3>
 
           </div>
 
@@ -97,7 +97,7 @@
 
             </div>
 
-            <h3>14</h3>
+            <h3><%=hiddenProducts%></h3>
 
           </div>
 
@@ -112,29 +112,37 @@
               Products
             </h3>
 
-            <!-- SORT -->
-            <form method="GET" class="sort-box">
-              <input type="hidden" name="search" value="<%= search || '' %>">
+            <form method="GET" action="/admin/products" class="sort-toggle">
 
-              <div class="sort-dropdown">
-                <button type="button" class="sort-trigger">
+                <input type="hidden" name="search" value="<%= search %>">
+                <input type="hidden" name="page" value="<%= currentPage %>">
+
+                <button
+                  type="submit"
+                  name="sort"
+                  value="latest"
+                  class="sort-btn <%=sort==='latest'?'active':'' %> "
+                >
                   <i class="fa-solid fa-arrow-down-wide-short"></i>
-                  <span>sort</span>
-                  <i class="fa-solid fa-chevron-down"></i>
+                  Latest
                 </button>
 
-                <div class="sort-menu">
-                  <a href="?sort=latest">Latest</a>
-                  <a href="?sort=oldest">Oldest</a>
-                  <a href="?sort=az">Name A-Z</a>
-                  <a href="?sort=za">Name Z-A</a>
-                </div>
-              </div>
-            </form>
+                <button
+                  type="submit"
+                  name="sort"
+                  value="oldest"
+                  class="sort-btn <%=sort==='oldest'?'active':'' %> "
+                >
+                  <i class="fa-solid fa-arrow-up-wide-short"></i>
+                  Oldest
+                </button>
+
+              </form>
 
             <!-- SEARCH -->
             <form method="GET" action="/admin/products" class="search-box">
               <input type="hidden" name="page" value="<%=currentPage%>">
+              <input type="hidden" name="sort" value="<%=sort%>">
 
               <input
                 type="text"
@@ -172,6 +180,7 @@
                 <th>Fit</th>
                 <th>Status</th>
                 <th>Total Stock</th>
+                <th>Total variants</th>
                 
                 <th>Actions</th>
                 
@@ -188,11 +197,13 @@
       <tr>
 
         <!-- IMAGE -->
-        <td>
-
-        img
-
-        </td>
+ <td>
+  <% if (product.defaultImage) { %>
+    <img src="<%= product.defaultImage %>" alt="<%= product.name %>" class="product-img">
+  <% } else { %>
+    <div class="product-img-placeholder">No Image</div>
+  <% } %>
+</td>
 
         <!-- NAME -->
         <td>
@@ -211,7 +222,7 @@
 
         <!-- CATEGORY -->
         <td>
-          <%= product.categoryId.name %>
+          <%= product.category.name %>
         </td>
 
         <!-- FIT -->
@@ -230,16 +241,22 @@
 
         </td>
 
-        <!-- DATE -->
+
         <td>
 
-           stck
+           <%=product.totalStock%>   
+
+        </td>
+        <td>
+
+           <%=product.totalVariants%>   
 
         </td>
        
 
         <!-- ACTIONS -->
-        <td class="actions">
+         <td>
+        <div class="actions">
 
           <a href="/admin/products/edit/<%=product._id%>" class="icon-action" data-tooltip="Edit Product">
             <i class="fa-solid fa-pen"></i>
@@ -250,10 +267,11 @@
             <i class="fa-solid <%= product.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
 
           </button>
-          <button class="icon-action" data-tooltip="Manage Variants">
+          <a href="/admin/products/<%=product._id%>/variants" class="icon-action" data-tooltip="Manage Variants">
             <i class="fa-solid fa-layer-group"></i>
-          </button>
+          </a>
 
+        </div>
         </td>
 
       </tr>
@@ -303,7 +321,7 @@
             <%if(currentPage>1){%>
 
               <a
-               href="/admin/products?page=<%=currentPage-1%>&search=<%=search%>" class="nav-btn"
+               href="/admin/products?page=<%=currentPage-1%>&search=<%=search%>&sort=<%=sort%>" class="nav-btn"
                >
                 Prev
               </a>
@@ -316,7 +334,7 @@
 
             <%for(let i=1;i<=totalPages;i++){%>
 
-              <a href="/admin/products?page=<%=i%>&search=<%=search%>"  class="page-btn <%= currentPage === i ? 'active' : '' %>">
+              <a href="/admin/products?page=<%=i%>&search=<%=search%>&sort=<%=sort%>"  class="page-btn <%= currentPage === i ? 'active' : '' %>">
 
                 <%=i%>
 
@@ -324,7 +342,7 @@
 
             <%}%>
             <%if(currentPage < totalPages){%>
-            <a class="nav-btn" href="/admin/products?page=<%= Number(currentPage)+1 %>&search=<%=search%>">
+            <a class="nav-btn" href="/admin/products?page=<%= Number(currentPage)+1 %>&search=<%=search%>&sort=<%=sort%>">
               Next
             </a>
             <%}else{%>

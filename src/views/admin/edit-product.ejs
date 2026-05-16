@@ -63,18 +63,20 @@
       <label>Category</label>
 
       <select name="category" id="category">
-        <option value="">Select Category</option>
+  <option value="">Select Category</option>
 
-        <% categories.forEach(category => { %>
-          <option
-            value="<%= category._id %>"
-            <%= product.categoryId.toString() === category._id.toString() ? "selected" : "" %>
-          >
-            <%= category.name %>
-          </option>
-        <% }) %>
+  <% const selectedId = product.categoryId?._id?.toString() || product.categoryId?.toString(); %>
 
-      </select>
+  <% categories.forEach(category => { %>
+    <option 
+      value="<%= category._id %>"
+      <%= selectedId === category._id.toString() ? "selected" : "" %>
+    >
+      <%= category.name %>
+    </option>
+  <% }) %>
+
+</select>
 
       <small id="categoryError" class="error"></small>
     </div>
@@ -223,9 +225,9 @@
     </div>
 
   </div>
-
-
   <small id="validationError" class="validation-error"></small>
+
+
 
 
   <div class="form-actions">

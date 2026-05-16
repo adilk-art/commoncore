@@ -29,13 +29,13 @@ const clearErrors = () => {
     "validationError",
   ].forEach((id) => showError(id, ""));
 };
+
 if(form){
-
-
 form.addEventListener("submit", async(e) => {
   e.preventDefault();
   clearErrors();
   let hasError = false;
+  action = e.target.value;
 
   const name = nameInput.value.trim().replace(/\s+/g," ");
   const description = descriptionInput.value.trim();
@@ -109,7 +109,8 @@ if (!material || material.length < 3) {
       material,
       basePrice,
       isActive,
-      washCare
+      washCare,
+
     });
   
     if (res.data.success) {
@@ -150,6 +151,7 @@ if (!material || material.length < 3) {
 
   }
 });
+
 }
 if(form){
 
@@ -185,3 +187,36 @@ const changeProductStatus = async (id) => {
     utils.showToast("Something went wrong");
   }
 };
+
+function preserveScroll() {
+  const content = document.querySelector(".content");
+  if (!content) return;
+
+  const SCROLL_KEY = "contentScroll";
+  const INTENT_KEY = "contentScrollIntent";
+
+  const saved = sessionStorage.getItem(SCROLL_KEY);
+  const intentional = sessionStorage.getItem(INTENT_KEY);
+
+  if (saved !== null && intentional === "true") {
+    requestAnimationFrame(() => {
+      content.scrollTop = Number(saved);
+      sessionStorage.removeItem(SCROLL_KEY);
+      sessionStorage.removeItem(INTENT_KEY);
+    });
+  } else {
+    sessionStorage.removeItem(SCROLL_KEY);
+    sessionStorage.removeItem(INTENT_KEY);
+  }
+
+  document
+    .querySelectorAll(".pagination a, .search-box button, .clear-btn")
+    .forEach((el) => {
+      el.addEventListener("click", () => {
+        sessionStorage.setItem(SCROLL_KEY, content.scrollTop);
+        sessionStorage.setItem(INTENT_KEY, "true");
+      });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", preserveScroll);

@@ -12,9 +12,13 @@ let callback=null;
   confirmModal.classList.remove("show");
   callback=null
 };
-confirmBtn.addEventListener("click",()=>{
 
-  if(callback) callback();
-  closeConfirmModal();
-}) 
+if(confirmBtn){
+
+  confirmBtn.addEventListener("click",()=>{
+  
+    if(callback) callback();
+    closeConfirmModal();
+  }) 
+}
 

@@ -24,6 +24,7 @@
     <%- include("./partials/sidebar", { active: "categories" }) %>
 
     <%- include("./partials/logout-modal") %>
+    <%- include("../partials/confirm-modal") %>
 
     <!-- MAIN -->
     <div class="main">
@@ -95,33 +96,33 @@
             <div class="table-header">
 
               <h3>Product Categories</h3>
+              <!-- SORT -->
+              <form method="GET" action="/admin/categories" class="sort-toggle">
 
-<form method="GET" action="/admin/categories" class="sort-toggle">
+                <input type="hidden" name="search" value="<%= search %>">
+                <input type="hidden" name="page" value="<%= currentPage %>">
 
-  <input type="hidden" name="search" value="<%= search %>">
-  <input type="hidden" name="page" value="<%= currentPage %>">
+                <button
+                  type="submit"
+                  name="sort"
+                  value="latest"
+                  class="sort-btn <%=sort==='latest'?'active':'' %> "
+                >
+                  <i class="fa-solid fa-arrow-down-wide-short"></i>
+                  Latest
+                </button>
 
-  <button
-    type="submit"
-    name="sort"
-    value="latest"
-    class="sort-btn <%=sort==='latest'?'active':'' %> "
-  >
-    <i class="fa-solid fa-arrow-down-wide-short"></i>
-    Latest
-  </button>
+                <button
+                  type="submit"
+                  name="sort"
+                  value="oldest"
+                  class="sort-btn <%=sort==='oldest'?'active':'' %> "
+                >
+                  <i class="fa-solid fa-arrow-up-wide-short"></i>
+                  Oldest
+                </button>
 
-  <button
-    type="submit"
-    name="sort"
-    value="oldest"
-    class="sort-btn <%=sort==='oldest'?'active':'' %> "
-  >
-    <i class="fa-solid fa-arrow-up-wide-short"></i>
-    Oldest
-  </button>
-
-</form>
+              </form>
               <!-- SEARCH -->
               <form method="GET" action="/admin/categories" class="search-box">
               <input type="hidden" name="sort" value="<%=sort%>">
@@ -195,7 +196,8 @@
 
           <button 
           type="button" 
-          class="icon-btn edit-btn"
+          class="icon-action edit-btn"
+          data-tooltip="Edit Category"
           data-id="<%= category._id %>"
           data-name="<%= category.name %>"
           data-sizetype="<%= category.sizeType %>"
@@ -205,7 +207,8 @@
           </button>
 
           <button 
-            class="icon-btn toggle-status-btn"
+            class="icon-action toggle-status-btn"
+            data-tooltip="Change Status"
             data-id="<%= category._id %>"
             data-active="<%= category.isActive %>"
           >
