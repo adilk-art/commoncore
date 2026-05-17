@@ -14,8 +14,31 @@ export const getAllCategories = async () => {
   return await Category.find().sort({ createdAt: -1 });
 };
 
-export const getPaginatedCategories = async (filter,skip,limit,sortOrder) => {
-  return await Category.find(filter).sort({ createdAt: sortOrder }).skip(skip).limit(limit);
+
+
+export const getPaginatedCategories = async (filter, skip, limit, sortOrder) => {
+  return await Category.aggregate([
+    { $match: filter },
+
+    {
+      $lookup: {
+        from: "products",
+        localField: "_id",
+        foreignField: "categoryId",
+        as: "products"
+      }
+    },
+
+    {
+      $addFields: {
+        productCount: { $size: "$products" }
+      }
+    },
+
+    { $sort: { createdAt: sortOrder } },
+    { $skip: skip },
+    { $limit: limit }
+  ]);
 };
 
 export const getCategoryCount = async (filter={}) => {

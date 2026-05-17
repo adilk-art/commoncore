@@ -185,31 +185,35 @@ document
 
   });
 
-  document.querySelectorAll(".toggle-status-btn").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    try {
-      const id = btn.dataset.id;
-      const currentStatus = btn.dataset.active === "true";
 
-      const res = await axios.patch(
-        `/admin/categories/toggle-status/${id}`,
-        { isActive: !currentStatus }
-      );
 
-      if (res.data.success) {
-        utils.showToast(res.data.message);
+document.querySelectorAll(".toggle-status-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const id = btn.dataset.id;
+    const currentStatus = btn.dataset.active === "true";
 
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+    openConfirmModal("Change category status?", async () => {
+      try {
+        const res = await axios.patch(
+          `/admin/categories/toggle-status/${id}`,
+          { isActive: !currentStatus }
+        );
+
+        if (res.data.success) {
+          
+          utils.showToast(res.data.message);
+
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+
+      } catch (err) {
+        utils.showToast(
+          err.response?.data?.message || "Error updating status"
+        );
       }
-
-    } catch (err) {
-      utils.showToast(
-        err.response?.data?.message || "Error updating status",
-        "error"
-      );
-    }
+    });
   });
 });
 

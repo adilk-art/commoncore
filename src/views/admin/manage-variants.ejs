@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include("./partials/head", { title: "Manage Variants" }) %>
+  <link rel="stylesheet" href="/css/admin/manage-variants.css">
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+/>
+</head>
+
+<body>
+
+  <%- include("./partials/header", { title: "Manage Variants" }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", { active: "products" }) %>
+
+    <%- include("./partials/logout-modal") %>
+    <%- include("../partials/confirm-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+          <div>
+            <p class="breadcrumb">
+              Admin Dashboard > Product Management > Variants
+            </p>
+
+            <h2 class="page-title">
+              Manage Variants
+            </h2>
+          </div>
+        </div>
+
+      <div class="product-summary-card">
+        <div class="summary-block">
+          <span>Product</span>
+          <h4><%= product?.name || "-" %></h4>
+        </div>
+
+        <div class="summary-block">
+          <span>Category</span>
+          <h4><%= product?.categoryId?.name || "-" %></h4>
+        </div>
+
+        <div class="summary-block">
+          <span>Fit</span>
+          <h4><%= product?.fit || "-" %></h4>
+        </div>
+
+        <div class="summary-block">
+          <span>Base Price</span>
+          <h4>₹<%= product?.basePrice || 0 %></h4>
+        </div>
+
+        <div class="summary-block">
+          <span>Total Variants</span>
+          <h4><%= variantsCount || 0 %></h4>
+        </div>
+
+        <div class="summary-block">
+          <span>Active Variants</span>
+          <h4><%= activeVariants || 0 %></h4>
+        </div>
+
+        <div class="summary-block">
+          <span>Inactive Variants</span>
+          <h4><%= inactiveVariants || 0 %></h4>
+        </div>
+      </div>
+
+        <div class="variant-grid">
+
+          <!-- LEFT PANEL -->
+
+      <div class="left-panel">
+
+      
+
+      <div class="table-container">
+
+        <div class="table-header">
+          <h3>Product Variants</h3>
+
+            <!-- SEARCH -->
+          <form method="GET" action="/admin/products/<%= product._id %>/variants" class="search-box">
+            <input type="text" name="search" placeholder="Search by size or color" value="<%= search || '' %>">
+            <button type="submit" class="search-btn"><i class="fa fa-search"></i></button>
+
+            <% if (search) { %>
+              <a href="/admin/products/<%= product._id %>/variants" class="clear-btn">Clear</a>
+            <% } %>
+          </form>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Size</th>
+              <th>Color</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% if (variants && variants.length > 0) { %>
+              <% variants.forEach(variant => { %>
+                <tr>
+                  <td>
+                    <img src="<%= variant.images?.[0]?.url || '' %>" class="variant-img">
+                  </td>
+                  <td><%= variant.size %></td>
+                  <td>
+                    <div class="color-cell">
+                      <span class="color-dot" style="background:<%= variant.color.code %>"></span>
+                      <%= variant.color.name %>
+                    </div>
+                  </td>
+                  <td><%= variant.stock %></td>
+                  <td>
+                    <span class="status <%= variant.isActive ? 'active' : 'hide' %>">
+                      <%= variant.isActive ? "Active" : "Hidden" %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="action-wrap">
+                      <button type="button" class="icon-action edit-btn" data-tooltip="Edit Variant" data-variant='<%- JSON.stringify(variant) %>'>
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button class="icon-action status-btn" data-tooltip="Change Status" data-id="<%=variant._id%>">
+                        <i class="fa-solid <%= variant.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="default-badge-column">
+                    <% if (variant.isDefault) { %>
+                      <span class="default-badge">Default</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="7">No variants found</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+
+
+          <!-- PAGINATION -->
+    <div class="pagination">
+   <p class="results-text">
+      Showing 
+      <%= (currentPage - 1) * limit + 1 %> 
+      to 
+      <%= Math.min(currentPage * limit, totalVariants) %> 
+      of 
+      <%= totalVariants %> 
+      results
+      </p>
+
+  <!-- PREV -->
+  <% if (currentPage > 1) { %>
+
+    <a
+href="/admin/products/<%=product._id%>/variants?page=<%= currentPage - 1 %>&search=<%= search %>"      class="nav-btn"
+    >
+      Prev
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Prev
+    </span>
+
+  <% } %>
+
+  <!-- PAGE NUMBERS -->
+  <% for (let i = 1; i <= totalPages; i++) { %>
+
+    <a
+      href="/admin/products/<%=product._id%>/variants?page=<%= i %>&search=<%= search || '' %>"
+      class="page-btn <%= currentPage === i ? 'active' : '' %>"
+    >
+      <%= i %>
+    </a>
+
+  <% } %>
+
+  <!-- NEXT -->
+  <% if (currentPage < totalPages) { %>
+
+    <a
+      href="/admin/products/<%=product._id%>/variants?page=<%= currentPage + 1 %>&search=<%= search || '' %>"
+      class="nav-btn"
+    >
+      Next
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Next
+    </span>
+
+  <% } %>
+
+</div>
+
+      </div>
+    </div>
+
+          <!-- RIGHT --> <!-- MANAGE VARIANTS -->
+
+          <div class="side-card" id="addCard">
+
+            <h3>
+              <i class="fa-solid fa-circle-plus"></i>
+              Add Variant
+            </h3>
+
+<form class="variant-form" id="form" enctype="multipart/form-data" method="POST">
+
+  <div class="row-fields">
+
+    <div class="form-group">
+      <label>Size</label>
+      <select id="size" name="size">
+        <option value="">Select size</option>
+        <%sizes.forEach(size=>{%>
+          <option value="<%=size%>"><%=size%></option>
+
+        <%})%>
+      </select>
+      <span class="error" id="sizeError"></span>
+    </div>
+
+    <div class="form-group">
+      <label>Stock</label>
+      <input type="number" id="stock" name="stock" placeholder="Enter stock">
+      <span class="error" id="stockError"></span>
+    </div>
+
+  </div>
+
+  <div class="color-row">
+
+    <div class="form-group color-picker-group">
+      <label>Color</label>
+      <input type="color" id="colorCode" name="colorCode">
+      <span class="error" id="colorCodeError"></span>
+    </div>
+
+    <div class="form-group">
+      <label>Color Name</label>
+      <input type="text" id="colorName" name="colorName" placeholder="e.g. Navy Blue">
+      <span class="error" id="colorNameError"></span>
+    </div>
+
+  </div>
+  
+  <div class="form-group">
+  <label>Price</label>
+  <input type="number" id="price" name="price" placeholder="Enter price">
+  <span class="error" id="priceError"></span>
+</div>
+
+  <div class="row-fields">
+
+  <div class="form-group">
+    <label>Status</label>
+    <select id="isActive" name="isActive">
+      <option value="true" selected>Active</option>
+      <option value="false">Hidden</option>
+    </select>
+    <span class="error" id="isActiveError"></span>
+  </div>
+
+  <div class="form-group">
+    <label>Default Variant</label>
+    <select id="isDefault" name="isDefault">
+      <option value="false" selected>No</option>
+      <option value="true">Yes</option>
+    </select>
+    <span class="error" id="isDefaultError"></span>
+  </div>
+
+</div>
+
+<div class="form-group">
+
+  <label>Variant Images (Minimum 3,First image will be the thumbnail)</label>
+
+  <input
+    type="file"
+    id="images"
+    name="images"
+    multiple
+    accept="image/*"
+    hidden
+  >
+
+  <label for="images" class="upload-trigger">
+    Add Images
+    <i class="fa-solid fa-plus"></i>
+  </label>
+
+  <span class="error" id="imagesError"></span>
+
+  <div class="preview-grid" id="previewGrid"></div>
+
+</div>
+
+  <small id="validationError" class="validation-error"></small>
+
+
+  <button type="submit" class="save-btn">Save Variant</button>
+
+<button type="reset" class="discard-btn">
+  Discard Changes
+</button>
+
+</form>
+
+</div>
+
+<div class="side-card" id="editCard" style="display:none;">
+
+  <h3>
+    <i class="fa-solid fa-pen"></i>
+    Edit Variant
+  </h3>
+
+  <form class="variant-form" id="editForm" enctype="multipart/form-data">
+
+    <input type="hidden" id="editVariantId">
+
+    <div class="row-fields">
+
+      <div class="form-group">
+        <label>Size</label>
+        <select id="editSize" name="size">
+          <option value="">Select size</option>
+          <% sizes.forEach(size => { %>
+            <option value="<%= size %>"><%= size %></option>
+          <% }) %>
+        </select>
+        <span class="error" id="editSizeError"></span>
+      </div>
+
+      <div class="form-group">
+        <label>Stock</label>
+        <input type="number" id="editStock" name="stock">
+        <span class="error" id="editStockError"></span>
+      </div>
+
+    </div>
+
+    <div class="color-row">
+
+      <div class="form-group color-picker-group">
+        <label>Color</label>
+        <input type="color" id="editColorCode" name="colorCode">
+        <span class="error" id="editColorCodeError"></span>
+      </div>
+
+      <div class="form-group">
+        <label>Color Name</label>
+        <input type="text" id="editColorName" name="colorName">
+        <span class="error" id="editColorNameError"></span>
+      </div>
+
+    </div>
+
+    <div class="form-group">
+      <label>Price</label>
+      <input type="number" id="editPrice" name="price">
+      <span class="error" id="editPriceError"></span>
+    </div>
+
+    <div class="row-fields">
+
+      <div class="form-group">
+        <label>Status</label>
+        <select id="editIsActive" name="isActive">
+          <option value="true">Active</option>
+          <option value="false">Hidden</option>
+        </select>
+        <span class="error" id="editIsActiveError"></span>
+      </div>
+
+      <div class="form-group">
+        <label>Default Variant</label>
+        <select id="editIsDefault" name="isDefault">
+          <option value="false">No</option>
+          <option value="true">Yes</option>
+        </select>
+        <span class="error" id="editIsDefaultError"></span>
+      </div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Variant Images</label>
+
+      <input
+        type="file"
+        id="editImages"
+        name="images"
+        multiple
+        accept="image/*"
+        hidden
+      >
+
+      <label for="editImages" class="upload-trigger">
+        Update Images
+        <i class="fa-solid fa-plus"></i>
+      </label>
+
+      <span class="error" id="editImagesError"></span>
+
+      <div class="preview-grid" id="editPreviewGrid"></div>
+
+    </div>
+      <small id="editValidationError" class="validation-error"></small>
+
+
+    <button type="submit" class="save-btn">Update Variant</button>
+
+    <button type="button" class="discard-btn" id="cancelEditBtn">
+      Cancel
+    </button>
+
+  </form>
+
+</div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <div id="cropModal" class="crop-modal">
+
+  <div class="crop-box">
+
+    <div class="crop-header">
+      <h4>Crop Image</h4>
+    </div>
+
+    <div class="crop-body">
+      <img id="cropImage">
+    </div>
+
+    <div class="crop-actions">
+      <button type="button" id="cancelCropBtn" class="discard-btn">
+        Cancel
+      </button>
+
+      <button type="button" id="cropBtn" class="crop-btn">
+        Crop
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<div id="zoomModal" class="zoom-modal">
+  <img id="zoomImage" />
+</div>
+<%- include("./partials/scripts") %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script type="module" src="/js/admin/manageVariants.js"></script>
+<script type="module" src="/js/admin/editVariant.js"></script>
+
+</body>
+</html>
+

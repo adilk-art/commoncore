@@ -1,317 +1,201 @@
-const form = document.getElementById("editProfileForm");
-const nameInput = document.getElementById("name");
-const phoneInput = document.getElementById("phone");
+const form = document.getElementById("form");
 
-const nameError = document.getElementById("nameError");
-const phoneError = document.getElementById("phoneError");
-const serverErr = document.getElementById("serverErr");
-
-const input = document.getElementById("profileImageInput");
-const preview = document.getElementById("previewImg");
+const size = document.getElementById("size");
+const stock = document.getElementById("stock");
+const price = document.getElementById("price");
+const colorName = document.getElementById("colorName");
+const colorCode = document.getElementById("colorCode");
+const imageInput = document.getElementById("images");
+const previewGrid = document.getElementById("previewGrid");
 
 const cropModal = document.getElementById("cropModal");
-const cropImg = document.getElementById("cropImage");
-const imageSelectError = document.getElementById("imageSelectError");
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  let isValid = true;
-
-  nameError.innerText = "";
-  phoneError.innerText = "";
-  nameError.style.display = "none";
-  phoneError.style.display = "none";
-  serverErr.textContent = "";
-  serverErr.style.display = "none";
-
-  phoneInput.classList.remove("input-error");
-  nameInput.classList.remove("input-error");
-
-  const name = nameInput.value.trim();
-
-  if (!name) {
-    nameError.innerText = "Name is required";
-    nameError.style.display = "block";
-    nameInput.classList.add("input-error");
-    isValid = false;
-  } else if (name.length < 3) {
-    nameError.innerText = "Name must be at least 3 characters";
-    nameError.style.display = "block";
-    nameInput.classList.add("input-error");
-    isValid = false;
-  }
-
-  const phone = phoneInput.value.trim();
-
-  if (phone) {
-    const phoneRegex = /^[6-9]\d{9}$/;
-
-    if (!phoneRegex.test(phone)) {
-      phoneError.innerText = "Enter valid 10-digit phone number";
-      phoneError.style.display = "block";
-      phoneInput.classList.add("input-error");
-      isValid = false;
-    }
-  }
-
-  if (!isValid) return;
-
-  const formData = new FormData(form);
-
-  try {
-    const res = await axios.patch("/user/profile/edit", formData);
-
-    if (res.data.success) {
-      const successBox = document.getElementById("profileUpdateSuccessMsg");
-      const actionBtns = document.getElementById("profileActionBtns");      
-      imageSelectError.textContent = "";
-  
-     utils.showToast("Profile changed successfully")
-
-      setTimeout(() => {
-        window.location.href = "/user/profile";
-      }, 1500);
-    }
-  } catch (err) {
-    const data = err.response?.data;
-    serverErr.textContent = data?.errors.msg|| "Something went wrong";
-    serverErr.style.display = "block";
-  }
-});
+const cropImageEl = document.getElementById("cropImage");
+const cropBtn = document.getElementById("cropBtn");
+const cancelCropBtn = document.getElementById("cancelCropBtn");
 
 let cropper;
+let selectedFiles = [];
+let currentIndex = 0;
+let croppedFiles = [];
 
-input.addEventListener("change", () => {
-  const file = input.files[0];
-  imageSelectError.textContent = "";
+const allowedMime = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+const allowedExt = [".jpg", ".jpeg", ".png", ".webp"];
 
-  if (!file) return;
+function setError(id, msg) {
+  document.getElementById(id).textContent = msg;
+}
 
-  const allowed = ["image/jpeg", "image/png", "image/webp"];
-  const maxSize = 2 * 1024 * 1024;
+function clearErrors() {
+  document.querySelectorAll(".error").forEach(el => el.textContent = "");
+}
 
-  if (!allowed.includes(file.type)) {
-    imageSelectError.textContent = "Only JPG, PNG, WEBP allowed";
-    input.value = "";
-    setTimeout(() => {
-      imageSelectError.textContent = "";
-      imageSelectError.classList.remove("show-error");
-    }, 3000);
-    return;
-  }
+function isValidImage(file) {
+  const mimeOk = allowedMime.includes(file.type.toLowerCase());
+  const ext = "." + file.name.split(".").pop().toLowerCase();
+  const extOk = allowedExt.includes(ext);
 
-  if (file.size > maxSize) {
-    imageSelectError.textContent = "Max size is 2MB";
-    input.value = "";
-    setTimeout(() => {
-      imageSelectError.textContent = "";
-      imageSelectError.classList.remove("show-error");
-    }, 3000);
-    return;
-  }
+  return mimeOk || extOk;
+}
 
-  // set image
-  cropImg.src = URL.createObjectURL(file);
-  cropModal.classList.add("active");
+function openCropModal(file) {
+  const reader = new FileReader();
 
-  setTimeout(() => {
+  reader.onload = (e) => {
+    cropImageEl.src = e.target.result;
+    cropModal.classList.add("active");
+
     if (cropper) cropper.destroy();
 
-    cropper = new Cropper(cropImg, {
-      aspectRatio: 1,
+    cropper = new Cropper(cropImageEl, {
+      aspectRatio: 4 / 5,
       viewMode: 1,
-      responsive: true,
+      autoCropArea: 1,
+      dragMode: "move",
     });
-  }, 50);
-});
+  };
 
-function cropImage() {
-  if (!cropper) return;
-
-  const canvas = cropper.getCroppedCanvas({
-    width: 300,
-    height: 300,
-  });
-
-  const base64 = canvas.toDataURL("image/jpeg");
-
-  preview.src = base64;
-
-  fetch(base64)
-    .then((res) => res.blob())
-    .then((blob) => {
-      const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
-
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-    });
-
-  closeCropModal();
+  reader.readAsDataURL(file);
 }
 
 function closeCropModal() {
   cropModal.classList.remove("active");
-  if (cropper) cropper.destroy();
+
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
 }
 
-function openEmailModal() {
-  document.getElementById("emailModal").style.display = "flex";
-
-  document.getElementById("step1").style.display = "block";
-  document.getElementById("step2").style.display = "none";
-
-  clearErrors();
-}
-
-function closeEmailModal() {
-  document.getElementById("emailModal").style.display = "none";
-  document.getElementById("confirmPassword").value = "";
-}
-
-function clearErrors() {
-  document.getElementById("passwordError").textContent = "";
-  document.getElementById("emailError").textContent = "";
-}
-
-async function verifyPasswordStep() {
-  const password = document.getElementById("confirmPassword").value;
-  const passwordError = document.getElementById("passwordError");
-  passwordError.textContent = "";
-  if (!password) {
-    passwordError.textContent = "Password is required";
-    passwordError.style.display = "block";
+function loadNextImage() {
+  if (currentIndex >= selectedFiles.length) {
+    closeCropModal();
     return;
   }
 
-  try {
-    await axios.post("/user/profile/verify-password", { password });
-
-    document.getElementById("step1").style.display = "none";
-    document.getElementById("step2").style.display = "block";
-  } catch (err) {
-    passwordError.textContent =
-      err.response?.data?.message || "Incorrect password";
-    passwordError.style.display = "block";
-  }
+  openCropModal(selectedFiles[currentIndex]);
 }
 
-async function sendOtp() {
-  const email = document.getElementById("newEmail").value;
-  const emailError = document.getElementById("emailError");
+function cropCurrentImage() {
+  if (!cropper) return;
 
-  emailError.textContent = "";
+  const canvas = cropper.getCroppedCanvas({
+    width: 800,
+    height: 1000,
+  });
 
-  if (!email) {
-    emailError.textContent = "Email is required";
-    emailError.style.display = "block";
-    return;
-  }
+  const base64 = canvas.toDataURL("image/jpeg", 0.9);
 
-  try {
-    const res = await axios.patch("/user/profile/email-change", {
-      email,
+  fetch(base64)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File(
+        [blob],
+        `variant-${Date.now()}-${currentIndex}.jpg`,
+        { type: "image/jpeg" }
+      );
+
+      croppedFiles.push(file);
+
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.className = "preview-box";
+
+      previewGrid.appendChild(img);
+
+      currentIndex++;
+      loadNextImage();
     });
-
-    if (res.data.success) {
-      closeEmailModal();
-      openOtpModal("email-change", email);
-    }
-  } catch (err) {
-    const msg = err.response?.data?.message || "Something went wrong";
-    emailError.textContent = msg;
-    emailError.style.display = "block";
-  }
 }
 
-document.getElementById("confirmPassEye").addEventListener("click", () => {
-  const input = document.getElementById("confirmPassword");
-  const icon = document.querySelector("#confirmPassEye i");
+imageInput.addEventListener("change", (e) => {
+  clearErrors();
 
-  if (input.type === "password") {
-    input.type = "text";
-    icon.classList.remove("fa-eye");
-    icon.classList.add("fa-eye-slash");
-  } else {
-    input.type = "password";
-    icon.classList.remove("fa-eye-slash");
-    icon.classList.add("fa-eye");
+  selectedFiles = [...e.target.files];
+  croppedFiles = [];
+  currentIndex = 0;
+  previewGrid.innerHTML = "";
+
+  if (!selectedFiles.length) return;
+
+  for (const file of selectedFiles) {
+    if (!isValidImage(file)) {
+      imageInput.value = "";
+      closeCropModal();
+      setError("imagesError", "Only JPG, PNG or WEBP images allowed");
+      return;
+    }
   }
+
+  loadNextImage();
 });
 
-function pwd_openModal() {
-  document.getElementById("pwd_modal").style.display = "flex";
-}
+cropBtn.addEventListener("click", cropCurrentImage);
 
-function pwd_closeModal() {
-  document.getElementById("pwd_modal").style.display = "none";
+cancelCropBtn.addEventListener("click", () => {
+  closeCropModal();
+  imageInput.value = "";
+  selectedFiles = [];
+  croppedFiles = [];
+  previewGrid.innerHTML = "";
+});
 
-  document.getElementById("pwd_current").value = "";
-  document.getElementById("pwd_new").value = "";
-  document.getElementById("pwd_confirm").value = "";
-  document.getElementById("pwd_error").textContent = "";
-}
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-function pwd_validate(password) {
-  const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
-  return regex.test(password);
-}
+  clearErrors();
 
-async function pwd_changePassword() {
-  const current = document.getElementById("pwd_current").value;
-  const newPass = document.getElementById("pwd_new").value;
-  const confirm = document.getElementById("pwd_confirm").value;
+  let valid = true;
 
-  const error = document.getElementById("pwd_error");
-  error.textContent = "";
-
-  if (!current || !newPass || !confirm) {
-    error.textContent = "All fields are required";
-    return;
+  if (!size.value) {
+    setError("sizeError", "Select size");
+    valid = false;
   }
 
-  if (!pwd_validate(newPass)) {
-    error.textContent =
-      "Min 8 chars, 1 number and 1 special character required";
-    return;
+  if (!stock.value || Number(stock.value) < 0) {
+    setError("stockError", "Enter valid stock");
+    valid = false;
   }
 
-  if (newPass !== confirm) {
-    error.textContent = "Passwords do not match";
-    return;
+  if (!price.value || Number(price.value) <= 0) {
+    setError("priceError", "Enter valid price");
+    valid = false;
   }
+
+  if (!colorName.value.trim()) {
+    setError("colorNameError", "Enter color name");
+    valid = false;
+  }
+
+  if (!colorCode.value) {
+    setError("colorCodeError", "Choose color");
+    valid = false;
+  }
+
+  if (croppedFiles.length < 3) {
+    setError("imagesError", "Minimum 3 images required");
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  const formData = new FormData();
+
+  formData.append("size", size.value);
+  formData.append("stock", stock.value);
+  formData.append("price", price.value);
+  formData.append("colorName", colorName.value.trim());
+  formData.append("colorCode", colorCode.value);
+
+  croppedFiles.forEach(file => {
+    formData.append("images", file);
+  });
 
   try {
-    const res = await axios.post("/user/profile/change-password", {
-      currentPassword: current,
-      newPassword: newPass,
-    });
+    await axios.post(window.location.pathname, formData);
 
-    if (res.data.success) {
-      pwd_closeModal();
-      document.getElementById("successModal").style.display = "flex";
+    window.location.reload();
 
-    }
-  } catch (err) {
-    error.textContent =
-      err.response?.data?.message || "Error updating password";
+  } catch (error) {
+    setError("imagesError", error.response?.data?.message || "Something went wrong");
   }
-}
-
-function goToLogin() {
-  window.location.href = "/user/login";
-}
-
-function togglePwd(inputId, icon) {
-  const input = document.getElementById(inputId);
-
-  if (input.type === "password") {
-    input.type = "text";
-    icon.classList.remove("fa-eye");
-    icon.classList.add("fa-eye-slash");
-  } else {
-    input.type = "password";
-    icon.classList.remove("fa-eye-slash");
-    icon.classList.add("fa-eye");
-  }
-}
+});

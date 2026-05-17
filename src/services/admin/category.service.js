@@ -13,6 +13,7 @@ import {
 import Category from "../../models/category.model.js";
 import { categorySchema } from "../../validators/category.validation.js";
 
+
 export const getAllCategoriesService = async (page = 1, search, sort) => {
   const limit = 5; //limit per page;
   const skip = (page - 1) * limit;
@@ -61,7 +62,7 @@ export const addCategoryService = async (data) => {
     throw err;
   }
 
-  return await createCategory({ name, sizeType, isActive });
+  return await createCategory({ formattedName, sizeType, isActive });
 };
 
 export const updateCategoryService = async (id, data) => {
@@ -88,7 +89,7 @@ export const updateCategoryService = async (id, data) => {
     err.status = 409;
     throw err;
   }
-
+ 
   return await updateCategoryById(id, {
     name,
     sizeType,
