@@ -181,6 +181,7 @@
                 <th>Status</th>
                 <th>Total Stock</th>
                 <th>Total variants</th>
+                <th>Active variants</th>
                 
                 <th>Actions</th>
                 
@@ -235,7 +236,7 @@
 
           <span class="status <%= product.isActive ? 'active' : 'hide' %>">
 
-            <%= product.isActive ? 'Active' : 'Hidden' %>
+            <%= product.isActive ? 'Active' : 'Inactive' %>
 
           </span>
 
@@ -250,6 +251,11 @@
         <td>
 
            <%=product.totalVariants%>   
+
+        </td>
+        <td>
+
+           <%=product.activeVariants%>   
 
         </td>
        

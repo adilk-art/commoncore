@@ -2,7 +2,6 @@ import { success } from "zod";
 import {
   addProductService,
   getAllProductsService,
-  getAllCategoriesService,
   getProductByIdService,
   editProductService,
   changeProductStatusService,
@@ -11,7 +10,8 @@ import {
   editVariantService,
   getProductsStatsService,
   getVariantsStatsService,
-  changeVariantStatusService
+  changeVariantStatusService,
+  getAllActiveCategoriesService
 } from "../../services/admin/product.service.js";
 
 export const loadProductPage = async (req, res, next) => {
@@ -46,7 +46,7 @@ export const loadProductPage = async (req, res, next) => {
 
 export const loadAddProductPage = async (req, res, next) => {
   try {
-    const categories = await getAllCategoriesService();
+    const categories = await getAllActiveCategoriesService();
     res.render("admin/add-product.ejs", { categories });
   } catch (err) {
     next(err);
@@ -68,7 +68,7 @@ export const addProduct = async (req, res, next) => {
 export const loadEditProductPage = async (req, res, next) => {
   try {
     const product = await getProductByIdService(req.params.id);
-    const categories = await getAllCategoriesService();
+    const categories = await getAllActiveCategoriesService();
     
     res.render("admin/edit-product.ejs", {
       product,
@@ -81,7 +81,6 @@ export const loadEditProductPage = async (req, res, next) => {
 
 export const editProduct = async (req, res, next) => {
   try {
-    console.log("controller")
     await editProductService(req.params.id, req.body);
     return res.status(200).json({
       success: true,

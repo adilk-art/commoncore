@@ -1,6 +1,4 @@
-
 const form = document.getElementById("form");
-
 
 const nameInput = document.getElementById("name");
 const descriptionInput = document.getElementById("description");
@@ -10,7 +8,6 @@ const materialInput = document.getElementById("material");
 const basePriceInput = document.getElementById("basePrice");
 const isActiveInput = document.getElementById("isActive");
 const washCareInput = document.getElementById("washCare");
-
 
 const showError = (id, msg) => {
   document.getElementById(id).textContent = msg;
@@ -26,142 +23,161 @@ const clearErrors = () => {
     "basePriceError",
     "isActiveError",
     "washCareError",
-    "validationError",
+    "validationError"
   ].forEach((id) => showError(id, ""));
 };
 
-if(form){
-form.addEventListener("submit", async(e) => {
-  e.preventDefault();
-  clearErrors();
-  let hasError = false;
-  action = e.target.value;
+/* SCROLL PRESERVE */
 
-  const name = nameInput.value.trim().replace(/\s+/g," ");
-  const description = descriptionInput.value.trim();
-  const category = categoryInput.value;
-  const fit = fitInput.value;
-  const material = materialInput.value.trim();
-  const basePrice = Number(basePriceInput.value);
-  const isActive = isActiveInput.value;
-  const washCare = washCareInput.value;
+function saveScrollPosition() {
+  const content = document.querySelector(".content");
+  if (!content) return;
 
-  if (!name) {
-  showError("nameError", "Product name is required");
-  hasError = true;
-} else if (name.length < 3) {
-  showError("nameError", "Product name must be at least 3 characters");
-  hasError = true;
-} else if (!/[a-zA-Z]/.test(name)) {
-  showError("nameError", "Product name must contain at least one letter");
-  hasError = true;
+  sessionStorage.setItem("contentScroll", content.scrollTop);
 }
 
+function restoreScrollPosition() {
+  const content = document.querySelector(".content");
+  const saved = sessionStorage.getItem("contentScroll");
 
-  if (!description || description.length < 5) {
-    showError("descriptionError", "Description must be atleast 5 characters");
-    hasError = true;
-  }
+  if (!content || saved === null) return;
 
-  if (!category) {
-    showError("categoryError", "Please select Category");
-    hasError = true;
-  }
-
-  if (!fit) {
-    showError("fitError", "Please select fit");
-    hasError = true;
-  }
-
-if (!material || material.length < 3) {
-  showError("materialError", "Material is required");
-  hasError = true;
-} else if (!/[a-zA-Z]/.test(material)) {
-  showError("materialError", "Enter a valid material");
-  hasError = true;
+  requestAnimationFrame(() => {
+    content.scrollTop = Number(saved);
+    sessionStorage.removeItem("contentScroll");
+  });
 }
 
-  if (!basePrice || basePrice < 1) {
-    showError("basePriceError", "Please provide base price");
-    hasError = true;
-  }
+document.addEventListener("DOMContentLoaded", restoreScrollPosition);
 
-  if (!isActive) {
-    showError("isActiveError", "Status is required");
-    hasError = true;
-  }
-  if (!washCare) {
-    showError("washCareError", "washcare is required");
-    hasError = true;
-  }
+/* FORM SUBMIT */
 
-  if (hasError) return;
+if (form) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const productId=form.dataset.id;
-  let res;
-  if(productId){
-    try {
-      res = await axios.patch(`/admin/products/edit/${productId}`, {
-      name,
-      description,
-      category,
-      fit,
-      material,
-      basePrice,
-      isActive,
-      washCare,
+    clearErrors();
 
-    });
-  
-    if (res.data.success) {
-      utils.showToast(res.data.message);
-  
-      setTimeout(() => {
-        window.location.href = "/admin/products";
-      }, 1000);
+    let hasError = false;
+
+    const name = nameInput.value.trim().replace(/\s+/g, " ");
+    const description = descriptionInput.value.trim();
+    const category = categoryInput.value;
+    const fit = fitInput.value;
+    const material = materialInput.value.trim();
+    const basePrice = Number(basePriceInput.value);
+    const isActive = isActiveInput.value;
+    const washCare = washCareInput.value;
+
+    if (!name) {
+      showError("nameError", "Product name is required");
+      hasError = true;
+    } else if (name.length < 3) {
+      showError("nameError", "Product name must be at least 3 characters");
+      hasError = true;
+    } else if (!/[a-zA-Z]/.test(name)) {
+      showError("nameError", "Product name must contain at least one letter");
+      hasError = true;
     }
-  
-  } catch (err) {
-   showError("validationError", err.response?.data?.message);
-  }
 
-  }else{
-     try{
+    if (!description || description.length < 5) {
+      showError("descriptionError", "Description must be atleast 5 characters");
+      hasError = true;
+    }
 
-       res = await axios.post("/admin/products/add", {
-       name,
-       description,
-       category,
-       fit,
-       material,
-       basePrice,
-       isActive,
-       washCare
-     });
-     if (res.data.success) {
-       utils.showToast(res.data.message);
-   
-       setTimeout(() => {
-         window.location.href = "/admin/products";
-       }, 1000);
-     }
-     }catch(err){
+    if (!category) {
+      showError("categoryError", "Please select Category");
+      hasError = true;
+    }
+
+    if (!fit) {
+      showError("fitError", "Please select fit");
+      hasError = true;
+    }
+
+    if (!material || material.length < 3) {
+      showError("materialError", "Material is required");
+      hasError = true;
+    } else if (!/[a-zA-Z]/.test(material)) {
+      showError("materialError", "Enter a valid material");
+      hasError = true;
+    }
+
+    if (!basePrice || basePrice < 1) {
+      showError("basePriceError", "Please provide base price");
+      hasError = true;
+    }
+
+    if (!isActive) {
+      showError("isActiveError", "Status is required");
+      hasError = true;
+    }
+
+    if (!washCare) {
+      showError("washCareError", "Wash care is required");
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const productId = form.dataset.id;
+
+    try {
+      let res;
+
+      if (productId) {
+        res = await axios.patch(`/admin/products/edit/${productId}`, {
+          name,
+          description,
+          category,
+          fit,
+          material,
+          basePrice,
+          isActive,
+          washCare
+        });
+      } else {
+        res = await axios.post("/admin/products/add", {
+          name,
+          description,
+          category,
+          fit,
+          material,
+          basePrice,
+          isActive,
+          washCare
+        });
+      }
+
+      if (res.data.success) {
+        utils.showToast(res.data.message);
+
+        saveScrollPosition();
+
+        setTimeout(() => {
+          window.location.href = "/admin/products";
+        }, 1000);
+      }
+
+    } catch (err) {
       showError("validationError", err.response?.data?.message);
-     }
-
-  }
-});
-
-}
-if(form){
-
-  form.addEventListener("input",(e)=>{
-    clearErrors()
-  })
+    }
+  });
 }
 
-document.addEventListener("click", (e) => {        //global event listener
-  const btn = e.target.closest(".status-btn");    //getting the closest element near the target(delegation)
+/* CLEAR ERROR */
+
+if (form) {
+  form.addEventListener("input", () => {
+    clearErrors();
+  });
+}
+
+/* STATUS BUTTON */
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".status-btn");
+
   if (!btn) return;
 
   const id = btn.dataset.id;
@@ -177,46 +193,15 @@ const changeProductStatus = async (id) => {
 
     if (res.data.success) {
       utils.showToast(res.data.message);
-      setTimeout(() => 
-      {
-        window.location.href="/admin/products"
-      }
-        , 1000);
+
+      saveScrollPosition();
+
+      setTimeout(() => {
+        window.location.href = "/admin/products";
+      }, 1000);
     }
+
   } catch (err) {
     utils.showToast("Something went wrong");
   }
 };
-
-function preserveScroll() {
-  const content = document.querySelector(".content");
-  if (!content) return;
-
-  const SCROLL_KEY = "contentScroll";
-  const INTENT_KEY = "contentScrollIntent";
-
-  const saved = sessionStorage.getItem(SCROLL_KEY);
-  const intentional = sessionStorage.getItem(INTENT_KEY);
-
-  if (saved !== null && intentional === "true") {
-    requestAnimationFrame(() => {
-      content.scrollTop = Number(saved);
-      sessionStorage.removeItem(SCROLL_KEY);
-      sessionStorage.removeItem(INTENT_KEY);
-    });
-  } else {
-    sessionStorage.removeItem(SCROLL_KEY);
-    sessionStorage.removeItem(INTENT_KEY);
-  }
-
-  document
-    .querySelectorAll(".pagination a, .search-box button, .clear-btn")
-    .forEach((el) => {
-      el.addEventListener("click", () => {
-        sessionStorage.setItem(SCROLL_KEY, content.scrollTop);
-        sessionStorage.setItem(INTENT_KEY, "true");
-      });
-    });
-}
-
-document.addEventListener("DOMContentLoaded", preserveScroll);

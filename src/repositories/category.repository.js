@@ -14,9 +14,16 @@ export const getAllCategories = async () => {
   return await Category.find().sort({ createdAt: -1 });
 };
 
+export const getAllActiveCategories = async () => {
+  return await Category.find({ isActive: true }).sort({ createdAt: -1 });
+};
 
-
-export const getPaginatedCategories = async (filter, skip, limit, sortOrder) => {
+export const getPaginatedCategories = async (
+  filter,
+  skip,
+  limit,
+  sortOrder,
+) => {
   return await Category.aggregate([
     { $match: filter },
 
@@ -25,38 +32,45 @@ export const getPaginatedCategories = async (filter, skip, limit, sortOrder) => 
         from: "products",
         localField: "_id",
         foreignField: "categoryId",
-        as: "products"
-      }
+        as: "products",
+      },
     },
 
     {
       $addFields: {
-        productCount: { $size: "$products" }
-      }
+        totalProducts: { $size: "$products" },
+        activeProducts: {
+          $size: {
+            $filter: {
+              input: "$products",
+              as: "product",
+              cond: { $eq: ["$$product.isActive", true] },
+            },
+          },
+        },
+      },
     },
 
     { $sort: { createdAt: sortOrder } },
     { $skip: skip },
-    { $limit: limit }
+    { $limit: limit },
   ]);
 };
 
-export const getCategoryCount = async (filter={}) => {
+export const getCategoryCount = async (filter = {}) => {
   return await Category.countDocuments(filter);
 };
 
 export const updateCategoryById = async (id, data) => {
-
-  return Category.findByIdAndUpdate(
-    id,
-    data,
-    { returnDocument: "after" }
-  );
+  return Category.findByIdAndUpdate(id, data, { returnDocument: "after" });
 };
 
-export const getCategoriesExceptCurrent=async(id,name)=>{
-  return await Category.findOne({_id:{$ne:id},name:new RegExp(`^${name}$`,"i")});
-}
+export const getCategoriesExceptCurrent = async (id, name) => {
+  return await Category.findOne({
+    _id: { $ne: id },
+    name: new RegExp(`^${name}$`, "i"),
+  });
+};
 export const getTotalCategoryCount = async () => {
   return await Category.countDocuments();
 };

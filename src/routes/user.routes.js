@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 import userController from "../controllers/user/user.controller.js";
 import addressController from "../controllers/user/address.controller.js";
+import * as shopController from "../controllers/user/shop.controller.js"
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -37,6 +38,13 @@ router.post("/address/add", isAuthenticated, addressController.addAddress);
 router.delete("/address/delete/:id", isAuthenticated, addressController.deleteAddress);
 router.patch("/address/default/:id", isAuthenticated, addressController.setDefaultAddress);
 router.patch("/address/update/:id", isAuthenticated, addressController.updateAddress);
+
+router.get("/shop", isAuthenticated, shopController.getShopPage);
+router.get("/product/:id", isAuthenticated, shopController.getProductDetail);
+
+
+
+
 
 router.get('/auth/google',
     passport.authenticate('google',{scope:['profile','email']})

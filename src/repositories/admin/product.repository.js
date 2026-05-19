@@ -37,6 +37,15 @@ export const getAllProducts = async (limit, skip, filter, sortOrder) => {
         },
 
         totalVariants: { $size: "$variants" },
+        activeVariants: {
+          $size: {
+            $filter: {
+              input: "$variants",
+              as: "variant",
+              cond: { $eq: ["$$variant.isActive", true] },
+            },
+          },
+        },
 
         totalStock: {
           $sum: {

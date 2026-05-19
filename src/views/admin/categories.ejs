@@ -2,31 +2,22 @@
 <html lang="en">
 
 <head>
-  <head>
 
-  <%- include("./partials/head", {
-    title: "Categories"
-  }) %>
-
-  <link rel="stylesheet"
-  href="/css/admin/categories.css">
+  <%- include("./partials/head", { title: "Categories" }) %>
+  <link rel="stylesheet" href="/css/admin/categories.css">
 
 </head>
 
 <body>
 
-  <!-- HEADER -->
   <%- include("./partials/header", { title: "Categories" }) %>
 
   <div class="layout">
 
-    <!-- SIDEBAR -->
     <%- include("./partials/sidebar", { active: "categories" }) %>
-
     <%- include("./partials/logout-modal") %>
     <%- include("../partials/confirm-modal") %>
 
-    <!-- MAIN -->
     <div class="main">
 
       <div class="content">
@@ -35,6 +26,7 @@
         <div class="page-top">
 
           <div>
+
             <p class="breadcrumb">
               Admin Dashboard > Category Management
             </p>
@@ -42,7 +34,13 @@
             <h2 class="page-title">
               Category Management
             </h2>
+
           </div>
+
+          <button id="openAddModal" class="add-category-btn">
+            <i class="fa-solid fa-plus"></i>
+            Add Category
+          </button>
 
         </div>
 
@@ -54,7 +52,6 @@
               <p>Total Categories</p>
               <i class="fa-solid fa-layer-group"></i>
             </div>
-
             <h3><%= totalCategories %></h3>
           </div>
 
@@ -63,7 +60,6 @@
               <p>Active Categories</p>
               <i class="fa-solid fa-circle-check"></i>
             </div>
-
             <h3><%= activeCategories %></h3>
           </div>
 
@@ -72,60 +68,39 @@
               <p>Hidden Categories</p>
               <i class="fa-solid fa-eye-slash"></i>
             </div>
-
             <h3><%= hiddenCategories %></h3>
           </div>
 
-          <!-- <div class="stat-card">
-            <div class="stat-top">
-              <p>Total Products</p>
-              <i class="fa-solid fa-box"></i>
-            </div>
-
-            <h3>142</h3>
-          </div> -->
-
         </div>
 
-        <!-- CATEGORY GRID -->
-        <div class="category-grid">
+        <!-- TABLE -->
+        <div class="table-container">
 
-          <!-- LEFT -->
-          <div class="table-container">
+          <div class="table-header">
 
-            <div class="table-header">
+            <h3>Product Categories</h3>
 
-              <h3>Product Categories</h3>
-              <!-- SORT -->
-              <form method="GET" action="/admin/categories" class="sort-toggle">
+            <form method="GET" action="/admin/categories" class="sort-toggle">
 
-                <input type="hidden" name="search" value="<%= search %>">
-                <input type="hidden" name="page" value="<%= currentPage %>">
+              <input type="hidden" name="search" value="<%= search %>">
+              <input type="hidden" name="page" value="<%= currentPage %>">
 
-                <button
-                  type="submit"
-                  name="sort"
-                  value="latest"
-                  class="sort-btn <%=sort==='latest'?'active':'' %> "
-                >
-                  <i class="fa-solid fa-arrow-down-wide-short"></i>
-                  Latest
-                </button>
+              <button type="submit" name="sort" value="latest" class="sort-btn <%= sort === 'latest' ? 'active' : '' %>">
+                <i class="fa-solid fa-arrow-down-wide-short"></i>
+                Latest
+              </button>
 
-                <button
-                  type="submit"
-                  name="sort"
-                  value="oldest"
-                  class="sort-btn <%=sort==='oldest'?'active':'' %> "
-                >
-                  <i class="fa-solid fa-arrow-up-wide-short"></i>
-                  Oldest
-                </button>
+              <button type="submit" name="sort" value="oldest" class="sort-btn <%= sort === 'oldest' ? 'active' : '' %>">
+                <i class="fa-solid fa-arrow-up-wide-short"></i>
+                Oldest
+              </button>
 
-              </form>
-              <!-- SEARCH -->
-              <form method="GET" action="/admin/categories" class="search-box">
-              <input type="hidden" name="sort" value="<%=sort%>">
+            </form>
+
+            <form method="GET" action="/admin/categories" class="search-box">
+
+              <input type="hidden" name="sort" value="<%= sort %>">
+
               <input
                 type="text"
                 name="search"
@@ -133,338 +108,133 @@
                 value="<%= search || '' %>"
               >
 
-
-              
               <button type="submit" class="search-btn">
                 <i class="fa fa-search"></i>
               </button>
 
-              <% if (search) { %>
-                <a href="/admin/categories" class="clear-btn">
-                  Clear
-                </a>
+              <% if(search){ %>
+                <a href="/admin/categories" class="clear-btn">Clear</a>
               <% } %>
-
-            </form>
-
-            </div>
-
-            <!-- TABLE -->
-            <table>
-
-              <thead>
-                <tr>
-                  <th>Category Name</th>
-                  <th>Size Type</th>
-                  <th>Status</th>
-                  <th>Products Count</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-
-<tbody>
-
-  <% if(categories.length > 0){ %>
-
-    <% categories.forEach(category => { %>
-
-      <tr>
-
-        <td>
-          <%= category.name %>
-        </td>
-
-        <td>
-          <%= category.sizeType %>
-        </td>
-
-        <td>
-
-          <span class="status <%= category.isActive ? 'active' : 'hide' %>">
-
-            <%= category.isActive ? 'Active' : 'Hidden' %>
-
-          </span>
-
-        </td>
-
-        <td>
-          <%= category.productCount || 0 %>
-        </td>
-
-        <td class="actions">
-
-          <button 
-          type="button" 
-          class="icon-action edit-btn"
-          data-tooltip="Edit Category"
-          data-id="<%= category._id %>"
-          data-name="<%= category.name %>"
-          data-sizetype="<%= category.sizeType %>"
-          data-active="<%= category.isActive %>"
-          >
-            <i class="fa-solid fa-pen"></i>
-          </button>
-
-          <button 
-            class="icon-action toggle-status-btn"
-            data-tooltip="Change Status"
-            data-id="<%= category._id %>"
-            data-active="<%= category.isActive %>"
-          >
-
-            <i class="fa-solid <%= category.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
-
-          </button>
-
-        </td>
-
-      </tr>
-
-    <% }) %>
-
-  <% } else { %>
-
-    <tr>
-
-      <td colspan="5" class="empty-row">
-
-        <div class="empty-state">
-
-          <i class="fa-solid fa-layer-group"></i>
-
-          <p>No categories found</p>
-
-        </div>
-
-      </td>
-
-    </tr>
-
-  <% } %>
-
-</tbody>
-
-</table>
-
-
-<div class="pagination">
-   <p class="results-text">
-      Showing 
-      <%= (currentPage - 1) * limit + 1 %> 
-      to 
-      <%= Math.min(currentPage * limit, totalCategories) %> 
-      of 
-      <%= totalCategories %> 
-      results
-      </p>
-
-  <!-- PREV -->
-  <% if (currentPage > 1) { %>
-
-    <a
-href="/admin/categories?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort%>"      class="nav-btn"
-    >
-      Prev
-    </a>
-
-  <% } else { %>
-
-    <span class="nav-btn disabled">
-      Prev
-    </span>
-
-  <% } %>
-
-  <!-- PAGE NUMBERS -->
-  <% for (let i = 1; i <= totalPages; i++) { %>
-
-    <a
-      href="/admin/categories?page=<%= i %>&search=<%= search || '' %>&sort=<%=sort%>"
-      class="page-btn <%= currentPage === i ? 'active' : '' %>"
-    >
-      <%= i %>
-    </a>
-
-  <% } %>
-
-  <!-- NEXT -->
-  <% if (currentPage < totalPages) { %>
-
-    <a
-      href="/admin/categories?page=<%= currentPage + 1 %>&search=<%= search || '' %>"
-      class="nav-btn"
-    >
-      Next
-    </a>
-
-  <% } else { %>
-
-    <span class="nav-btn disabled">
-      Next
-    </span>
-
-  <% } %>
-
-</div>
- </div>
-
-
-          <!-- RIGHT -->
-          <div class="side-card" id="addCard">
-
-            <h3>
-              <i class="fa-solid fa-circle-plus"></i>
-              Add New Category
-            </h3>
-
-            <form
-              class="category-form"
-              id="categoryForm"
-            >
-
-              <div class="form-group">
-
-                <label>Category Name</label>
-
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  placeholder="e.g. T-Shirts"
-                >
-                <span class="error" id="nameError"></span>   
-
-              </div>
-
-              <div class="form-group">
-
-                <label>Size Type</label>
-
-                <select name="sizeType" id="sizeType">
-
-                  <option value="">
-                    Select size type
-                  </option>
-
-                  <option value="Alpha">
-                    Alpha
-                  </option>
-
-                  <option value="Numeric">
-                    Numeric
-                  </option>
-
-                </select>
-
-                 <span class="error" id="sizeTypeError"></span>
-
-              </div>
-
-              <div class="form-group">
-
-                <label>Status</label>
-
-                <select name="isActive" id="isActive">
-
-                  <option value="true">
-                    Active
-                  </option>
-
-                  <option value="false">
-                    Hidden
-                  </option>
-
-                </select>
-
-              </div>
-                <span class="error" id="validationError"></span>   
-
-
-              <button
-                type="submit"
-                class="save-btn"
-              >
-                Save Category
-              </button>
-
-              <button
-                type="reset"
-                class="discard-btn"
-              >
-                Discard Changes
-              </button>
 
             </form>
 
           </div>
 
-          <!-- edit category card -->
+          <table>
 
- <div class="side-card hidden" id="editCard">
+            <thead>
 
-  <h3>
-    <i class="fa-solid fa-pen"></i>
-    Edit Category
-  </h3>
+              <tr>
+                <th>Category Name</th>
+                <th>Size Type</th>
+                <th>Status</th>
+                <th>Total Products</th>
+                <th>Active Products</th>
+                <th>Actions</th>
+              </tr>
 
-  <form class="category-form" id="editCategoryForm">
+            </thead>
 
-    <div class="form-group">
+            <tbody>
 
-      <label>Category Name</label>
+              <% if(categories.length > 0){ %>
 
-      <input
-        type="text"
-        id="editName"
-        placeholder="e.g. T-Shirts"
-      >
-    <span class="error" id="editNameError"></span>   
+                <% categories.forEach(category => { %>
 
+                  <tr>
 
-    </div>
+                    <td><%= category.name %></td>
 
-    <div class="form-group">
+                    <td><%= category.sizeType %></td>
 
-      <label>Size Type</label>
+                    <td>
+                      <span class="status <%= category.isActive ? 'active' : 'hide' %>">
+                        <%= category.isActive ? 'Active' : 'Inactive' %>
+                      </span>
+                    </td>
 
-      <select id="editSizeType">
+                    <td><%= category.totalProducts || 0 %></td>
+                    <td><%= category.activeProducts || 0 %></td>
 
-        <option value="Alpha">Alpha</option>
-        <option value="Numeric">Numeric</option>
+                    <td class="actions">
 
-      </select>
-    <span class="error" id="editSizeTypeError"></span>   
+                      <button
+                        type="button"
+                        class="icon-action edit-btn"
+                        data-tooltip="Edit Category"
+                        data-id="<%= category._id %>"
+                        data-name="<%= category.name %>"
+                        data-sizetype="<%= category.sizeType %>"
+                        data-active="<%= category.isActive %>"
+                      >
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
 
+                      <button
+                        class="icon-action toggle-status-btn"
+                        data-tooltip="Change Status"
+                        data-id="<%= category._id %>"
+                        data-active="<%= category.isActive %>"
+                      >
+                        <i class="fa-solid <%= category.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+                      </button>
 
-    </div>
+                    </td>
 
-    <div class="form-group">
+                  </tr>
 
-      <label>Status</label>
+                <% }) %>
 
-      <select id="editIsActive">
+              <% } else { %>
 
-        <option value="true">Active</option>
-        <option value="false">Hidden</option>
+                <tr>
 
-      </select>
+                  <td colspan="5" class="empty-row">
 
-    </div>
-    
-    <span class="error" id="editValidationError"></span>   
+                    <div class="empty-state">
+                      <i class="fa-solid fa-layer-group"></i>
+                      <p>No categories found</p>
+                    </div>
 
-    <button type="submit" class="save-btn">
-      Update Category
-    </button>
+                  </td>
 
-    <button type="button" id="cancelEdit" class="discard-btn">
-      Cancel
-    </button>
+                </tr>
 
-  </form>
+              <% } %>
 
-</div>
+            </tbody>
+
+          </table>
+
+          <div class="pagination">
+
+            <p class="results-text">
+              Showing <%= (currentPage - 1) * limit + 1 %>
+              to <%= Math.min(currentPage * limit, totalCategories) %>
+              of <%= totalCategories %> results
+            </p>
+
+            <% if(currentPage > 1){ %>
+              <a href="/admin/categories?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>" class="nav-btn">Prev</a>
+            <% } else { %>
+              <span class="nav-btn disabled">Prev</span>
+            <% } %>
+
+            <% for(let i=1;i<=totalPages;i++){ %>
+
+              <a href="/admin/categories?page=<%= i %>&search=<%= search || '' %>&sort=<%= sort %>" class="page-btn <%= currentPage===i ? 'active' : '' %>">
+                <%= i %>
+              </a>
+
+            <% } %>
+
+            <% if(currentPage < totalPages){ %>
+              <a href="/admin/categories?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>" class="nav-btn">Next</a>
+            <% } else { %>
+              <span class="nav-btn disabled">Next</span>
+            <% } %>
+
+          </div>
 
         </div>
 
@@ -474,8 +244,127 @@ href="/admin/categories?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%
 
   </div>
 
+  <!-- ADD MODAL -->
+  <div class="modal-overlay hidden" id="addCategoryModal">
+
+    <div class="custom-modal">
+
+      <div class="modal-header">
+
+        <h3>
+          <i class="fa-solid fa-circle-plus"></i>
+          Add New Category
+        </h3>
+
+        <button class="close-modal" id="closeAddModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+      </div>
+
+      <form class="category-form" id="categoryForm">
+
+        <div class="form-group">
+          <label>Category Name</label>
+          <input type="text" id="name">
+          <span class="error" id="nameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Size Type</label>
+          <select id="sizeType">
+            <option value="">Select size type</option>
+            <option value="Alpha">Alpha</option>
+            <option value="Numeric">Numeric</option>
+          </select>
+          <span class="error" id="sizeTypeError"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="isActive">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+
+        <span class="error" id="validationError"></span>
+
+        <button type="submit" class="save-btn">
+          Save Category
+        </button>
+
+        <button type="button" class="discard-btn" id="cancelAddModal">
+          Cancel
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay hidden" id="editCategoryModal">
+
+    <div class="custom-modal">
+
+      <div class="modal-header">
+
+        <h3>
+          <i class="fa-solid fa-pen"></i>
+          Edit Category
+        </h3>
+
+        <button class="close-modal" id="closeEditModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+      </div>
+
+      <form class="category-form" id="editCategoryForm">
+
+        <div class="form-group">
+          <label>Category Name</label>
+          <input type="text" id="editName">
+          <span class="error" id="editNameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Size Type</label>
+          <select id="editSizeType">
+            <option value="Alpha">Alpha</option>
+            <option value="Numeric">Numeric</option>
+          </select>
+          <span class="error" id="editSizeTypeError"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="editIsActive">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+
+        <span class="error" id="editValidationError"></span>
+
+        <button type="submit" class="save-btn">
+          Update Category
+        </button>
+
+        <button type="button" class="discard-btn" id="cancelEdit">
+          Cancel
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
 
   <%- include("./partials/scripts") %>
   <script src="/js/admin/categories.js"></script>
+
 </body>
 </html>

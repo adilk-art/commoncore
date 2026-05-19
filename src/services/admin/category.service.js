@@ -62,7 +62,7 @@ export const addCategoryService = async (data) => {
     throw err;
   }
 
-  return await createCategory({ formattedName, sizeType, isActive });
+  return await createCategory({ name, sizeType, isActive });
 };
 
 export const updateCategoryService = async (id, data) => {

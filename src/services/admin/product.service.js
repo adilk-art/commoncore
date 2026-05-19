@@ -11,7 +11,7 @@ import {
 } from "../../repositories/admin/product.repository.js";
 import { productSchema } from "../../validators/product.validation.js";
 import { variantSchema } from "../../validators/variant.validation.js";
-import { getAllCategories } from "../../repositories/category.repository.js";
+import { getAllActiveCategories, getAllCategories } from "../../repositories/category.repository.js";
 import {
   getVariants,
   createVariant,
@@ -33,7 +33,7 @@ export const getAllProductsService = async (page, search,sort) => {
   const limit = 6;
   const skip = limit * (page - 1);
   const filter = search
-    ? { name: { $regex: `^${search}`, $options: "i" } }
+    ? { name: { $regex:search, $options: "i" } }
     : {};
   const sortOrder=sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 }
 
@@ -51,8 +51,8 @@ export const getAllProductsService = async (page, search,sort) => {
   };
 };
 
-export const getAllCategoriesService = async () => {
-  return await getAllCategories();
+export const getAllActiveCategoriesService = async () => {
+  return await getAllActiveCategories();
 
 };
 
