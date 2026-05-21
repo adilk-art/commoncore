@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Cart — Stitch</title>
+  <%- include('../partials/user-head') %>
+  <link rel="stylesheet" href="/css/user/cart.css">
+</head>
+<body>
+
+  <%- include('../partials/user-header') %>
+
+  <main class="cart-page">
+
+    <div class="cart-layout">
+
+      <!-- LEFT -->
+      <section class="cart-main card card-lg">
+
+        <div class="cart-head">
+          <h1 class="text-page-title">Shopping Cart</h1>
+          <p class="text-body"><%= cart.items.length %> items</p>
+        </div>
+
+        <% if(cart.items.length === 0){ %>
+
+          <div class="cart-empty">
+            <p class="text-body">Your cart is empty.</p>
+            <a href="/user/shop" class="secondary-btn">Continue Shopping</a>
+          </div>
+
+        <% } else { %>
+
+          <div class="cart-items">
+
+            <% cart.items.forEach(item => { %>
+
+              <% if(!item.variant || !item.product) return; %>
+
+              <% const unavailable = item.status !== "active"; %>
+
+              <article class="cart-item <%= unavailable ? 'cart-item-disabled' : '' %>">
+
+                <!-- IMAGE -->
+                <div class="cart-item-image-wrap">
+
+                  <img
+                    src="<%= item.variant.images?.[0]?.url || '/images/no-image.png' %>"
+                    class="cart-item-image"
+                    alt="<%= item.product.name %>"
+                  >
+
+                  <!-- <% if(unavailable){ %>
+                    <span class="cart-item-badge"><%= item.message %></span>
+                  <% } %> -->
+
+                </div>
+
+                <!-- CONTENT -->
+                <div class="cart-item-content">
+
+                  <div class="cart-item-top">
+
+                    <div class="cart-item-info">
+
+  <h3 class="text-card-title">
+    <%= item.product.name %>
+  </h3>
+
+  <p class="cart-unit-price">
+    ₹<%= item.variant.price.toLocaleString("en-IN") %> 
+  </p>
+
+  <p class="text-body">
+    Color: <%= item.variant.color.name %>
+  </p>
+
+  <p class="text-body">
+    Size: <%= item.variant.size %>
+  </p>
+
+  <% if(unavailable){ %>
+    <p class="status-danger">
+      <%= item.message %>
+    </p>
+  <% } %>
+
+</div>
+
+                    <div class="cart-item-price">
+                      ₹<%= (item.variant.price * item.quantity).toLocaleString('en-IN') %>
+                    </div>
+
+                  </div>
+
+                  <!-- BOTTOM -->
+                  <div class="cart-item-bottom">
+
+                    <!-- QUANTITY -->
+                    <div class="cart-qty-box">
+
+                      <button
+                        class="cart-qty-btn qty-change"
+                        data-id="<%= item._id %>"
+                        data-action="decrease"
+                        <%= unavailable || item.quantity <= 1? 'disabled' : '' %>
+                      >−</button>
+
+                      <span class="cart-qty-value">
+                        <%= item.quantity %>
+                      </span>
+
+                      <button
+                      class="cart-qty-btn qty-change"
+                      data-id="<%= item._id %>"
+                      data-action="increase"
+                      <%= unavailable || item.quantity >= 5 ? 'disabled' : '' %>
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p class="qty-error" id="qty-error-<%= item._id %>"></p>
+
+                    <!-- ACTIONS -->
+                    <div class="cart-item-actions">
+
+                      <button
+                        class="cart-link-btn move-wishlist"
+                        data-id="<%= item.product._id %>"
+                      >
+                        Move to Wishlist
+                      </button>
+
+                      <button
+                        class="cart-link-btn remove-item"
+                        data-id="<%= item._id %>"
+                      >
+                        Remove
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </article>
+
+            <% }) %>
+
+          </div>
+
+        <% } %>
+
+      </section>
+
+
+      <!-- RIGHT SUMMARY -->
+      <% if(cart.items.length > 0){ %>
+
+      <aside class="cart-summary card card-md">
+
+        <h2 class="text-section-title">Order Summary</h2>
+
+        <%
+          const shipping = cart.subtotal >= 999 ? 0 : 99;
+          const total = cart.subtotal + shipping;
+        %>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>₹<%= cart.subtotal.toLocaleString('en-IN') %></span>
+        </div>
+
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span>
+            <%= shipping === 0 ? 'Free' : `₹${shipping}` %>
+          </span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>₹<%= total.toLocaleString('en-IN') %></span>
+        </div>
+
+        <% if(cart.invalid){ %>
+          <p class="summary-warning">
+  ⚠ Some items in your cart are unavailable. Remove or update them before checkout.
+</p>
+        <% } %>
+
+        <a
+          href="/user/checkout"
+          class="summary-btn <%= cart.invalid ? 'summary-btn-disabled' : '' %>"
+        >
+          Proceed to Checkout →
+        </a>
+
+      </aside>
+
+      <% } %>
+
+    </div>
+
+  </main>
+
+  <%- include('../partials/user-scripts') %>
+  <script src="/js/user/cart.js"></script>
+
+</body>
+</html>

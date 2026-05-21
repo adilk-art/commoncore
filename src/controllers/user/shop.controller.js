@@ -19,7 +19,7 @@ export const getProductDetail = async (req, res, next) => {
       req.params.id
     );
 
-    return res.render(\
+    return res.render(
       "user/product-detail.ejs",
       data
     );

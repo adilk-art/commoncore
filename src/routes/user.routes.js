@@ -3,6 +3,7 @@ const router = express.Router();
 import userController from "../controllers/user/user.controller.js";
 import addressController from "../controllers/user/address.controller.js";
 import * as shopController from "../controllers/user/shop.controller.js"
+import * as cartController from "../controllers/user/cart.controller.js"
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -41,6 +42,12 @@ router.patch("/address/update/:id", isAuthenticated, addressController.updateAdd
 
 router.get("/shop", isAuthenticated, shopController.getShopPage);
 router.get("/product/:id", isAuthenticated, shopController.getProductDetail);
+
+
+router.post("/cart/add", isAuthenticated, cartController.addToCart);
+router.get("/cart", isAuthenticated,cartController.loadCart);
+router.patch("/cart/quantity", isAuthenticated,cartController.updateCartQuantity);
+router.delete("/cart/item/:itemId", isAuthenticated,cartController.removeCartItem);
 
 
 
