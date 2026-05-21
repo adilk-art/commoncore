@@ -5,7 +5,9 @@ import {
   findCartByUserId,
   createCart,
   saveCart,
-  deleteCartItem
+  deleteCartItem,
+  findPurchasableVariants
+  
 } from "../../repositories/cart.repository.js";
 
 const MAX_QTY = 5;
@@ -322,4 +324,15 @@ export const removeCartItemService = async ({
   cart.items.pull(itemId);
 
   await saveCart(cart);
+};
+
+export const getCartVariantsService = async (
+  productId,
+) => {
+
+  const variants =
+    await findPurchasableVariants(productId);
+
+  return variants;
+
 };

@@ -1,15 +1,21 @@
 import mongoose from "mongoose";
+
 import {
   getShopProducts,
   getShopCategories,
   countShopProducts,
   findProductDetail,
   findRelatedProducts,
+  
 } from "../../repositories/shop.repository.js";
 
-export const getShopPageService = async (query) => {
+import { findWishlistByUserId } from "../../repositories/wishlist.repository.js";
+
+export const getShopPageService = async (query, userId) => {
   const page = Number(query.page) || 1;
+
   const limit = 8;
+
   const skip = (page - 1) * limit;
 
   const {
@@ -37,23 +43,59 @@ export const getShopPageService = async (query) => {
 
   if (minPrice || maxPrice) {
     filter.basePrice = {};
-    if (minPrice) filter.basePrice.$gte = Number(minPrice);
-    if (maxPrice) filter.basePrice.$lte = Number(maxPrice);
+
+    if (minPrice) {
+      filter.basePrice.$gte = Number(minPrice);
+    }
+
+    if (maxPrice) {
+      filter.basePrice.$lte = Number(maxPrice);
+    }
   }
 
-  let sortOption = { createdAt: -1 };
+  let sortOption = {
+    createdAt: -1,
+  };
 
-  if (sort === "az") sortOption = { name: 1 };
-  if (sort === "za") sortOption = { name: -1 };
-  if (sort === "low") sortOption = { basePrice: 1 };
-  if (sort === "high") sortOption = { basePrice: -1 };
+  if (sort === "az") {
+    sortOption = { name: 1 };
+  }
+
+  if (sort === "za") {
+    sortOption = { name: -1 };
+  }
+
+  if (sort === "low") {
+    sortOption = { basePrice: 1 };
+  }
+
+  if (sort === "high") {
+    sortOption = { basePrice: -1 };
+  }
 
   const data = await getShopProducts(filter, sortOption, skip, limit);
+
+  let wishlistProductIds = [];
+
+  if (userId) {
+    const wishlist = await findWishlistByUserId(userId);
+
+    wishlistProductIds = wishlist?.products?.map((item) => String(item)) || [];
+  }
+  // console.log(wishlistProductIds);
+
+  const products = data.map((product) => ({
+    ...product,
+
+    isWishlisted: wishlistProductIds.includes(String(product._id)),
+  }));
+
   const total = await countShopProducts(filter);
+
   const categories = await getShopCategories();
 
   return {
-    products: data,
+    products,
     categories,
     currentPage: page,
     totalPages: Math.ceil(total / limit),
@@ -65,7 +107,7 @@ export const getShopPageService = async (query) => {
   };
 };
 
-export const getProductDetailService = async (productId) => {
+export const getProductDetailService = async ({ productId, userId }) => {
   if (!mongoose.Types.ObjectId.isValid(productId)) {
     throw new Error("Invalid product");
   }
@@ -93,13 +135,22 @@ export const getProductDetailService = async (productId) => {
     product._id,
   );
 
+  let isWishlisted = false;
+
+  if (userId) {
+    const wishlist = await findWishlistByUserId(userId);
+
+    isWishlisted = wishlist?.products?.some(
+      (id) => String(id) === String(productId),
+    );
+  }
+
   return {
     product,
-
     variants: activeVariants,
-
     selectedVariant,
-
     relatedProducts,
+    isWishlisted,
   };
 };
+

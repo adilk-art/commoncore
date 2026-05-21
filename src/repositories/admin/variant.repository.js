@@ -46,3 +46,4 @@ export const getProductActiveVariantsCount = async (productId) => {
 export const getProductInactiveVariantsCount = async (productId) => {
   return await Variant.countDocuments({ productId, isActive: false });
 };
+

@@ -307,7 +307,85 @@
     }
   });
 
+  
+
+const wishlistForm = document.querySelector(".wishlist-form");
+
+wishlistForm?.addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  try {
+
+    const formData = new FormData(wishlistForm);
+
+    const button = wishlistForm.querySelector(".pd-wishlist-btn");
+    const svg = button.querySelector("svg");
+
+    const isActive = button.classList.contains(
+      "pd-wishlist-btn--active",
+    );
+
+    let response;
+
+    if (isActive) {
+
+      response = await axios.delete(
+        `/user/wishlist/${formData.get("productId")}`,
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        },
+      );
+
+      button.classList.remove(
+        "pd-wishlist-btn--active",
+      );
+
+      svg.setAttribute("fill", "none");
+
+    } else {
+
+      response = await axios.post(
+        "/user/wishlist/add",
+        {
+          productId: formData.get("productId"),
+        },
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        },
+      );
+
+      button.classList.add(
+        "pd-wishlist-btn--active",
+      );
+
+      svg.setAttribute(
+        "fill",
+        "currentColor",
+      );
+
+    }
+
+    userToast(response.data.message);
+
+  } catch (error) {
+
+    const message =
+      error?.response?.data?.message ||
+      "Failed to update wishlist";
+
+    userToast(message);
+
+  }
+
+});
+  
   /* ── Wishlist buttons on related cards (prevent link nav) ── */
+
   document.querySelectorAll(".pd-related-wish").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();

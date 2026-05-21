@@ -1,4 +1,4 @@
-import { addToCartService,getCartService,updateCartQuantityService,removeCartItemService } from "../../services/user/cart.service.js";
+import { addToCartService,getCartService,updateCartQuantityService,removeCartItemService,getCartVariantsService } from "../../services/user/cart.service.js";
 
 export const addToCart = async (req, res) => {
   try {
@@ -97,4 +97,31 @@ export const removeCartItem = async (req, res) => {
     });
 
   }
+};
+
+export const getCartVariants = async (
+  req,
+  res,
+) => {
+
+  try {
+    const variants =
+      await getCartVariantsService(
+        req.params.productId,
+      );
+
+    return res.json({
+      success: true,
+      variants,
+    });
+
+  } catch (error) {
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
 };

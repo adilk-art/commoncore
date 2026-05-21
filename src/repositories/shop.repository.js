@@ -2,8 +2,15 @@ import Category from "../models/category.model.js";
 import Variant from "../models/variant.model.js";
 import Product from "../models/product.model.js";
 
-export const getShopProducts = async (filter, sort, skip, limit) => {
+export const getShopProducts = async (
+  filter,
+  sort,
+  skip,
+  limit
+) => {
+
   return await Product.aggregate([
+
     {
       $match: filter,
     },
@@ -23,7 +30,9 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
           $filter: {
             input: "$variants",
             as: "variant",
-            cond: { $eq: ["$$variant.isActive", true] },
+            cond: {
+              $eq: ["$$variant.isActive", true],
+            },
           },
         },
       },
@@ -37,17 +46,59 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
 
     {
       $addFields: {
-        defaultImage: {
-          $let: {
-            vars: {
-              firstVariant: {
-                $arrayElemAt: ["$activeVariants", 0],
-              },
-            },
-            in: {
-              $arrayElemAt: ["$$firstVariant.images.url", 0],
+        inStockVariants: {
+          $filter: {
+            input: "$activeVariants",
+            as: "variant",
+            cond: {
+              $gt: ["$$variant.stock", 0],
             },
           },
+        },
+      },
+    },
+
+    {
+      $addFields: {
+        previewVariant: {
+          $cond: {
+            if: {
+              $gt: [
+                { $size: "$inStockVariants" },
+                0,
+              ],
+            },
+            then: {
+              $arrayElemAt: [
+                "$inStockVariants",
+                0,
+              ],
+            },
+            else: {
+              $arrayElemAt: [
+                "$activeVariants",
+                0,
+              ],
+            },
+          },
+        },
+      },
+    },
+
+    {
+      $addFields: {
+        defaultImage: {
+          $arrayElemAt: [
+            "$previewVariant.images.url",
+            0,
+          ],
+        },
+
+        inStock: {
+          $gt: [
+            { $size: "$inStockVariants" },
+            0,
+          ],
         },
       },
     },
@@ -82,7 +133,9 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
     {
       $limit: limit,
     },
+
   ]);
+
 };
 
 export const countShopProducts = async (filter) => {
@@ -204,3 +257,4 @@ export const findRelatedProducts = async (categoryId, currentProductId) => {
     },
   ]);
 };
+

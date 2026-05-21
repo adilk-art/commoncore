@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shop — Stitch</title>
-  <link rel="stylesheet" href="/css/user/standard.css" />
-  <link rel="stylesheet" href="/css/user/user-header.css" />
+    <title> Shop-commoncore</title>
+    <%- include('../partials/user-head') %>
+
   <link rel="stylesheet" href="/css/user/shop.css" />
 </head>
 <body>
@@ -244,9 +242,18 @@
 
               <!-- Cart 3/4 + Wishlist 1/4 -->
               <div class="card-actions">
-                <form action="/cart/add" method="POST" class="cart-form">
-                  <input type="hidden" name="productId" value="<%= product._id %>" />
-                  <button type="submit" class="cart-btn">
+                <form class="cart-form">
+
+                <input
+                  type="hidden"
+                  name="productId"
+                  value="<%= product._id %>"
+                />
+
+                <button
+                  type="submit"
+                  class="cart-btn open-cart-modal"
+                >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
                       <line x1="3" y1="6" x2="21" y2="6"/>
@@ -255,14 +262,32 @@
                     Add to cart
                   </button>
                 </form>
-                <form action="/wishlist/add" method="POST" class="wish-form">
-                  <input type="hidden" name="productId" value="<%= product._id %>" />
-                  <button type="submit" class="wish-btn" aria-label="Wishlist">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                  </button>
-                </form>
+                <form class="wish-form">
+                <input
+                  type="hidden"
+                  name="productId"
+                  value="<%= product._id %>"
+                />
+
+                <button
+                  type="submit"
+                  class="wish-btn <%= product.isWishlisted ? 'wish-btn--active' : '' %>"
+                  aria-label="Wishlist"
+                >
+
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="<%= product.isWishlisted ? 'currentColor' : 'none' %>"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+
+                </button>
+              </form>
               </div>
 
             </div>
@@ -303,6 +328,123 @@
     </section>
 
   </main>
+
+<!--  VARIANT SELECTION MODAL -->
+
+
+<div
+  class="variant-modal-backdrop"
+  id="cartVariantModal"
+>
+
+  <div class="variant-modal">
+
+    <button
+      class="variant-close"
+      id="closeCartVariantModal"
+      type="button"
+    >
+      ×
+    </button>
+
+    <div class="variant-layout">
+
+      <!-- LEFT -->
+
+      <div class="variant-preview">
+
+        <div class="variant-preview-image-wrap">
+
+          <img
+            src=""
+            alt=""
+            id="variantPreviewImage"
+            class="variant-preview-image"
+          />
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+
+      <div class="variant-details">
+
+        <p class="variant-small-label">
+          Product
+        </p>
+
+        <h2
+          class="variant-product-name"
+          id="variantProductName"
+        >
+          Product Name
+        </h2>
+
+        <div class="variant-price">
+          ₹<span id="variantPreviewPrice">0</span>
+        </div>
+
+        <!-- COLORS -->
+
+        <div class="variant-section">
+
+          <p class="variant-label">
+            Color
+          </p>
+
+          <div
+            class="variant-color-list"
+            id="variantColorList"
+          >
+          </div>
+
+        </div>
+
+        <!-- SIZES -->
+
+        <div class="variant-section">
+
+          <p class="variant-label">
+            Size
+          </p>
+
+          <div
+            class="variant-size-list"
+            id="variantSizeList"
+          >
+          </div>
+
+        </div>
+
+        <p
+          class="variant-stock"
+          id="variantStockText"
+        >
+        </p>
+
+        <p
+          class="variant-error"
+          id="cartVariantError"
+        >
+        </p>
+
+        <button
+          class="variant-confirm-btn"
+          id="confirmCartVariant"
+          type="button"
+        >
+          Add To Cart
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+  <%- include('../partials/user-scripts') %>
 <script src="/js/user/shop.js"></script>
 
 </body>

@@ -411,7 +411,11 @@
   color: var(--danger);
   border-color: #fecdd3;
 }
-
+.pd-wishlist-btn--active{
+  background:#fff0f2;
+  color:var(--danger);
+  border-color:#fecdd3;
+}
 /* ── Accordion ── */
 .pd-accordion {
   border-top: 1px solid var(--border);

@@ -4,6 +4,7 @@ import userController from "../controllers/user/user.controller.js";
 import addressController from "../controllers/user/address.controller.js";
 import * as shopController from "../controllers/user/shop.controller.js"
 import * as cartController from "../controllers/user/cart.controller.js"
+import * as wishlistController from "../controllers/user/wishlist.controller.js"
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -46,10 +47,16 @@ router.get("/product/:id", isAuthenticated, shopController.getProductDetail);
 
 router.post("/cart/add", isAuthenticated, cartController.addToCart);
 router.get("/cart", isAuthenticated,cartController.loadCart);
+router.get("/cart/variants/:productId",isAuthenticated,cartController.getCartVariants,);
 router.patch("/cart/quantity", isAuthenticated,cartController.updateCartQuantity);
 router.delete("/cart/item/:itemId", isAuthenticated,cartController.removeCartItem);
 
-
+router.get("/wishlist", isAuthenticated, wishlistController.getWishlist);
+router.post("/wishlist/add", isAuthenticated, wishlistController.addToWishlist);
+router.delete("/wishlist/:productId",isAuthenticated,wishlistController.removeWishlistItem);
+router.post("/wishlist/move-to-cart",isAuthenticated,wishlistController.moveWishlistToCart);
+router.post("/wishlist/add-all-to-cart",isAuthenticated,wishlistController.addAllWishlistToCart,);
+router.get("/wishlist/variants/:productId",isAuthenticated,wishlistController.getWishlistVariants);
 
 
 

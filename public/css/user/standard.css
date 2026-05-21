@@ -100,7 +100,7 @@ ul{
 /* BUTTONS */
 
 .primary-btn{
-  height: 20px;
+  height:45px;
   border: none;
   border-radius: var(--radius-sm);
   background: var(--primary);
