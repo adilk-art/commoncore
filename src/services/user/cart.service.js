@@ -9,6 +9,7 @@ import {
   findPurchasableVariants
   
 } from "../../repositories/cart.repository.js";
+import { addToWishlistService } from "./wishlist.service.js";
 
 const MAX_QTY = 5;
 
@@ -18,10 +19,6 @@ export const addToCartService = async ({
   quantity,
 }) => {
 
-  /* ─────────────────────────────
-     Find Variant
-  ───────────────────────────── */
-
   const variant = await Variant.findById(variantId)
     .populate("productId");
 
@@ -30,10 +27,6 @@ export const addToCartService = async ({
   }
 
   const product = variant.productId;
-
-  /* ─────────────────────────────
-     Product & variant validations
-  ───────────────────────────── */
 
   if (!product) {
     throw new Error("Product not found");
@@ -51,28 +44,15 @@ export const addToCartService = async ({
     throw new Error("Out of stock");
   }
 
-  /* ─────────────────────────────
-     Quantity validations
-  ───────────────────────────── */
-
   quantity = Number(quantity);
 
   if (!Number.isInteger(quantity) || quantity < 1) {
     throw new Error("Invalid quantity");
   }
 
-  /* ─────────────────────────────
-     Find Cart
-  ───────────────────────────── */
-
   let cart = await findCartByUserId(userId);
 
-  /* ─────────────────────────────
-     Create cart if not exists
-  ───────────────────────────── */
-
   if (!cart) {
-
     if (quantity > MAX_QTY) {
       throw new Error(`Maximum ${MAX_QTY} allowed per product`);
     }
@@ -92,18 +72,10 @@ export const addToCartService = async ({
     };
   }
 
-  /* ─────────────────────────────
-     Check existing item
-  ───────────────────────────── */
-
   const existingItem = cart.items.find(
     item =>
       item.variantId.toString() === variantId.toString()
   );
-
-  /* ─────────────────────────────
-     Existing item
-  ───────────────────────────── */
 
   if (existingItem) {
 
@@ -125,10 +97,6 @@ export const addToCartService = async ({
 
   } else {
 
-    /* ─────────────────────────────
-       New item
-    ───────────────────────────── */
-
     if (quantity > MAX_QTY) {
       throw new Error(`Maximum ${MAX_QTY} allowed per product`);
     }
@@ -143,11 +111,7 @@ export const addToCartService = async ({
     });
   }
 
-  /* ─────────────────────────────
-     Save Cart
-  ───────────────────────────── */
-
-  await saveCart(cart);
+ await saveCart(cart);
 
   return {
     success: true,
@@ -155,10 +119,10 @@ export const addToCartService = async ({
   };
 };
 
+
 export const getCartService = async (userId) => {
 
   const cart = await findCartByUserId(userId);
-
   if (!cart) {
     return {
       items: [],
@@ -325,6 +289,51 @@ export const removeCartItemService = async ({
 
   await saveCart(cart);
 };
+
+export const moveCartItemToWishlistService =
+  async ({
+    userId,
+    itemId,
+  }) => {
+
+    const cart =
+      await findCartByUserId(userId);
+
+    if (!cart) {
+      throw new Error("Cart not found");
+    }
+
+    const item =
+      cart.items.id(itemId);
+
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    const variant =
+      await Variant.findById(
+        item.variantId,
+      );
+
+    if (!variant) {
+      throw new Error("Variant not found");
+    }
+
+    await addToWishlistService({
+      userId,
+      productId: variant.productId,
+    });
+
+    cart.items.pull(itemId);
+
+    await saveCart(cart);
+
+    return {
+      success: true,
+      message: "Moved to wishlist",
+    };
+
+  };
 
 export const getCartVariantsService = async (
   productId,

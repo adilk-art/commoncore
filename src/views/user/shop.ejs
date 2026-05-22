@@ -18,7 +18,6 @@
       <h1 class="shop-hero__title">All Products</h1>
     </div>
 
-    <!-- Category pills — centred -->
     <div class="cat-bar">
       <a href="/user/shop?search=<%= search %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&page=1"
          class="cat-pill <%= category === '' ? 'cat-pill--active' : '' %>">All</a>
@@ -28,14 +27,11 @@
       <% }) %>
     </div>
 
-    <!-- ── Toolbar row ── -->
     <div class="toolbar-row">
 
-      <!-- Left: trigger buttons -->
       <div class="toolbar-triggers">
 
         <button class="trigger-btn" id="filterBtn" aria-expanded="false" aria-controls="filterPanel">
-          <!-- price + category hint icons -->
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <line x1="4" y1="6"  x2="20" y2="6"/>
             <line x1="8" y1="12" x2="16" y2="12"/>
@@ -43,12 +39,11 @@
           </svg>
           <span class="trigger-label">Filter</span>
           <span class="trigger-hint">
-            <!-- ₹ icon -->
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
               <line x1="6" y1="4" x2="18" y2="4"/>
               <path d="M6 8h8a4 4 0 0 1 0 8H6l8 8"/>
             </svg>
-            <!-- tag/category icon -->
+            
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
               <circle cx="7" cy="7" r="1"/>
@@ -78,7 +73,7 @@
 
       </div>
 
-      <!-- Right: search -->
+      
       <form class="search-form" action="/user/shop" method="GET" id="searchForm">
         <input type="hidden" name="category" value="<%= category %>" />
         <input type="hidden" name="sort"     value="<%= sort %>"     />
@@ -111,7 +106,7 @@
 
     </div><!-- /toolbar-row -->
 
-    <!-- ── Collapsible panels (hidden by default, expand below toolbar) ── -->
+    
     <div class="panels-row" id="panelsRow">
 
       <!-- Filter panel -->
@@ -189,7 +184,9 @@
         </form>
       </div>
 
-    </div><!-- /panels-row -->
+    </div>
+
+    <!-- /panels-row -->
 
     <!-- Divider with item count -->
     <div class="shop-divider">

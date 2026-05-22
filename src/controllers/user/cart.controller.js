@@ -1,4 +1,4 @@
-import { addToCartService,getCartService,updateCartQuantityService,removeCartItemService,getCartVariantsService } from "../../services/user/cart.service.js";
+import { addToCartService,getCartService,updateCartQuantityService,removeCartItemService,getCartVariantsService,moveCartItemToWishlistService } from "../../services/user/cart.service.js";
 
 export const addToCart = async (req, res) => {
   try {
@@ -8,12 +8,11 @@ export const addToCart = async (req, res) => {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: "Please login first",
+        message: "Please login to use cart",
       });
     }
 
     const { variantId, quantity } = req.body;
-
     const result = await addToCartService({
       userId,
       variantId,
@@ -99,12 +98,44 @@ export const removeCartItem = async (req, res) => {
   }
 };
 
+export const moveToWishlist = async (
+  req,
+  res,
+) => {
+
+  try {
+
+    const result =
+      await moveCartItemToWishlistService({
+        userId: req.session.userId,
+        itemId: req.body.itemId,
+      });
+
+    return res.json(result);
+
+  } catch (error) {
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
+};
+
 export const getCartVariants = async (
   req,
   res,
 ) => {
 
   try {
+      if(!req.session.userId){
+      return res.status(401).json({
+    message: "Please login to use cart",
+    });
+
+    }
     const variants =
       await getCartVariantsService(
         req.params.productId,

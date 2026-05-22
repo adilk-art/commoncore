@@ -1,87 +1,59 @@
 const moveButtons = document.querySelectorAll(".move-cart");
-
 const removeButtons = document.querySelectorAll(".remove-wishlist");
-
 const addAllBtn = document.getElementById("addAllBtn");
-
 const modal = document.getElementById("variantModal");
-
 const variantOptions = document.getElementById("variantOptions");
-
 const confirmBtn = document.getElementById("confirmVariantBtn");
-
 const closeBtn = document.getElementById("closeVariantModal");
-
 const modalError = document.getElementById("variantModalError");
-
 let selectedProduct = null;
-
 let selectedVariant = null;
-
 let pendingSelections = [];
-
 let currentSelectionIndex = 0;
 
 const showModalError = (message) => {
   if (!modalError) return;
-
   modalError.textContent = message;
-
   modalError.classList.add("active");
 };
 
 const clearModalError = () => {
   if (!modalError) return;
-
   modalError.textContent = "";
-
   modalError.classList.remove("active");
 };
 
 const openModal = () => {
   clearModalError();
-
   modal.classList.add("active");
 };
 
 const closeModal = () => {
   clearModalError();
-
   modal.classList.remove("active");
 };
 
 closeBtn?.addEventListener("click", closeModal);
-
 const openSelectionModal = () => {
   const current = pendingSelections[currentSelectionIndex];
-
   if (!current) {
     pendingSelections = [];
-
     currentSelectionIndex = 0;
-
     closeModal();
-
     location.reload();
-
     return;
   }
 
   selectedProduct = current.productId;
-
   renderVariants(current.variants);
-
   openModal();
 };
 
 const renderVariants = (variants) => {
   variantOptions.innerHTML = "";
-
   const grouped = {};
-
   variants.forEach((variant) => {
     const colorName = variant.color.name;
-
     if (!grouped[colorName]) {
       grouped[colorName] = {
         color: variant.color,
@@ -89,22 +61,15 @@ const renderVariants = (variants) => {
         variants: [],
       };
     }
-
     grouped[colorName].variants.push(variant);
   });
 
   const colors = Object.values(grouped);
-
   let selectedColor = colors[0];
-
   let selectedSize = selectedColor?.variants?.[0]?.size || "";
-
   const preview = document.createElement("div");
-
   preview.className = "variant-preview";
-
   const details = document.createElement("div");
-
   details.className = "variant-details";
 
   const getVariant = () => {
@@ -113,52 +78,36 @@ const renderVariants = (variants) => {
     if (!variant) {
       variant = selectedColor.variants[0];
     }
-
     return variant;
   };
 
   const colorWrap = document.createElement("div");
-
   colorWrap.className = "variant-color-wrap";
-
   const colorTitle = document.createElement("p");
-
   colorTitle.className = "variant-section-title";
-
   colorTitle.textContent = "COLOR";
-
   colorWrap.appendChild(colorTitle);
-
   const colorList = document.createElement("div");
-
   colorList.className = "variant-color-list";
 
   colors.forEach((colorObj, index) => {
     const btn = document.createElement("button");
-
     btn.type = "button";
-
     btn.className = "variant-color-btn";
-
     if (index === 0) {
       btn.classList.add("active");
     }
 
     btn.style.background = colorObj.color.code;
-
     btn.addEventListener("click", () => {
       document
         .querySelectorAll(".variant-color-btn")
         .forEach((el) => el.classList.remove("active"));
 
       btn.classList.add("active");
-
       selectedColor = colorObj;
-
       selectedSize = colorObj.variants?.[0]?.size || "";
-
       updatePreview();
-
       renderSizes();
     });
 
@@ -166,25 +115,15 @@ const renderVariants = (variants) => {
   });
 
   colorWrap.appendChild(colorList);
-
   const sizeWrap = document.createElement("div");
-
   sizeWrap.className = "variant-size-wrap";
-
   const sizeTitle = document.createElement("p");
-
   sizeTitle.className = "variant-section-title";
-
   sizeTitle.textContent = "SIZE";
-
   sizeWrap.appendChild(sizeTitle);
-
   const sizeList = document.createElement("div");
-
   sizeList.className = "variant-size-list";
-
   sizeWrap.appendChild(sizeList);
-
   const renderSizes = () => {
     sizeList.innerHTML = "";
 
@@ -331,6 +270,7 @@ moveButtons.forEach((btn) => {
     }
   });
 });
+
 
 confirmBtn?.addEventListener("click", async () => {
   const success = await moveToCart();

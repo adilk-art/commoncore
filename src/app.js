@@ -9,6 +9,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import localsMiddleware from "./middlewares/locals.middleware.js";
 import { adminSession, userSession } from "./config/session.js";
 import { cartCountMiddleware } from "./middlewares/cartCount.middleware.js";
+import { wishlistCountMiddleware } from "./middlewares/wishlistCount.middleware.js";
 const app = express();
 
 app.use(express.json());
@@ -31,6 +32,7 @@ app.use("/admin", adminSession);
 
 app.use(localsMiddleware);
 app.use(cartCountMiddleware);
+app.use(wishlistCountMiddleware);
 
 
 app.use("/", indexRoutes);

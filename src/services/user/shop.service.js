@@ -12,12 +12,10 @@ import {
 import { findWishlistByUserId } from "../../repositories/wishlist.repository.js";
 
 export const getShopPageService = async (query, userId) => {
+
   const page = Number(query.page) || 1;
-
   const limit = 8;
-
   const skip = (page - 1) * limit;
-
   const {
     search = "",
     category = "",
@@ -74,15 +72,12 @@ export const getShopPageService = async (query, userId) => {
   }
 
   const data = await getShopProducts(filter, sortOption, skip, limit);
-
   let wishlistProductIds = [];
 
   if (userId) {
     const wishlist = await findWishlistByUserId(userId);
-
     wishlistProductIds = wishlist?.products?.map((item) => String(item)) || [];
   }
-  // console.log(wishlistProductIds);
 
   const products = data.map((product) => ({
     ...product,
@@ -113,19 +108,16 @@ export const getProductDetailService = async ({ productId, userId }) => {
   }
 
   const product = await findProductDetail(productId);
-
   if (!product || !product.isActive) {
     throw new Error("Product unavailable");
   }
 
   const activeVariants = product.variants.filter((item) => item.isActive);
-
   if (!activeVariants.length) {
     throw new Error("Product unavailable");
   }
 
-  let selectedVariant = activeVariants.find((v) => v.isDefault);
-
+  let selectedVariant = activeVariants.find((v) => v.isDefault);    //default variant selection
   if (!selectedVariant) {
     selectedVariant = activeVariants[0];
   }
@@ -136,7 +128,6 @@ export const getProductDetailService = async ({ productId, userId }) => {
   );
 
   let isWishlisted = false;
-
   if (userId) {
     const wishlist = await findWishlistByUserId(userId);
 

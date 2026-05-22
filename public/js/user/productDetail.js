@@ -1,13 +1,7 @@
-/* ─────────────────────────────────────────────────
-   product-detail.js
-   Relies on window.__VARIANTS__ injected by EJS
-───────────────────────────────────────────────── */
-
 (function () {
   const variants = window.__VARIANTS__ || [];
   let selectedId = window.__SELECTED_ID__ || "";
 
-  /* ── DOM refs ── */
   const mainImage = document.getElementById("mainImage");
   const zoomContainer = document.getElementById("zoomContainer");
   const thumbsCol = document.getElementById("thumbsCol");
@@ -33,8 +27,6 @@
 
   const MAX_QTY = 5;
 
-  /* ── Helpers ── */
-
   function getVariant(id) {
     return variants.find((v) => String(v._id) === String(id)) || null;
   }
@@ -55,8 +47,6 @@
   function fmt(n) {
     return "₹" + Number(n).toLocaleString("en-IN");
   }
-
-  /* ── Image helpers ── */
 
   function setMainImage(url) {
     if (!url || !mainImage) return;
@@ -143,13 +133,10 @@
     syncQty();
   });
 
-  /* ── Apply a selected variant to the UI ── */
-
   function applyVariant(variant) {
     if (!variant) return;
     selectedId = String(variant._id);
 
-    /* price */
     if (displayPrice) displayPrice.textContent = fmt(variant.price);
 
     /* stock badge */
@@ -185,33 +172,25 @@
     syncQty();
   }
 
-  /* ── Color selection ── */
-
   document.querySelectorAll(".pd-color").forEach((btn) => {
     btn.addEventListener("click", () => {
       const code = btn.dataset.colorCode;
       const name = btn.dataset.colorName;
 
-      /* update active color button */
       document
         .querySelectorAll(".pd-color")
         .forEach((b) => b.classList.remove("pd-color--active"));
       btn.classList.add("pd-color--active");
 
-      /* update label */
       if (colorLabel) colorLabel.textContent = name;
 
-      /* rebuild size buttons for this color */
       const colorVariants = variants.filter((v) => v.colorCode === code);
       buildSizes(colorVariants);
 
-      /* auto-select first available size */
       const first = colorVariants.find((v) => v.stock > 0) || colorVariants[0];
       if (first) applyVariant(first);
     });
   });
-
-  /* ── Size buttons builder ── */
 
   function buildSizes(colorVariants) {
     if (!sizesWrap) return;
@@ -244,20 +223,14 @@
     });
   }
 
-  /* ── Initial size bind (rendered by EJS) ── */
   bindSizes();
   bindThumbs();
   syncQty();
-
-  /* ─────────────────────────────────────────────────
-   Add To Cart
-───────────────────────────────────────────────── */
 
   const cartForm = document.getElementById("cartForm");
 
   cartForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     try {
       const variantId = cartVariantId.value;
       const quantity = Number(cartQty.value);
@@ -267,25 +240,19 @@
       const originalText = cartBtn.textContent;
       cartBtn.textContent = "Adding...";
 
-
       const response = await axios.post("/user/cart/add", {
         variantId,
         quantity,
       });
 
-
       if (response.data.success) {
-
-
         if (errorBox) {
           errorBox.textContent = "";
         }
 
-
         if (window.userToast) {
           userToast(response.data.message);
         }
-
 
         cartBtn.textContent = "Added ✓";
 
@@ -295,115 +262,120 @@
         }, 1200);
       }
     } catch (error) {
+      const status = error?.response?.status;
+
       const message = error?.response?.data?.message || "Failed to add to cart";
 
+      if (status === 401) {
+        userToast(message || "Please login first");
+        cartBtn.disabled = false;
+        cartBtn.textContent = "Add to Cart";
+        return;
+      }
 
       if (errorBox) {
         errorBox.textContent = message;
       }
-
       cartBtn.disabled = false;
       cartBtn.textContent = "Add to Cart";
     }
   });
 
+  const wishlistForm = document.querySelector(".wishlist-form");
+
+  wishlistForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    try {
+      const formData = new FormData(wishlistForm);
+
+      const button = wishlistForm.querySelector(".pd-wishlist-btn");
+      const svg = button.querySelector("svg");
+
+      const isActive = button.classList.contains("pd-wishlist-btn--active");
+
+      let response;
+
+      if (isActive) {
+        response = await axios.delete(
+          `/user/wishlist/${formData.get("productId")}`,
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          },
+        );
+
+        button.classList.remove("pd-wishlist-btn--active");
+
+        svg.setAttribute("fill", "none");
+      } else {
+        response = await axios.post(
+          "/user/wishlist/add",
+          {
+            productId: formData.get("productId"),
+          },
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          },
+        );
+
+        button.classList.add("pd-wishlist-btn--active");
+
+        svg.setAttribute("fill", "currentColor");
+      }
+
+      userToast(response.data.message);
+    } catch (error) {
+      const message =
+        error?.response?.data?.message || "Failed to update wishlist";
+
+      userToast(message);
+    }
+  });
+
+
   
+  buyForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-const wishlistForm = document.querySelector(".wishlist-form");
+    const variant = getSelectedVariant();
 
-wishlistForm?.addEventListener("submit", async (e) => {
-
-  e.preventDefault();
-
-  try {
-
-    const formData = new FormData(wishlistForm);
-
-    const button = wishlistForm.querySelector(".pd-wishlist-btn");
-    const svg = button.querySelector("svg");
-
-    const isActive = button.classList.contains(
-      "pd-wishlist-btn--active",
-    );
-
-    let response;
-
-    if (isActive) {
-
-      response = await axios.delete(
-        `/user/wishlist/${formData.get("productId")}`,
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        },
-      );
-
-      button.classList.remove(
-        "pd-wishlist-btn--active",
-      );
-
-      svg.setAttribute("fill", "none");
-
-    } else {
-
-      response = await axios.post(
-        "/user/wishlist/add",
-        {
-          productId: formData.get("productId"),
-        },
-        {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        },
-      );
-
-      button.classList.add(
-        "pd-wishlist-btn--active",
-      );
-
-      svg.setAttribute(
-        "fill",
-        "currentColor",
-      );
-
+    if (!variant || variant.stock <= 0) {
+      showError("Out of stock");
+      return;
     }
 
-    userToast(response.data.message);
+    const originalText = buyBtn.textContent;
 
-  } catch (error) {
+    try {
+      buyBtn.disabled = true;
+      buyBtn.textContent = "Processing...";
 
-    const message =
-      error?.response?.data?.message ||
-      "Failed to update wishlist";
+      const response = await axios.post("/user/checkout/buy-now", {
+        variantId: buyVariantId.value,
+        quantity: Number(buyQty.value),
+      });
 
-    userToast(message);
+      if (response.data.success) {
+        window.location.href = response.data.redirect;
+      }
+    } catch (error) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || "Something went wrong";
 
+    buyBtn.disabled = false;
+    buyBtn.textContent = originalText;
+
+    if (status === 401) {
+      userToast(message);
+      return;
+    }
+
+    showError(message);
   }
-
-});
-  
-  /* ── Wishlist buttons on related cards (prevent link nav) ── */
-
-  document.querySelectorAll(".pd-related-wish").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const card = btn.closest(".pd-related-card");
-      const href = card?.getAttribute("href");
-      const id = href?.split("/").pop();
-      if (!id) return;
-      fetch("/user/wishlist/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: id }),
-      })
-        .then(() => {
-          btn.style.color = "#dc2626";
-        })
-        .catch(console.error);
-    });
   });
+
 })();

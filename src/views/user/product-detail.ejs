@@ -96,7 +96,7 @@
           </h4>
           <div class="pd-colors">
             <%
-              // Group unique colors; map color code → first variant with that color
+                                                       // Group unique colors; map color code → first variant with that color
               const colorMap = {};
               variants.forEach(v => {
                 if (!colorMap[v.color.code]) colorMap[v.color.code] = v;
@@ -173,7 +173,7 @@
             >Add to Cart</button>
           </form>
 
-          <form action="/user/checkout/direct" method="POST" class="pd-action-form" id="buyForm">
+          <form action="/user/checkout/buy-now" method="POST" class="pd-action-form" id="buyForm">
             <input type="hidden" name="variantId" id="buyVariantId" value="<%= selectedVariant._id %>" />
             <input type="hidden" name="quantity"  id="buyQty"       value="1" />
             <button
@@ -239,17 +239,9 @@
             </div>
           </details>
 
-          <!-- <details>
-            <summary>Description</summary>
-            <div class="pd-accordion-content">
-              <p><%= product.description %></p>
-            </div>
-          </details> -->
-
         </div>
-
-      </div><!-- /pd-info -->
-
+      </div>
+      
     </section>
 
     <!-- RELATED PRODUCTS -->
@@ -261,11 +253,11 @@
         <div class="pd-related-grid">
           <% relatedProducts.forEach(item => { %>
             <a href="/user/product/<%= item._id %>" class="pd-related-card">
-              <button type="button" class="pd-related-wish" aria-label="Wishlist">
+              <!-- <button type="button" class="pd-related-wish" aria-label="Wishlist">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
-              </button>
+              </button> -->
               <div class="pd-related-image-wrap">
                 <img src="<%= item.defaultImage %>" alt="<%= item.name %>" class="pd-related-image" loading="lazy" />
               </div>
@@ -278,11 +270,10 @@
         </div>
       </section>
     <% } %>
-    <!-- REVIEWS -->
+
 <!-- REVIEWS -->
 <section class="pd-reviews">
 
-  <!-- Top -->
   <div class="pd-reviews-top">
 
     <div class="pd-reviews-summary">
@@ -309,13 +300,10 @@
 
   </div>
 
-  <!-- Divider -->
   <div class="pd-reviews-divider"></div>
 
-  <!-- Cards -->
   <div class="pd-reviews-grid">
 
-    <!-- Card -->
     <div class="pd-review-card">
       <div class="pd-review-card-top">
         <div>
@@ -338,7 +326,6 @@
       </p>
     </div>
 
-    <!-- Card -->
     <div class="pd-review-card">
       <div class="pd-review-card-top">
         <div>
@@ -362,7 +349,6 @@
       </p>
     </div>
 
-    <!-- Card -->
     <div class="pd-review-card">
       <div class="pd-review-card-top">
         <div>
@@ -388,7 +374,6 @@
 
   </div>
 
-  <!-- Bottom Button -->
   <div class="pd-reviews-footer">
     <button class="pd-view-reviews-btn">
       View All Reviews
@@ -399,7 +384,6 @@
 
   </main>
 
-  <!-- Pass variants data to JS -->
   <%- include('../partials/user-scripts') %>
   <script>
     window.__VARIANTS__ = <%- variantsJson %>;

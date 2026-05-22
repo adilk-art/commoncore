@@ -1,75 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Common Core</title>
-    <link rel="stylesheet" href="/css/user/home.css" />
-    <link rel="stylesheet" href="/css/user/style.css" />
-    <link rel="stylesheet" href="/css/user/global.css">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
-  </head>
+<head>
+  <title>commoncore — Common For All</title>
+  <%- include('../partials/user-head') %>
+  <link rel="stylesheet" href="/css/user/home.css" />
+</head>
+<body>
 
-  <body>
-    <!-- NAVBAR -->
-    <%- include("../partials/header") %>
-    <!-- HERO -->
+  <%- include('../partials/user-header') %>
+
+  <main class="home-page">
+
+    <!-- ── HERO ── -->
     <section class="hero">
-      <div class="hero-text">
-        <span class="tag">New Collection 2026</span>
 
-        <h1>
-          Everyday Wear <br />
-          <span>For Everyone.</span>
+      <div class="hero-left">
+        <span class="hero-tag">COMMONCORE® 2026 COLLECTION</span>
+        <h1 class="hero-title">
+          Quiet<br>
+          Luxury<br>
+          <em>for Every</em><br>
+          Day.
         </h1>
-
-        <p>
-          Premium essentials crafted for comfort and durability. The foundation
-          of a modern, timeless wardrobe.
+        <p class="hero-body">
+          Elevated essentials built around clean silhouettes,
+          premium fabrics, and the kind of simplicity that
+          never goes out of style.
         </p>
-
-        <button>
-          <a href="/user/shop">
+        <div class="hero-actions">
+          <a href="/user/shop" class="btn-dark">
             Shop Now
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </a>
-        </button>
+          <a href="/user/shop" class="btn-ghost">
+            Explore Collection
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
       </div>
 
-      <div class="hero-image">
-        <img src="/images/hero.png" alt="models" />
+      <div class="hero-right">
+
+        <!-- Floating badges -->
+        <div class="badge-float badge-float--tl">
+          <span class="badge-label">New Drop</span>
+          <span class="badge-val">SS 2026</span>
+        </div>
+        <div class="badge-float badge-float--br">
+          <span class="badge-label">Ships in</span>
+          <span class="badge-val">2–4 days</span>
+        </div>
+
+        <!-- Hero image — swap src with your actual image -->
+        <div class="hero-img-wrap">
+          <div class="hero-figure">
+            <img
+              src="/images/hero.png"
+              alt="2026 Collection"
+              class="hero-figure-img"
+              onerror="this.style.display='none'"
+            />
+          </div>
+        </div>
+
       </div>
     </section>
 
-    <!-- CATEGORY -->
-    <section class="categories">
-      <h2>Shop by Category</h2>
+    <!-- ── MARQUEE ── -->
+    <div class="marquee-wrap" aria-hidden="true">
+      <div class="marquee-track">
+        <span class="marquee-item">FREE SHIPPING OVER ₹999</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">PREMIUM FABRICS</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">EASY 30-DAY RETURNS</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">NEW SS 2026 COLLECTION</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">SUSTAINABLE MATERIALS</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">MADE FOR EVERYDAY WEAR</span><span class="marquee-dot">·</span>
+        <!-- Duplicate for seamless loop -->
+        <span class="marquee-item">FREE SHIPPING OVER ₹999</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">PREMIUM FABRICS</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">EASY 30-DAY RETURNS</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">NEW SS 2026 COLLECTION</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">SUSTAINABLE MATERIALS</span><span class="marquee-dot">·</span>
+        <span class="marquee-item">MADE FOR EVERYDAY WEAR</span><span class="marquee-dot">·</span>
+      </div>
+    </div>
 
-      <div class="category-grid">
-        <div class="card tshirt">
-          <h3>T-Shirts</h3>
-          <p>100% Cotton Essentials</p>
-          <img src="/images/tshirts.png" />
-          <span>Explore →</span>
+    <!-- ── CATEGORIES ── -->
+   <section class="section">
+
+  <div class="section-header">
+    <span class="section-title">Shop by Category</span>
+
+    <a href="/user/shop" class="section-link">
+      View all →
+    </a>
+  </div>
+
+  <div class="cat-grid">
+
+    <a
+      href="/user/shop?search=&sort=&minPrice=&maxPrice=&category=6a0319106e95d204811a5784&page=1"
+      class="cat-card cat-card--large cat-card--warm"
+    >
+      <div class="cat-info">
+        <span class="cat-eyebrow">ESSENTIALS</span>
+
+        <div class="cat-name">
+          T-Shirts
         </div>
 
-        <div class="card jeans">
-          <h3>Jeans</h3>
-          <p>Timeless Cuts & Washes</p>
-          <img src="/images/jeans.png" />
-          <span>Explore →</span>
-        </div>
-
-        <div class="card hoodies">
-          <h3>Hoodies</h3>
-          <p>Cozy Everyday Layers</p>
-          <img src="/images/hoodies.png" />
-          <span>Explore →</span>
+        <div class="cat-sub">
+          Clean basics for daily rotation
         </div>
       </div>
-    </section>
-     <script src="/js/user/logout.js"></script>
 
-  </body>
+      <img
+        src="/images/tshirts.png"
+        alt="T-Shirts"
+        class="cat-img"
+      />
+    </a>
+
+
+    <div class="cat-stack">
+
+      <a
+  href="/user/shop?search=&sort=&minPrice=&maxPrice=&category=6a0319066e95d204811a577c&page=1"
+  class="cat-card cat-card--cool"
+>
+        <div class="cat-info">
+          <span class="cat-eyebrow">DENIM</span>
+
+          <div class="cat-name">
+            Jeans
+          </div>
+        </div>
+
+        <img
+          src="/images/jeans.png"
+          alt="Jeans"
+          class="cat-img"
+        />
+      </a>
+
+
+      <a
+  href="/user/shop?search=&sort=&minPrice=&maxPrice=&category=6a0319426e95d204811a578e&page=1"
+  class="cat-card cat-card--muted"
+>
+        <div class="cat-info">
+          <span class="cat-eyebrow">LAYERS</span>
+
+          <div class="cat-name">
+            Hoodies
+          </div>
+        </div>
+
+        <img
+          src="/images/hoodies.png"
+          alt="Hoodies"
+          class="cat-img"
+        />
+      </a>
+
+    </div>
+
+
+    <a
+      href="/user/shop"
+      class="cat-card cat-card--large cat-card--sage"
+    >
+      <div class="cat-info">
+        <span class="cat-eyebrow">ALL STYLES</span>
+
+        <div class="cat-name">
+          Full<br>Collection
+        </div>
+
+        <div class="cat-sub" style="margin-top:14px;">
+          Browse everything →
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+</section>
+
+    <!-- ── FEATURED PRODUCTS ── -->
+  
+
+    <!-- ── FEATURES ── -->
+    <section class="features">
+
+      <div class="feat">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <h3>Premium Materials</h3>
+        <p>Carefully selected fabrics with elevated comfort and lasting durability.</p>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+          </svg>
+        </div>
+        <h3>Easy Returns</h3>
+        <p>Smooth 30-day returns and hassle-free exchanges on every order.</p>
+      </div>
+
+      <div class="feat">
+        <div class="feat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="1" y="3" width="15" height="13"/>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/>
+            <circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <h3>Fast Shipping</h3>
+        <p>Reliable delivery across India in 2–4 business days.</p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <%- include('../partials/user-scripts') %>
+
+</body>
 </html>

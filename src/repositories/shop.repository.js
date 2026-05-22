@@ -172,6 +172,7 @@ export const findProductDetail = async (productId) => {
   return product;
 };
 
+
 export const findRelatedProducts = async (categoryId, currentProductId) => {
   return await Product.aggregate([
     {
