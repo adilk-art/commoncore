@@ -35,7 +35,7 @@ export const getAllProductsService = async (page, search,sort) => {
   const filter = search
     ? { name: { $regex:search, $options: "i" } }
     : {};
-  const sortOrder=sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 }
+  const sortOrder=sort === "oldest" ? { isActive: 1 } : { createdAt: -1 }
 
   const products = await getAllProducts(limit, skip, filter,sortOrder);
   const productCount = await countProducts(filter);

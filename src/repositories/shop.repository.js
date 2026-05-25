@@ -113,7 +113,13 @@ export const getShopProducts = async (
     },
 
     {
-      $unwind: "$categoryId",
+  $unwind: "$categoryId",
+    },
+
+    {
+      $match: {
+        "categoryId.isActive": true,
+      },
     },
 
     {

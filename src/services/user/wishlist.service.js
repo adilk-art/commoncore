@@ -41,7 +41,9 @@ export const getWishlistService = async (userId) => {
     variant && variant.isActive;
 
   const unavailable =
-    !product.isActive || !hasActiveVariant;
+  !product.isActive ||
+  !product.categoryId?.isActive ||
+  !hasActiveVariant;
 
   wishlistItems.push({
     product,

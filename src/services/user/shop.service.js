@@ -108,14 +108,30 @@ export const getProductDetailService = async ({ productId, userId }) => {
   }
 
   const product = await findProductDetail(productId);
-  if (!product || !product.isActive) {
-    throw new Error("Product unavailable");
-  }
+  if (
+  !product ||
+  !product.isActive ||
+  !product.categoryId?.isActive
+) {
+
+  const error =
+    new Error("Product unavailable");
+
+  error.statusCode = 404;
+
+  throw error;
+}
 
   const activeVariants = product.variants.filter((item) => item.isActive);
   if (!activeVariants.length) {
-    throw new Error("Product unavailable");
-  }
+
+  const error =
+    new Error("Product unavailable");
+
+  error.statusCode = 404;
+
+  throw error;
+}
 
   let selectedVariant = activeVariants.find((v) => v.isDefault);    //default variant selection
   if (!selectedVariant) {

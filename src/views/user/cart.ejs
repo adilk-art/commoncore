@@ -41,19 +41,30 @@
               <article class="cart-item <%= unavailable ? 'cart-item-disabled' : '' %>">
 
                 <!-- IMAGE -->
-                <div class="cart-item-image-wrap">
+                <% if(!unavailable){ %>
 
-                  <img
-                    src="<%= item.variant.images?.[0]?.url || '/images/no-image.png' %>"
-                    class="cart-item-image"
-                    alt="<%= item.product.name %>"
+                  <a
+                    href="/user/product/<%= item.product._id %>"
+                    class="cart-item-image-wrap"
                   >
+                    <img
+                      src="<%= item.variant.images?.[0]?.url || '/images/no-image.png' %>"
+                      class="cart-item-image"
+                      alt="<%= item.product.name %>"
+                    >
+                  </a>
 
-                  <!-- <% if(unavailable){ %>
-                    <span class="cart-item-badge"><%= item.message %></span>
-                  <% } %> -->
+                  <% } else { %>
 
-                </div>
+                  <div class="cart-item-image-wrap">
+                    <img
+                      src="<%= item.variant.images?.[0]?.url || '/images/no-image.png' %>"
+                      class="cart-item-image"
+                      alt="<%= item.product.name %>"
+                    >
+                  </div>
+
+                  <% } %>
 
                 <!-- CONTENT -->
                 <div class="cart-item-content">

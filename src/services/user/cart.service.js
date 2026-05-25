@@ -135,9 +135,11 @@ export const getCartService = async (userId) => {
     path: "items.variantId",
     populate: {
       path: "productId",
+      populate: {
+        path: "categoryId",
+      },
     },
   });
-
   let subtotal = 0;
   let invalid = false;
 
@@ -153,8 +155,12 @@ export const getCartService = async (userId) => {
       status = "removed";
       message = "Unavailable";
     }
+    else if (!product.categoryId?.isActive) {
+    status = "blocked";
+    message = "Category unavailable";
+  }
 
-    else if (product.isBlocked) {
+    else if (!product.isActive) {
       status = "blocked";
       message = "Product unavailable";
     }
