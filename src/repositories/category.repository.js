@@ -14,21 +14,62 @@ export const getAllCategories = async () => {
   return await Category.find().sort({ createdAt: -1 });
 };
 
-export const getPaginatedCategories = async (filter,skip,limit,sortOrder) => {
-  return await Category.find(filter).sort({ createdAt: sortOrder }).skip(skip).limit(limit);
+export const getAllActiveCategories = async () => {
+  return await Category.find({ isActive: true }).sort({ createdAt: -1 });
 };
 
-export const getCategoryCount = async (filter={}) => {
+export const getPaginatedCategories = async (
+  filter,
+  skip,
+  limit,
+  sortOrder,
+) => {
+  return await Category.aggregate([
+    { $match: filter },
+
+    {
+      $lookup: {
+        from: "products",
+        localField: "_id",
+        foreignField: "categoryId",
+        as: "products",
+      },
+    },
+
+    {
+      $addFields: {
+        totalProducts: { $size: "$products" },
+        activeProducts: {
+          $size: {
+            $filter: {
+              input: "$products",
+              as: "product",
+              cond: { $eq: ["$$product.isActive", true] },
+            },
+          },
+        },
+      },
+    },
+
+    { $sort: { createdAt: sortOrder } },
+    { $skip: skip },
+    { $limit: limit },
+  ]);
+};
+
+export const getCategoryCount = async (filter = {}) => {
   return await Category.countDocuments(filter);
 };
 
 export const updateCategoryById = async (id, data) => {
+  return Category.findByIdAndUpdate(id, data, { returnDocument: "after" });
+};
 
-  return Category.findByIdAndUpdate(
-    id,
-    data,
-    { returnDocument: "after" }
-  );
+export const getCategoriesExceptCurrent = async (id, name) => {
+  return await Category.findOne({
+    _id: { $ne: id },
+    name: new RegExp(`^${name}$`, "i"),
+  });
 };
 export const getTotalCategoryCount = async () => {
   return await Category.countDocuments();

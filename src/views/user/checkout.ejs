@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <title>
+    Checkout — Stitch
+  </title>
+
+  <%- include('../partials/user-head') %>
+
+  <link
+    rel="stylesheet"
+    href="/css/user/checkout.css"
+  >
+
+</head>
+
+<body>
+
+<%- include('../partials/user-header') %>
+
+<main class="checkout-page">
+
+  <div class="checkout-layout">
+
+    <!-- LEFT -->
+
+    <section class="checkout-main">
+
+      <!-- ADDRESS -->
+
+      <section class="checkout-section">
+
+        <div class="checkout-section-head">
+
+          <div class="checkout-step">
+            1
+          </div>
+
+          <h2 class="text-section-title">
+            Shipping Address
+          </h2>
+
+        </div>
+
+        <div class="checkout-address-grid">
+
+          <% addresses.forEach(address => { %>
+
+            <label
+              class="checkout-address <%= address.isDefault ? 'active' : '' %>"
+            >
+
+              <input
+                type="radio"
+                name="address"
+                value="<%= address._id %>"
+                class="hidden address-radio"
+                <%= address.isDefault ? 'checked' : '' %>
+              >
+
+              <% if(address.isDefault){ %>
+
+                <span class="address-badge">
+                  Default
+                </span>
+
+              <% } %>
+
+              <h3 class="address-name">
+                <%= address.fullName %>
+              </h3>
+
+              <p class="address-text">
+                <%= address.line1 %>
+              </p>
+
+              <% if(address.line2){ %>
+
+                <p class="address-text">
+                  <%= address.line2 %>
+                </p>
+
+              <% } %>
+
+              <p class="address-text">
+                <%= address.city %>,
+                <%= address.state %>
+              </p>
+
+              <p class="address-text">
+                <%= address.pincode %>
+              </p>
+
+              <p class="address-phone">
+                +91 <%= address.phone %>
+              </p>
+
+            </label>
+
+          <% }) %>
+
+          <a
+            href="/user/address"
+            class="add-address-card"
+          >
+
+            <span>
+              + Add Address
+            </span>
+
+          </a>
+
+        </div>
+
+      </section>
+
+      <!-- PAYMENT -->
+
+      <section class="checkout-section">
+
+        <div class="checkout-section-head">
+
+          <div class="checkout-step">
+            2
+          </div>
+
+          <h2 class="text-section-title">
+            Payment Method
+          </h2>
+
+        </div>
+
+        <div class="payment-options">
+
+          <label class="payment-option active">
+
+            <input
+              type="radio"
+              name="payment"
+              value="razorpay"
+              checked
+              class="hidden payment-radio"
+            >
+
+            <div>
+
+              <h3 class="payment-title">
+                Razorpay
+              </h3>
+
+              <p class="text-muted">
+                UPI, Cards, Wallets
+              </p>
+
+            </div>
+
+          </label>
+
+          <label class="payment-option">
+
+            <input
+              type="radio"
+              name="payment"
+              value="cod"
+              class="hidden payment-radio"
+            >
+
+            <div>
+
+              <h3 class="payment-title">
+                Cash on Delivery
+              </h3>
+
+              <p class="text-muted">
+                Pay after delivery
+              </p>
+
+            </div>
+
+          </label>
+
+        </div>
+
+      </section>
+
+    </section>
+
+    <!-- RIGHT -->
+
+    <aside class="checkout-summary card card-md">
+
+      <h2 class="text-section-title">
+        Order Summary
+      </h2>
+
+      <div class="summary-products">
+
+        <% cart.items.forEach(item => { %>
+
+          <div class="summary-product">
+
+            <img
+              src="<%= item.variant.images?.[0]?.url %>"
+              alt=""
+            >
+
+            <div class="summary-product-info">
+
+              <h4>
+                <%= item.product.name %>
+              </h4>
+
+              <p>
+                Qty:
+                <%= item.quantity %>
+              </p>
+
+            </div>
+
+            <span>
+              ₹<%= (
+                item.variant.price *
+                item.quantity
+              ).toLocaleString('en-IN') %>
+            </span>
+
+          </div>
+
+        <% }) %>
+
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-row">
+
+        <span>
+          Subtotal
+        </span>
+
+        <span>
+          ₹<%= cart.subtotal.toLocaleString('en-IN') %>
+        </span>
+
+      </div>
+
+      <div class="summary-row">
+
+        <span>
+          Shipping
+        </span>
+
+        <span>
+          <%= shipping === 0 ? 'Free' : `₹${shipping}` %>
+        </span>
+
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-row summary-total">
+
+        <span>
+          Total
+        </span>
+
+        <span>
+          ₹<%= total.toLocaleString('en-IN') %>
+        </span>
+
+      </div>
+
+      <button
+        class="primary-btn place-order-btn"
+        id="placeOrderBtn"
+      >
+        Place Order
+      </button>
+
+    </aside>
+
+  </div>
+
+</main>
+
+<%- include('../partials/user-scripts') %>
+
+<script src="/js/user/checkout.js"></script>
+
+</body>
+</html>

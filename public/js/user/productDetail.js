@@ -1,0 +1,447 @@
+(function () {
+  const variants = window.__VARIANTS__ || [];
+  let selectedId = window.__SELECTED_ID__ || "";
+
+  const mainImage = document.getElementById("mainImage");
+  const zoomContainer = document.getElementById("zoomContainer");
+  const thumbsCol = document.getElementById("thumbsCol");
+
+  const colorLabel = document.getElementById("colorLabel");
+  const sizeLabel = document.getElementById("sizeLabel");
+  const sizesWrap = document.getElementById("sizesWrap");
+  const displayPrice = document.getElementById("displayPrice");
+  const stockRow = document.getElementById("stockRow");
+
+  const qtyInput = document.getElementById("qtyInput");
+  const plusBtn = document.getElementById("plusBtn");
+  const minusBtn = document.getElementById("minusBtn");
+  const errorBox = document.getElementById("errorBox");
+
+  const cartVariantId = document.getElementById("cartVariantId");
+  const cartQty = document.getElementById("cartQty");
+  const cartBtn = document.getElementById("cartBtn");
+
+  const buyVariantId = document.getElementById("buyVariantId");
+  const buyQty = document.getElementById("buyQty");
+  const buyBtn = document.getElementById("buyBtn");
+
+  const MAX_QTY = 5;
+
+  function getVariant(id) {
+    return variants.find((v) => String(v._id) === String(id)) || null;
+  }
+
+  function getSelectedVariant() {
+    return getVariant(selectedId);
+  }
+
+  function showError(msg) {
+    if (!errorBox) return;
+    errorBox.textContent = msg;
+    clearTimeout(errorBox._t);
+    errorBox._t = setTimeout(() => {
+      errorBox.textContent = "";
+    }, 2500);
+  }
+
+  function fmt(n) {
+    return "₹" + Number(n).toLocaleString("en-IN");
+  }
+
+  function setMainImage(url) {
+    if (!url || !mainImage) return;
+    mainImage.src = url;
+  }
+
+  function buildThumbs(imageUrls) {
+    if (!thumbsCol) return;
+    thumbsCol.innerHTML = imageUrls
+      .map(
+        (url, i) => `
+      <button type="button"
+        class="pd-thumb ${i === 0 ? "pd-thumb--active" : ""}"
+        data-image="${url}">
+        <img src="${url}" alt="" />
+      </button>`,
+      )
+      .join("");
+    bindThumbs();
+  }
+
+  function bindThumbs() {
+    thumbsCol.querySelectorAll(".pd-thumb").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        thumbsCol
+          .querySelectorAll(".pd-thumb")
+          .forEach((b) => b.classList.remove("pd-thumb--active"));
+        btn.classList.add("pd-thumb--active");
+        setMainImage(btn.dataset.image);
+      });
+    });
+  }
+
+  /* ── Zoom ── */
+
+  zoomContainer?.addEventListener("mousemove", (e) => {
+    const r = zoomContainer.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    mainImage.style.transformOrigin = `${x}% ${y}%`;
+  });
+
+  zoomContainer?.addEventListener("mouseleave", () => {
+    mainImage.style.transformOrigin = "center center";
+  });
+
+  /* ── Quantity ── */
+
+  function syncQty() {
+    let v = parseInt(qtyInput.value, 10);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > MAX_QTY) {
+      v = MAX_QTY;
+      showError(`Max ${MAX_QTY} per order`);
+    }
+
+    const stock = getSelectedVariant()?.stock ?? 0;
+    if (v > stock) {
+      v = Math.max(1, stock);
+      showError(`Only ${stock} in stock`);
+    }
+
+    qtyInput.value = v;
+    if (cartQty) cartQty.value = v;
+    if (buyQty) buyQty.value = v;
+
+    minusBtn.disabled = v <= 1;
+    plusBtn.disabled = v >= Math.min(MAX_QTY, stock);
+  }
+
+  plusBtn?.addEventListener("click", () => {
+    const stock = getSelectedVariant()?.stock ?? 0;
+    if (parseInt(qtyInput.value) >= Math.min(MAX_QTY, stock)) {
+      showError(`Max ${MAX_QTY} per order`);
+      return;
+    }
+    qtyInput.value = parseInt(qtyInput.value) + 1;
+    syncQty();
+  });
+
+  minusBtn?.addEventListener("click", () => {
+    if (parseInt(qtyInput.value) <= 1) return;
+    qtyInput.value = parseInt(qtyInput.value) - 1;
+    syncQty();
+  });
+
+  function applyVariant(variant) {
+    if (!variant) return;
+    selectedId = String(variant._id);
+
+    if (displayPrice) displayPrice.textContent = fmt(variant.price);
+
+    /* stock badge */
+    if (stockRow) {
+      let html;
+      if (variant.stock > 10) {
+        html = `<span class="pd-stock pd-stock--green">In Stock</span>`;
+      } else if (variant.stock > 0) {
+        html = `<span class="pd-stock pd-stock--orange">Only ${variant.stock} left</span>`;
+      } else {
+        html = `<span class="pd-stock pd-stock--red">Out of Stock</span>`;
+      }
+      stockRow.innerHTML = html;
+    }
+
+    /* images */
+    if (variant.images && variant.images.length) {
+      buildThumbs(variant.images);
+      setMainImage(variant.images[0]);
+    }
+
+    /* hidden inputs */
+    if (cartVariantId) cartVariantId.value = variant._id;
+    if (buyVariantId) buyVariantId.value = variant._id;
+
+    /* buttons */
+    const oos = variant.stock <= 0;
+    if (cartBtn) cartBtn.disabled = oos;
+    if (buyBtn) buyBtn.disabled = oos;
+
+    /* reset qty */
+    qtyInput.value = 1;
+    syncQty();
+  }
+
+  document.querySelectorAll(".pd-color").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const code = btn.dataset.colorCode;
+      const name = btn.dataset.colorName;
+
+      document
+        .querySelectorAll(".pd-color")
+        .forEach((b) => b.classList.remove("pd-color--active"));
+      btn.classList.add("pd-color--active");
+
+      if (colorLabel) colorLabel.textContent = name;
+
+      const colorVariants = variants.filter((v) => v.colorCode === code);
+      buildSizes(colorVariants);
+
+      const first = colorVariants.find((v) => v.stock > 0) || colorVariants[0];
+      if (first) applyVariant(first);
+    });
+  });
+
+  function buildSizes(colorVariants) {
+    if (!sizesWrap) return;
+    sizesWrap.innerHTML = colorVariants
+      .map(
+        (v) => `
+      <button type="button"
+        class="pd-size ${String(v._id) === selectedId ? "pd-size--active" : ""} ${v.stock <= 0 ? "pd-size--disabled" : ""}"
+        data-variant-id="${v._id}">
+        ${v.size}
+      </button>`,
+      )
+      .join("");
+    bindSizes();
+  }
+
+  function bindSizes() {
+    sizesWrap.querySelectorAll(".pd-size").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.classList.contains("pd-size--disabled")) return;
+        sizesWrap
+          .querySelectorAll(".pd-size")
+          .forEach((b) => b.classList.remove("pd-size--active"));
+        btn.classList.add("pd-size--active");
+
+        const v = getVariant(btn.dataset.variantId);
+        if (sizeLabel) sizeLabel.textContent = v?.size || "";
+        applyVariant(v);
+      });
+    });
+  }
+
+  bindSizes();
+  bindThumbs();
+  syncQty();
+
+  const cartForm = document.getElementById("cartForm");
+
+  cartForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    try {
+      const variantId = cartVariantId.value;
+      const quantity = Number(cartQty.value);
+
+      cartBtn.disabled = true;
+
+      const originalText = cartBtn.textContent;
+      cartBtn.textContent = "Adding...";
+
+      const response = await axios.post("/user/cart/add", {
+        variantId,
+        quantity,
+      });
+
+      if (response.data.success) {
+        // update header cart count
+        const cartBadge = document.querySelector(".cart-btn .cart-badge");
+
+        if (cartBadge && response.data.cartCount !== undefined) {
+          cartBadge.textContent = response.data.cartCount;
+        }
+
+        if (errorBox) {
+          errorBox.textContent = "";
+        }
+
+        if (window.userToast) {
+          userToast(response.data.message);
+        }
+
+        cartBtn.textContent = "Added ✓";
+
+        setTimeout(() => {
+          cartBtn.textContent = originalText;
+          cartBtn.disabled = false;
+        }, 1200);
+      }
+    } catch (error) {
+      const status = error?.response?.status;
+
+      const message = error?.response?.data?.message || "Failed to add to cart";
+
+      if (status === 401) {
+        userToast(message || "Please login first");
+
+        cartBtn.disabled = false;
+        cartBtn.textContent = "Add to Cart";
+
+        return;
+      }
+
+      if (errorBox) {
+        errorBox.textContent = message;
+      }
+
+      cartBtn.disabled = false;
+      cartBtn.textContent = "Add to Cart";
+    }
+  });
+
+  const wishlistForm = document.querySelector(".wishlist-form");
+
+  wishlistForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    try {
+      const formData = new FormData(wishlistForm);
+
+      const button = wishlistForm.querySelector(".pd-wishlist-btn");
+      const svg = button.querySelector("svg");
+
+      const isActive = button.classList.contains("pd-wishlist-btn--active");
+
+      let response;
+
+      if (isActive) {
+        response = await axios.delete(
+          `/user/wishlist/${formData.get("productId")}`,
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          },
+        );
+
+        button.classList.remove("pd-wishlist-btn--active");
+
+        svg.setAttribute("fill", "none");
+      } else {
+        response = await axios.post(
+          "/user/wishlist/add",
+          {
+            productId: formData.get("productId"),
+          },
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          },
+        );
+
+        button.classList.add("pd-wishlist-btn--active");
+
+        svg.setAttribute("fill", "currentColor");
+      }
+
+      const wishlistCount = document.getElementById("wishlistCount");
+
+      if (wishlistCount && response.data.wishlistCount !== undefined) {
+        wishlistCount.textContent = response.data.wishlistCount;
+      }
+
+      userToast(response.data.message);
+    } catch (error) {
+      const message =
+        error?.response?.data?.message || "Failed to update wishlist";
+
+      userToast(message);
+    }
+  });
+
+  buyForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const variant = getSelectedVariant();
+
+    if (!variant || variant.stock <= 0) {
+      showError("Out of stock");
+      return;
+    }
+
+    const originalText = buyBtn.textContent;
+
+    try {
+      buyBtn.disabled = true;
+      buyBtn.textContent = "Processing...";
+
+      const response = await axios.post("/user/checkout/buy-now", {
+        variantId: buyVariantId.value,
+        quantity: Number(buyQty.value),
+      });
+
+      if (response.data.success) {
+        window.location.href = response.data.redirect;
+      }
+    } catch (error) {
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || "Something went wrong";
+
+      buyBtn.disabled = false;
+      buyBtn.textContent = originalText;
+
+      if (status === 401) {
+        userToast(message);
+        return;
+      }
+
+      showError(message);
+    }
+  });
+
+  const relatedWishlistForms = document.querySelectorAll(
+    ".related-wishlist-form",
+  );
+
+  relatedWishlistForms.forEach((form) => {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        const formData = new FormData(form);
+
+        const productId = formData.get("productId");
+
+        const button = form.querySelector(".pd-related-wish");
+
+        const svg = button.querySelector("svg");
+
+        const isActive = button.classList.contains("pd-related-wish--active");
+
+        let response;
+
+        if (isActive) {
+          response = await axios.delete(`/user/wishlist/${productId}`);
+
+          button.classList.remove("pd-related-wish--active");
+
+          svg.setAttribute("fill", "none");
+        } else {
+          response = await axios.post("/user/wishlist/add", { productId });
+
+          button.classList.add("pd-related-wish--active");
+
+          svg.setAttribute("fill", "currentColor");
+        }
+
+        const wishlistCount = document.getElementById("wishlistCount");
+
+        if (wishlistCount && response.data.wishlistCount !== undefined) {
+          wishlistCount.textContent = response.data.wishlistCount;
+        }
+
+        userToast(response.data.message);
+      } catch (error) {
+        const message =
+          error?.response?.data?.message || "Failed to update wishlist";
+
+        userToast(message);
+      }
+    });
+  });
+})();

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title> Shop-commoncore</title>
+    <%- include('../partials/user-head') %>
+
+  <link rel="stylesheet" href="/css/user/shop.css" />
+</head>
+<body>
+
+  <%- include('../partials/user-header') %>
+
+  <main class="shop-main">
+
+    <!-- Page title -->
+    <div class="shop-hero">
+      <p class="shop-hero__eyebrow">Collection</p>
+      <h1 class="shop-hero__title">All Products</h1>
+    </div>
+
+    <div class="cat-bar">
+      <a href="/user/shop?search=<%= search %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&page=1"
+         class="cat-pill <%= category === '' ? 'cat-pill--active' : '' %>">All</a>
+      <% categories.forEach(cat => { %>
+        <a href="/user/shop?search=<%= search %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&category=<%= cat._id %>&page=1"
+           class="cat-pill <%= category === String(cat._id) ? 'cat-pill--active' : '' %>"><%= cat.name %></a>
+      <% }) %>
+    </div>
+
+    <div class="toolbar-row">
+
+      <div class="toolbar-triggers">
+
+        <button class="trigger-btn" id="filterBtn" aria-expanded="false" aria-controls="filterPanel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="4" y1="6"  x2="20" y2="6"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+            <line x1="11" y1="18" x2="13" y2="18"/>
+          </svg>
+          <span class="trigger-label">Filter</span>
+          <span class="trigger-hint">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
+              <line x1="6" y1="4" x2="18" y2="4"/>
+              <path d="M6 8h8a4 4 0 0 1 0 8H6l8 8"/>
+            </svg>
+            
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <circle cx="7" cy="7" r="1"/>
+            </svg>
+          </span>
+          <% if (category || minPrice || maxPrice) { %><span class="trigger-dot"></span><% } %>
+        </button>
+
+        <button class="trigger-btn" id="sortBtn" aria-expanded="false" aria-controls="sortPanel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M11 5h10M11 9h7M11 13h4"/>
+            <path d="M3 17l3 3 3-3"/><line x1="6" y1="20" x2="6" y2="4"/>
+          </svg>
+          <span class="trigger-label">Sort</span>
+          <span class="trigger-hint">
+            <!-- low-high icon -->
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
+              <polyline points="18 15 12 9 6 15"/>
+            </svg>
+            <!-- A-Z icon: letters -->
+            <svg width="14" height="11" viewBox="0 0 28 16" fill="none" stroke="currentColor" stroke-width="2" opacity=".5">
+              <text x="0" y="13" font-size="13" font-family="sans-serif" fill="currentColor" stroke="none">Az</text>
+            </svg>
+          </span>
+          <% if (sort) { %><span class="trigger-dot"></span><% } %>
+        </button>
+        <% const hasFilters = category || minPrice || maxPrice; %>
+        <% if (hasFilters) { %>
+          <a
+            href="/user/shop?search=<%= search %>&sort=<%= sort %>&page=1"
+            class="clear-filter-btn"
+          >
+            Clear Filters
+          </a>
+        <% } %>
+
+
+      </div>
+
+      
+      <form class="search-form" action="/user/shop" method="GET" id="searchForm">
+        <input type="hidden" name="category" value="<%= category %>" />
+        <input type="hidden" name="sort"     value="<%= sort %>"     />
+        <input type="hidden" name="minPrice" value="<%= minPrice %>" />
+        <input type="hidden" name="maxPrice" value="<%= maxPrice %>" />
+        <input type="hidden" name="page"     value="1" />
+
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            class="input-field search-input"
+            type="text"
+            name="search"
+            value="<%= search %>"
+            placeholder="Search…"
+            autocomplete="off"
+            id="searchInput"
+          />
+          <% if (search) { %>
+            <a href="/user/shop?category=<%= category %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>" class="search-clear" aria-label="Clear">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </a>
+          <% } %>
+        </div>
+      </form>
+
+    </div><!-- /toolbar-row -->
+
+    
+    <div class="panels-row" id="panelsRow">
+
+      <!-- Filter panel -->
+      <div class="panel" id="filterPanel" hidden>
+        <form class="panel__form" action="/user/shop" method="GET">
+          <input type="hidden" name="search"  value="<%= search %>" />
+          <input type="hidden" name="sort"    value="<%= sort %>"   />
+          <input type="hidden" name="page"    value="1" />
+
+          <div class="panel__group">
+            <div class="price-range-wrap">
+              <span class="price-sym">₹</span>
+              <input class="input-field price-input" type="number" name="minPrice" value="<%= minPrice %>" placeholder="Min" min="0" />
+              <span class="price-sep">–</span>
+              <span class="price-sym">₹</span>
+              <input class="input-field price-input" type="number" name="maxPrice" value="<%= maxPrice %>" placeholder="Max" min="0" />
+            </div>
+          </div>
+
+          <div class="panel__group">
+            <div class="cat-radio-wrap">
+              <label class="cat-radio <%= category === '' ? 'cat-radio--active' : '' %>">
+                <input type="radio" name="category" value="" <%= category === '' ? 'checked' : '' %> />
+                All
+              </label>
+              <% categories.forEach(cat => { %>
+                <label class="cat-radio <%= category === String(cat._id) ? 'cat-radio--active' : '' %>">
+                  <input type="radio" name="category" value="<%= cat._id %>" <%= category === String(cat._id) ? 'checked' : '' %> />
+                  <%= cat.name %>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <div class="panel__actions">
+            <button type="submit" class="primary-btn panel-apply-btn">Apply</button>
+            <% if (category || minPrice || maxPrice) { %>
+              <a href="/user/shop?search=<%= search %>&sort=<%= sort %>" class="clear-link">Clear</a>
+            <% } %>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sort panel -->
+      <div class="panel" id="sortPanel" hidden>
+        <form class="panel__form" action="/user/shop" method="GET" id="sortForm">
+          <input type="hidden" name="search"   value="<%= search %>"   />
+          <input type="hidden" name="category" value="<%= category %>" />
+          <input type="hidden" name="minPrice" value="<%= minPrice %>" />
+          <input type="hidden" name="maxPrice" value="<%= maxPrice %>" />
+          <input type="hidden" name="page"     value="1" />
+          <input type="hidden" name="sort"     value="<%= sort %>"     id="sortInput" />
+
+          <div class="sort-option-list">
+            <% const sorts = [
+              { val: '',     label: 'Newest first'       },
+              { val: 'low',  label: 'Price: Low → High'  },
+              { val: 'high', label: 'Price: High → Low'  },
+              { val: 'az',   label: 'Name: A → Z'        },
+              { val: 'za',   label: 'Name: Z → A'        },
+            ] %>
+            <% sorts.forEach(s => { %>
+              <button type="button"
+                class="sort-option <%= sort === s.val ? 'sort-option--active' : '' %>"
+                data-val="<%= s.val %>">
+                <%= s.label %>
+                <% if (sort === s.val) { %>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                <% } %>
+              </button>
+            <% }) %>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- /panels-row -->
+
+    <!-- Divider with item count -->
+    <div class="shop-divider">
+      <span class="shop-divider__count">
+        <%= products.length %><% if (totalPages > 1) { %> of ~<%= totalPages * 8 %><% } %> items
+      </span>
+    </div>
+
+    <!-- Product Grid -->
+    <section class="product-section">
+
+      <% if (products.length === 0) { %>
+        <div class="empty-state">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <p class="empty-state__title">No products found</p>
+          <p class="empty-state__sub">Try adjusting your filters or search</p>
+          <a href="/user/shop" class="primary-btn">Clear all</a>
+        </div>
+      <% } else { %>
+
+        <div class="product-grid">
+          <% products.forEach(product => { %>
+            <div class="product-card">
+
+              <a href="/user/product/<%= product._id %>" class="product-card__link">
+                <div class="product-card__img-wrap">
+                  <% if (product.defaultImage) { %>
+                    <img src="<%= product.defaultImage %>" alt="<%= product.name %>" class="product-card__img" loading="lazy" />
+                  <% } else { %>
+                    <div class="product-card__img-placeholder">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="product-card__info">
+                  <p class="product-card__category"><%= product.categoryId.name %></p>
+                  <h3 class="product-card__name"><%= product.name %></h3>
+                  <div class="product-card__meta">
+                    <span class="product-card__price">₹<%= product.basePrice.toLocaleString('en-IN') %></span>
+                    <span class="product-card__vars"><%= product.activeVariants.length %> var.</span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Cart 3/4 + Wishlist 1/4 -->
+              <div class="card-actions">
+                <form class="cart-form">
+
+                <input
+                  type="hidden"
+                  name="productId"
+                  value="<%= product._id %>"
+                />
+
+                <button
+                  type="submit"
+                  class="cart-btn open-cart-modal"
+                >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/>
+                      <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                    Add to cart
+                  </button>
+                </form>
+                <form class="wish-form">
+                <input
+                  type="hidden"
+                  name="productId"
+                  value="<%= product._id %>"
+                />
+
+                <button
+                  type="submit"
+                  class="wish-btn <%= product.isWishlisted ? 'wish-btn--active' : '' %>"
+                  aria-label="Wishlist"
+                >
+
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="<%= product.isWishlisted ? 'currentColor' : 'none' %>"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+
+                </button>
+              </form>
+              </div>
+
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+          <nav class="pagination">
+            <% if (currentPage > 1) { %>
+              <a href="/user/shop?search=<%= search %>&category=<%= category %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&page=<%= currentPage - 1 %>" class="page-btn page-btn--arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              </a>
+            <% } %>
+            <%
+              const delta = 2, pages = [];
+              for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) pages.push(i);
+              }
+              let prev = null;
+              pages.forEach(p => {
+                if (prev !== null && p - prev > 1) {
+            %><span class="page-ellipsis">…</span><%
+                }
+            %><a href="/user/shop?search=<%= search %>&category=<%= category %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&page=<%= p %>" class="page-btn <%= p === currentPage ? 'page-btn--active' : '' %>"><%= p %></a><%
+                prev = p;
+              });
+            %>
+            <% if (currentPage < totalPages) { %>
+              <a href="/user/shop?search=<%= search %>&category=<%= category %>&sort=<%= sort %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&page=<%= currentPage + 1 %>" class="page-btn page-btn--arrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </a>
+            <% } %>
+          </nav>
+        <% } %>
+
+      <% } %>
+    </section>
+
+  </main>
+
+<!--  VARIANT SELECTION MODAL -->
+
+
+<div
+  class="variant-modal-backdrop"
+  id="cartVariantModal"
+>
+
+  <div class="variant-modal">
+
+    <button
+      class="variant-close"
+      id="closeCartVariantModal"
+      type="button"
+    >
+      ×
+    </button>
+
+    <div class="variant-layout">
+
+      <!-- LEFT -->
+
+      <div class="variant-preview">
+
+        <div class="variant-preview-image-wrap">
+
+          <img
+            src=""
+            alt=""
+            id="variantPreviewImage"
+            class="variant-preview-image"
+          />
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+
+      <div class="variant-details">
+
+        <p class="variant-small-label">
+          Product
+        </p>
+
+        <h2
+          class="variant-product-name"
+          id="variantProductName"
+        >
+          Product Name
+        </h2>
+
+        <div class="variant-price">
+          ₹<span id="variantPreviewPrice">0</span>
+        </div>
+
+        <!-- COLORS -->
+
+        <div class="variant-section">
+
+          <p class="variant-label">
+            Color
+          </p>
+
+          <div
+            class="variant-color-list"
+            id="variantColorList"
+          >
+          </div>
+
+        </div>
+
+        <!-- SIZES -->
+
+        <div class="variant-section">
+
+          <p class="variant-label">
+            Size
+          </p>
+
+          <div
+            class="variant-size-list"
+            id="variantSizeList"
+          >
+          </div>
+
+        </div>
+
+        <p
+          class="variant-stock"
+          id="variantStockText"
+        >
+        </p>
+
+        <p
+          class="variant-error"
+          id="cartVariantError"
+        >
+        </p>
+
+        <button
+          class="variant-confirm-btn"
+          id="confirmCartVariant"
+          type="button"
+        >
+          Add To Cart
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+  <%- include('../partials/user-scripts') %>
+<script src="/js/user/shop.js"></script>
+
+</body>
+</html>

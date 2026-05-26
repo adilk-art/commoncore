@@ -1,0 +1,136 @@
+.sp-page {
+  min-height: calc(100vh - 80px);
+  padding: 80px 24px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-card {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  background: #f7f6f2;
+  border-radius: 34px;
+  padding: 72px 64px;
+  overflow: hidden;
+}
+
+.sp-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  color: #999;
+  margin-bottom: 26px;
+}
+
+.sp-code {
+  font-size: 120px;
+  line-height: .9;
+  letter-spacing: -.08em;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 20px;
+}
+
+.sp-title {
+  font-size: 54px;
+  line-height: .95;
+  letter-spacing: -.06em;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 22px;
+}
+
+.sp-body {
+  max-width: 440px;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #777;
+  margin-bottom: 42px;
+}
+
+.sp-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.sp-btn {
+  text-decoration: none;
+  transition: .2s ease;
+}
+
+.sp-btn--dark {
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sp-btn--dark:hover {
+  background: #2d2d2d;
+}
+
+.sp-btn--ghost {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+}
+
+.sp-btn--ghost:hover {
+  opacity: .6;
+}
+
+@media (max-width: 768px) {
+
+  .sp-card {
+    padding: 52px 34px;
+    border-radius: 28px;
+  }
+
+  .sp-code {
+    font-size: 90px;
+  }
+
+  .sp-title {
+    font-size: 40px;
+  }
+
+  .sp-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .sp-page {
+    padding: 20px 16px 50px;
+  }
+
+  .sp-card {
+    padding: 42px 24px;
+  }
+
+  .sp-code {
+    font-size: 72px;
+  }
+
+  .sp-title {
+    font-size: 32px;
+  }
+
+  .sp-body {
+    font-size: 13px;
+  }
+
+}

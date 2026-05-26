@@ -37,3 +37,12 @@ export const blockUserToggle=async(userId)=>{
     user.isBlocked=!user.isBlocked;
     return await user.save()
 }
+export const countUsers=async()=>{
+  return User.countDocuments()
+}
+export const countActiveUsers=async()=>{
+  return User.countDocuments({isBlocked:false});
+}
+export const countBlockedUsers=async()=>{
+  return User.countDocuments({isBlocked:true});
+}

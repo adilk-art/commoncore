@@ -23,57 +23,100 @@
 
     <!-- MAIN -->
     <div class="main">
-
+      
+      
       <div class="content">
-         <p class="breadcrumb">
+          <div class="page-top">
+          
+          <div>
+            <p class="breadcrumb">
               Admin Dashboard > Users
             </p>
-        <h2 class="page-title">User Management</h2>
-          <form method="GET" action="/admin/users" class="search-box">  <!--//search -->
-            <input 
-                type="text" 
-                name="search" 
-                placeholder="Search by name..."
-                value="<%= search %>"
-            >
-            <button type="submit">Search</button>
-            <%if(search){%>
-            <a href="/admin/users" class="clear-btn">Clear</a>
+            <h2 class="page-title">User Management</h2>
+          </div>
+        </div>
 
-            <%}%>
-         </form>
+         <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Total Users</p>
+              <i class="fa-solid fa-users"></i>
+            </div>
+
+            <h3><%=totalUsers%></h3>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Active Users</p>
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+
+            <h3><%=activeUsers%></h3>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <p>Blocked Users</p>
+              <i class="fa-solid fa-user-slash"></i>
+            </div>
+
+            <h3><%=blockedUsers%></h3>
+          </div>
 
 
+        </div>
+            
+            
+            
+            
+            
+            <div class="table-container">
+              <div class="table-header">
+                <h3>Users</h3>
 
-<form method="GET" action="/admin/users" class="sort-toggle">
-
-  <input type="hidden" name="search" value="<%= search %>">
-  <input type="hidden" name="page" value="<%= currentPage %>">
-
-  <button
+  <form method="GET" action="/admin/users" class="sort-toggle">
+    
+    <input type="hidden" name="search" value="<%= search %>">
+    <input type="hidden" name="page" value="<%= currentPage %>">
+    
+    <button
     type="submit"
     name="sort"
     value="latest"
     class="sort-btn <%= sort === 'latest' ? 'active' : '' %>"
-  >
+    >
     <i class="fa-solid fa-arrow-down-wide-short"></i>
     Latest
   </button>
-
+  
   <button
-    type="submit"
-    name="sort"
-    value="oldest"
-    class="sort-btn <%= sort === 'oldest' ? 'active' : '' %>"
+  type="submit"
+  name="sort"
+  value="oldest"
+  class="sort-btn <%= sort === 'oldest' ? 'active' : '' %>"
   >
-    <i class="fa-solid fa-arrow-up-wide-short"></i>
-    Oldest
-  </button>
+  <i class="fa-solid fa-arrow-up-wide-short"></i>
+  Oldest
+</button>
 
 </form>
-
-
- <div class="table-container">
+   <form method="GET" action="/admin/users" class="search-box">  <!--//search -->
+     <input 
+         type="text" 
+         name="search" 
+         placeholder="Search by name..."
+         value="<%= search %>"
+     >
+     <button type="submit" class="search-btn">
+                <i class="fa fa-search"></i>
+              </button>
+     <%if(search){%>
+     <a href="/admin/users" class="clear-btn">Clear</a>
+   
+     <%}%>
+   </form>
+   </div>
 
  <table>
   <thead>

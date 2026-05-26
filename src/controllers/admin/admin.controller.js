@@ -2,6 +2,7 @@ import { adminLoginService } from "../../services/admin/auth.service.js";
 import {
   getAllUsersService,
   toggleUserBlockService,
+  getUsersStatsService
 } from "../../services/admin/admin.service.js";
 import User from "../../models/user.model.js";
 import Admins from "../../models/admin.model.js";
@@ -50,10 +51,17 @@ export const loadUsersPage = async (req, res) => {
     sort,
   });
 
+  const stats= await getUsersStatsService()
+
+
   res.render("admin/users.ejs", {
     ...result,
     search,
     sort,
+    totalUsers:stats.totalUsers,
+    activeUsers:stats.activeUsers,
+    blockedUsers:stats.blockedUsers
+
   });
 };
 

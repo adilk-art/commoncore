@@ -25,10 +25,13 @@ import {
   updateEmailService,
   changePasswordService,
 } from "../../services/user/user.service.js";
+import {getFeaturedProductsService} from "../../services/user/home.service.js"
 import generateOtp from "../../utils/generateOtp.js";
 
-const loadHomePage = (req, res, next) => {
+const loadHomePage = async (req, res, next) => {
   try {
+  
+ 
     res.render("user/home.ejs");
   } catch (error) {
     next(error);

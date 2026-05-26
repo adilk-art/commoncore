@@ -8,9 +8,11 @@ import {
   getTotalCategoryCount,
   getActiveCategoryCount,
   getHiddenCategoryCount,
+  getCategoriesExceptCurrent,
 } from "../../repositories/category.repository.js";
 import Category from "../../models/category.model.js";
 import { categorySchema } from "../../validators/category.validation.js";
+
 
 export const getAllCategoriesService = async (page = 1, search, sort) => {
   const limit = 5; //limit per page;
@@ -32,7 +34,7 @@ export const getAllCategoriesService = async (page = 1, search, sort) => {
     totalPages,
     currentPage: page,
     categoryCount,
-    limit
+    limit,
   };
 };
 
@@ -80,17 +82,14 @@ export const updateCategoryService = async (id, data) => {
 
   const cleanName = name.trim().toLowerCase().replace(/\s+/g, " ");
 
-  const existing = await Category.findOne({
-    _id: { $ne: id },
-    name: new RegExp(`^${cleanName}$`, "i"),
-  });
+  const existing = await getCategoriesExceptCurrent(id, cleanName);
 
   if (existing) {
     const err = new Error("Category already exists");
     err.status = 409;
     throw err;
   }
-
+ 
   return await updateCategoryById(id, {
     name,
     sizeType,
