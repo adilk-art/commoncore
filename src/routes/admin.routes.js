@@ -2,6 +2,7 @@ import express from "express";
 import * as adminController from "../controllers/admin/admin.controller.js";
 import * as categoryController from "../controllers/admin/category.controller.js"
 import * as productController from "../controllers/admin/product.controller.js"
+import * as inventoryController from "../controllers/admin/inventory.controller.js"
 import { isAdminAuth,isAdminNotAuth } from "../middlewares/adminAuth.middleware.js";
 import userController from "../controllers/user/user.controller.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
@@ -35,6 +36,10 @@ router.get("/products/:productId/variants",isAdminAuth,productController.loadMan
 router.post("/products/:productId/variants",isAdminAuth,uploadVariant.array("images", 10),productController.addVariant);
 router.patch("/products/variants/edit/:id",isAdminAuth,uploadVariant.array("images", 10),productController.editVariant);
 router.patch("/products/variants/status/:id",isAdminAuth,productController.changeVariantStatus);
+
+router.get("/inventory", isAdminAuth,inventoryController.getInventoryPage);
+router.get("/inventory/:productId/variants",isAdminAuth,inventoryController.getInventoryVariants);
+router.patch("/inventory/variant/:variantId/stock",isAdminAuth,inventoryController.updateVariantStock);
 
 export default router;
 

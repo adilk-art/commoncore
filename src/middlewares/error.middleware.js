@@ -43,6 +43,6 @@ export const errorHandler = (
 
   return res
     .status(500)
-    .render("errors/500");
+    .render("errors/404");
 };
 

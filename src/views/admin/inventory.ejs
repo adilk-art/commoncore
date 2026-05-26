@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <%- include("./partials/head", {
+    title: "Inventory"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/inventory.css"
+  >
+
+</head>
+<body>
+
+<%- include("./partials/header", {
+  title: "Inventory"
+}) %>
+
+<div class="layout">
+
+  <%- include("./partials/sidebar", {
+    active: "inventory"
+  }) %>
+
+  <div class="main">
+
+    <div class="content">
+
+      <div class="page-top">
+
+        <div>
+          <p class="breadcrumb">
+            Admin Dashboard > Inventory
+          </p>
+
+          <h2 class="page-title">
+            Inventory Management
+          </h2>
+        </div>
+
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <div class="stat-top">
+            <p>Total Products</p>
+            <i class="fa-solid fa-box"></i>
+          </div>
+
+          <h3><%= totalProducts %></h3>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-top">
+            <p>Low Stock Variants</p>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+
+          <h3><%= lowStockVariants %></h3>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-top">
+            <p>Out Of Stock Variants</p>
+            <i class="fa-solid fa-box-open"></i>
+          </div>
+
+          <h3><%= outOfStockVariants %></h3>
+        </div>
+
+      </div>
+
+      <div class="table-container">
+
+        <div class="table-header">
+
+          <h3>
+            Inventory
+          </h3>
+
+          <form method="GET" action="/admin/inventory" class="sort-toggle">
+
+            <button
+              type="submit"
+              name="sort"
+              value="latest"
+              class="sort-btn <%=sort==='latest'?'active':'' %>"
+            >
+            <i class="fa-solid fa-arrow-down-wide-short"></i>
+              Latest
+            </button>
+
+            <button
+              type="submit"
+              name="sort"
+              value="oldest"
+              class="sort-btn <%=sort==='oldest'?'active':'' %>"
+            >
+            <i class="fa-solid fa-arrow-up-wide-short"></i>
+              Oldest
+            </button>
+
+          </form>
+
+          <form method="GET" action="/admin/inventory" class="search-box">
+
+            <input
+              type="text"
+              name="search"
+              value="<%= search || '' %>"
+              placeholder="Search inventory..."
+            >
+
+            <button type="submit" class="search-btn">
+              <i class="fa fa-search"></i>
+            </button>
+
+          </form>
+
+        </div>
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Product</th>
+              <th>Total Variants</th>
+              <th>Total Stock</th>
+              <th>Low Stock Variants</th>
+              <th>Out Of Stock Variants</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+          <% products.forEach(product => { %>
+
+            <tr>
+
+            <td>
+
+            <% if (product.defaultImage) { %>
+
+                <img
+                src="<%= product.defaultImage %>"
+                class="product-img"
+                alt="<%= product.name %>"
+                >
+
+            <% } else { %>
+
+                <div class="product-img-placeholder">
+                No Image
+                </div>
+
+            <% } %>
+
+            </td>
+
+              <td class="prod-name">
+                <%= product.name %>
+              </td>
+
+              <td>
+                <%= product.totalVariants %>
+              </td>
+
+              <td>
+
+                <%
+                    let stockClass = "good";
+
+                    if (product.totalStock === 0) {
+                    stockClass = "out";
+                    } else if (product.totalStock <= 10) {
+                    stockClass = "low";
+                    }
+                %>
+
+                <span class="stock-count <%= stockClass %>">
+                    <%= product.totalStock %>
+                </span>
+
+                </td>
+
+                <td>
+
+                <% if (product.lowStockVariants > 0) { %>
+
+                    <span class="variant-warning low">
+                    <%= product.lowStockVariants %>
+                    </span>
+
+                <% } else { %>
+
+                    <%= product.lowStockVariants %>
+
+                <% } %>
+
+                </td>
+
+                <td>
+
+                <% if (product.outOfStockVariants > 0) { %>
+
+                    <span class="variant-warning out">
+                    <%= product.outOfStockVariants %>
+                    </span>
+
+                <% } else { %>
+
+                    <%= product.outOfStockVariants %>
+
+                <% } %>
+
+                </td>
+
+              <td>
+                <span class="status <%= product.isActive ? 'active' : 'hide' %>">
+                  <%= product.isActive ? 'Active' : 'Hidden' %>
+                </span>
+              </td>
+
+              
+<td>
+
+  <button
+    class="manage-stock-btn"
+    data-id="<%= product._id %>"
+  >
+    Manage Stock
+  </button>
+
+</td>
+
+            </tr>
+
+          <% }) %>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="stock-modal hidden">
+  <div class="stock-modal-content">
+
+    <div class="stock-modal-header">
+      <h3>Manage Stock</h3>
+
+      <button class="close-stock-modal">
+        ×
+      </button>
+    </div>
+
+    <div class="variants-container"></div>
+
+  </div>
+</div>
+  <%- include("./partials/scripts") %>
+
+
+<script src="/js/admin/inventory.js"></script>
+
+</body>
+</html>
