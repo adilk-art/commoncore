@@ -80,29 +80,43 @@ updatePanels();
 const wishlistForms = document.querySelectorAll(".wish-form");
 
 wishlistForms.forEach((form) => {
+
   form.addEventListener("submit", async (e) => {
+
     e.preventDefault();
 
     try {
+
       const formData = new FormData(form);
+
       const productId = formData.get("productId");
+
       const button = form.querySelector(".wish-btn");
+
       const svg = button.querySelector("svg");
-      const isWishlisted = button.classList.contains("wish-btn--active");
+
+      const isWishlisted =
+        button.classList.contains("wish-btn--active");
 
       let response;
 
       if (isWishlisted) {
-        response = await axios.delete(`/user/wishlist/${productId}`, {
-          headers: {
-            "X-Requested-With": "XMLHttpRequest",
+
+        response = await axios.delete(
+          `/user/wishlist/${productId}`,
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
           },
-        });
+        );
 
         button.classList.remove("wish-btn--active");
 
         svg.setAttribute("fill", "none");
+
       } else {
+
         response = await axios.post(
           "/user/wishlist/add",
           { productId },
@@ -118,20 +132,38 @@ wishlistForms.forEach((form) => {
         svg.setAttribute("fill", "currentColor");
       }
 
+      // update wishlist count
+      const wishlistCount =
+        document.getElementById("wishlistCount");
+
+      if (
+        wishlistCount &&
+        response.data.wishlistCount !== undefined
+      ) {
+        wishlistCount.textContent =
+          response.data.wishlistCount;
+      }
+
       userToast(response.data.message);
+
     } catch (error) {
-  const status = error?.response?.status;
-  const message = error?.response?.data?.message;
-  console.log(status)
 
-  if (status === 401) {
-    userToast(message || "Please login first");
+      const status = error?.response?.status;
 
-    return;
-  }
+      const message =
+        error?.response?.data?.message;
 
-  userToast(message || "Failed to update wishlist");
-}
+      if (status === 401) {
+
+        userToast(message || "Please login first");
+
+        return;
+      }
+
+      userToast(
+        message || "Failed to update wishlist",
+      );
+    }
   });
 });
 
@@ -268,29 +300,46 @@ function updatePreview() {
   }
 }
 
-
 confirmCartBtn.addEventListener("click", async () => {
+
   try {
+
     if (!selectedVariant) {
-      cartError.textContent = "Please select a variant";
+
+      cartError.textContent =
+        "Please select a variant";
 
       return;
     }
 
     cartError.textContent = "";
 
-    const response = await axios.post("/user/cart/add", {
-      variantId: selectedVariant._id,
+    const response = await axios.post(
+      "/user/cart/add",
+      {
+        variantId: selectedVariant._id,
+        quantity: 1,
+      }
+    );
 
-      quantity: 1,
-    });
+    const cartCountEl =
+      document.getElementById("cartCount");
+
+    if (cartCountEl) {
+
+      cartCountEl.textContent =
+        response.data.cartCount;
+    }
 
     userToast(response.data.message);
 
     closeCartModal();
+
   } catch (error) {
+
     cartError.textContent =
-      error?.response?.data?.message || "Failed to add to cart";
+      error?.response?.data?.message ||
+      "Failed to add to cart";
   }
 });
 

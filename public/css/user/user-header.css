@@ -1,4 +1,15 @@
 /* ─── HEADER ─────────────────────────────────────────────── */
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo {
+  height: 15px;
+  width: auto;
+  object-fit: contain;
+}
 
 .site-header {
   position: sticky;

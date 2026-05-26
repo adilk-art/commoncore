@@ -158,8 +158,11 @@ function clearEditErrors() {
   });
 }
 
+const updateBtn = editForm.querySelector(".save-btn");
+
 editForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   clearEditErrors();
 
   let valid = true;
@@ -208,6 +211,14 @@ editForm.addEventListener("submit", async (e) => {
 
   if (!valid) return;
 
+  const originalBtnText = updateBtn.innerHTML;
+
+  updateBtn.disabled = true;
+  updateBtn.innerHTML = `
+    <span class="btn-loader"></span>
+    Updating...
+  `;
+
   const formData = new FormData();
 
   formData.append("size", editSize.value);
@@ -217,26 +228,40 @@ editForm.addEventListener("submit", async (e) => {
   formData.append("colorCode", editColorCode.value);
   formData.append("isActive", editIsActive.value);
   formData.append("isDefault", editIsDefault.value);
-  formData.append("existingImages", JSON.stringify(existingImages));    //old images
+  formData.append("existingImages", JSON.stringify(existingImages));
 
-  editCroppedFiles.forEach(file => {   //new images
+  editCroppedFiles.forEach((file) => {
     formData.append("images", file);
   });
-try{
-    const res=await axios.patch(
+
+  try {
+
+    const res = await axios.patch(
       `/admin/products/variants/edit/${editVariantId.value}`,
       formData
     );
-    if(res.data.success){
-    utils.showToast(res.data.message);
-      setTimeout(()=>{
-        window.location.reload();
-      },1000)
-    }
-}catch(err){
-    setEditError("editValidationError",err.response?.data?.message || "Something went wrong")
 
-}
+    if (res.data.success) {
+
+      utils.showToast(res.data.message);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+    }
+
+  } catch (err) {
+
+    setEditError(
+      "editValidationError",
+      err.response?.data?.message || "Something went wrong"
+    );
+
+    updateBtn.disabled = false;
+    updateBtn.innerHTML = originalBtnText;
+
+  }
 
 });
 

@@ -229,112 +229,145 @@
 
   const cartForm = document.getElementById("cartForm");
 
-  cartForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-      const variantId = cartVariantId.value;
-      const quantity = Number(cartQty.value);
+ cartForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-      cartBtn.disabled = true;
+  try {
+    const variantId = cartVariantId.value;
+    const quantity = Number(cartQty.value);
 
-      const originalText = cartBtn.textContent;
-      cartBtn.textContent = "Adding...";
+    cartBtn.disabled = true;
 
-      const response = await axios.post("/user/cart/add", {
-        variantId,
-        quantity,
-      });
+    const originalText = cartBtn.textContent;
+    cartBtn.textContent = "Adding...";
 
-      if (response.data.success) {
-        if (errorBox) {
-          errorBox.textContent = "";
-        }
+    const response = await axios.post("/user/cart/add", {
+      variantId,
+      quantity,
+    });
 
-        if (window.userToast) {
-          userToast(response.data.message);
-        }
+    if (response.data.success) {
 
-        cartBtn.textContent = "Added ✓";
+      // update header cart count
+      const cartBadge = document.querySelector(".cart-btn .cart-badge");
 
-        setTimeout(() => {
-          cartBtn.textContent = originalText;
-          cartBtn.disabled = false;
-        }, 1200);
-      }
-    } catch (error) {
-      const status = error?.response?.status;
-
-      const message = error?.response?.data?.message || "Failed to add to cart";
-
-      if (status === 401) {
-        userToast(message || "Please login first");
-        cartBtn.disabled = false;
-        cartBtn.textContent = "Add to Cart";
-        return;
+      if (cartBadge && response.data.cartCount !== undefined) {
+        cartBadge.textContent = response.data.cartCount;
       }
 
       if (errorBox) {
-        errorBox.textContent = message;
+        errorBox.textContent = "";
       }
+
+      if (window.userToast) {
+        userToast(response.data.message);
+      }
+
+      cartBtn.textContent = "Added ✓";
+
+      setTimeout(() => {
+        cartBtn.textContent = originalText;
+        cartBtn.disabled = false;
+      }, 1200);
+    }
+
+  } catch (error) {
+
+    const status = error?.response?.status;
+
+    const message =
+      error?.response?.data?.message || "Failed to add to cart";
+
+    if (status === 401) {
+      userToast(message || "Please login first");
+
       cartBtn.disabled = false;
       cartBtn.textContent = "Add to Cart";
+
+      return;
     }
-  });
+
+    if (errorBox) {
+      errorBox.textContent = message;
+    }
+
+    cartBtn.disabled = false;
+    cartBtn.textContent = "Add to Cart";
+  }
+});
 
   const wishlistForm = document.querySelector(".wishlist-form");
 
-  wishlistForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+ wishlistForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    try {
-      const formData = new FormData(wishlistForm);
+  try {
+    const formData = new FormData(wishlistForm);
 
-      const button = wishlistForm.querySelector(".pd-wishlist-btn");
-      const svg = button.querySelector("svg");
+    const button = wishlistForm.querySelector(".pd-wishlist-btn");
+    const svg = button.querySelector("svg");
 
-      const isActive = button.classList.contains("pd-wishlist-btn--active");
+    const isActive = button.classList.contains(
+      "pd-wishlist-btn--active",
+    );
 
-      let response;
+    let response;
 
-      if (isActive) {
-        response = await axios.delete(
-          `/user/wishlist/${formData.get("productId")}`,
-          {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-            },
+    if (isActive) {
+
+      response = await axios.delete(
+        `/user/wishlist/${formData.get("productId")}`,
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
           },
-        );
+        },
+      );
 
-        button.classList.remove("pd-wishlist-btn--active");
+      button.classList.remove("pd-wishlist-btn--active");
 
-        svg.setAttribute("fill", "none");
-      } else {
-        response = await axios.post(
-          "/user/wishlist/add",
-          {
-            productId: formData.get("productId"),
+      svg.setAttribute("fill", "none");
+
+    } else {
+
+      response = await axios.post(
+        "/user/wishlist/add",
+        {
+          productId: formData.get("productId"),
+        },
+        {
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
           },
-          {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
-            },
-          },
-        );
+        },
+      );
 
-        button.classList.add("pd-wishlist-btn--active");
+      button.classList.add("pd-wishlist-btn--active");
 
-        svg.setAttribute("fill", "currentColor");
-      }
-
-      userToast(response.data.message);
-    } catch (error) {
-      const message =
-        error?.response?.data?.message || "Failed to update wishlist";
-
-      userToast(message);
+      svg.setAttribute("fill", "currentColor");
     }
-  });
+
+    const wishlistCount = document.getElementById("wishlistCount");
+
+    if (
+      wishlistCount &&
+      response.data.wishlistCount !== undefined
+    ) {
+      wishlistCount.textContent =
+        response.data.wishlistCount;
+    }
+
+    userToast(response.data.message);
+
+  } catch (error) {
+
+    const message =
+      error?.response?.data?.message ||
+      "Failed to update wishlist";
+
+    userToast(message);
+  }
+});
 
 
   

@@ -70,6 +70,16 @@
           </span>
           <% if (sort) { %><span class="trigger-dot"></span><% } %>
         </button>
+        <% const hasFilters = category || minPrice || maxPrice; %>
+        <% if (hasFilters) { %>
+          <a
+            href="/user/shop?search=<%= search %>&sort=<%= sort %>&page=1"
+            class="clear-filter-btn"
+          >
+            Clear Filters
+          </a>
+        <% } %>
+
 
       </div>
 

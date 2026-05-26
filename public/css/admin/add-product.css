@@ -212,3 +212,29 @@
   background: #fff5f5;
   outline: none;
 }
+.save-btn:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+  filter: grayscale(.1);
+}
+
+.save-btn:disabled:hover {
+  background: inherit;
+}
+
+.btn-loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btnSpin .7s linear infinite;
+}
+
+@keyframes btnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

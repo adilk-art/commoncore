@@ -69,7 +69,6 @@ export const loadEditProductPage = async (req, res, next) => {
   try {
     const product = await getProductByIdService(req.params.id);
     const categories = await getAllActiveCategoriesService();
-    
     res.render("admin/edit-product.ejs", {
       product,
       categories,

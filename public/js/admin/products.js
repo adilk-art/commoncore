@@ -9,8 +9,14 @@ const basePriceInput = document.getElementById("basePrice");
 const isActiveInput = document.getElementById("isActive");
 const washCareInput = document.getElementById("washCare");
 
+const submitBtn = form?.querySelector('button[type="submit"]');
+
 const showError = (id, msg) => {
-  document.getElementById(id).textContent = msg;
+  const el = document.getElementById(id);
+
+  if (el) {
+    el.textContent = msg;
+  }
 };
 
 const clearErrors = () => {
@@ -31,6 +37,7 @@ const clearErrors = () => {
 
 function saveScrollPosition() {
   const content = document.querySelector(".content");
+
   if (!content) return;
 
   sessionStorage.setItem("contentScroll", content.scrollTop);
@@ -120,12 +127,28 @@ if (form) {
 
     if (hasError) return;
 
+    const originalBtnText = submitBtn.innerHTML;
+
+    submitBtn.disabled = true;
+
+    submitBtn.innerHTML = `
+      <span class="btn-loader"></span>
+      Saving...
+    `;
+
     const productId = form.dataset.id;
 
     try {
+
       let res;
 
       if (productId) {
+
+        submitBtn.innerHTML = `
+          <span class="btn-loader"></span>
+          Updating...
+        `;
+
         res = await axios.patch(`/admin/products/edit/${productId}`, {
           name,
           description,
@@ -136,7 +159,9 @@ if (form) {
           isActive,
           washCare
         });
+
       } else {
+
         res = await axios.post("/admin/products/add", {
           name,
           description,
@@ -147,9 +172,11 @@ if (form) {
           isActive,
           washCare
         });
+
       }
 
       if (res.data.success) {
+
         utils.showToast(res.data.message);
 
         saveScrollPosition();
@@ -157,17 +184,23 @@ if (form) {
         setTimeout(() => {
           window.location.href = "/admin/products";
         }, 1000);
+
       }
 
     } catch (err) {
-      showError("validationError", err.response?.data?.message);
+
+      showError(
+        "validationError",
+        err.response?.data?.message || "Something went wrong"
+      );
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+
     }
+
   });
-}
 
-/* CLEAR ERROR */
-
-if (form) {
   form.addEventListener("input", () => {
     clearErrors();
   });
@@ -176,6 +209,7 @@ if (form) {
 /* STATUS BUTTON */
 
 document.addEventListener("click", (e) => {
+
   const btn = e.target.closest(".status-btn");
 
   if (!btn) return;
@@ -185,23 +219,31 @@ document.addEventListener("click", (e) => {
   openConfirmModal("Change product status?", () => {
     changeProductStatus(id);
   });
+
 });
 
 const changeProductStatus = async (id) => {
+
   try {
+
     const res = await axios.patch(`/admin/products/status/${id}`);
 
     if (res.data.success) {
+
       utils.showToast(res.data.message);
 
       saveScrollPosition();
 
       setTimeout(() => {
-        window.location.href = "/admin/products";
+        window.location.reload();
       }, 1000);
+
     }
 
   } catch (err) {
+
     utils.showToast("Something went wrong");
+
   }
+
 };

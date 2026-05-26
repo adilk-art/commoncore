@@ -142,8 +142,13 @@ cancelCropBtn.addEventListener("click", () => {
   previewGrid.innerHTML = "";
 });
 
+
+
+const submitBtn = form.querySelector(".save-btn");
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   clearErrors();
 
   let valid = true;
@@ -162,10 +167,12 @@ form.addEventListener("submit", async (e) => {
     setError("priceError", "Enter valid price");
     valid = false;
   }
+
   if (!isActive.value) {
     setError("isActiveError", "Select status");
     valid = false;
   }
+
   if (!isDefault.value) {
     setError("isDefaultError", "Select valid default option");
     valid = false;
@@ -202,19 +209,44 @@ form.addEventListener("submit", async (e) => {
     formData.append("images", file);
   });
 
+  const originalText = submitBtn.innerHTML;
+
   try {
-    const res = await axios.post(window.location.pathname, formData);
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <span class="btn-loader"></span>
+      Saving...
+    `;
+
+    const res = await axios.post(
+      window.location.pathname,
+      formData,
+    );
+
     if (res.data.success) {
+
       utils.showToast(res.data.message);
+
+      submitBtn.innerHTML = "Saved ✓";
+
       setTimeout(() => {
         window.location.reload();
       }, 1000);
+
     }
+
   } catch (error) {
+
     setError(
       "validationError",
-      error.response?.data?.message || "Something went wrong",
+      error.response?.data?.message ||
+      "Something went wrong",
     );
+
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+
   }
 });
 

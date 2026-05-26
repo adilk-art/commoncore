@@ -526,3 +526,23 @@ tbody tr:hover {
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
+button[type="submit"]:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-loader {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

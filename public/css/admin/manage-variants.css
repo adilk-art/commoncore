@@ -471,6 +471,19 @@ tbody tr:hover {
   font-size: 13px;
   font-weight: 600;
 }
+.save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: .2s ease;
+}
+
+.save-btn:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .discard-btn {
   border: none;

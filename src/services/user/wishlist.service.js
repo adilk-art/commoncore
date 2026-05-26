@@ -59,6 +59,7 @@ export const getWishlistService = async (userId) => {
 
 };
 
+
 export const addToWishlistService = async ({
   userId,
   productId,
@@ -78,6 +79,7 @@ export const addToWishlistService = async ({
     return {
       success: true,
       message: "Already in wishlist",
+      wishlistCount: wishlist.products.length,
     };
   }
 
@@ -88,8 +90,8 @@ export const addToWishlistService = async ({
   return {
     success: true,
     message: "Added to wishlist",
+    wishlistCount: wishlist.products.length,
   };
-
 };
 
 export const removeWishlistItemService = async ({
@@ -111,9 +113,9 @@ export const removeWishlistItemService = async ({
 
   return {
     success: true,
-    message:"removed from wishlist"
+    message: "Removed from wishlist",
+    wishlistCount: wishlist.products.length,
   };
-
 };
 
 export const moveWishlistToCartService = async ({

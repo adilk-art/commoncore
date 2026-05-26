@@ -119,6 +119,10 @@
   margin-left: auto;
   margin-right: 6px;
 }
+.cat-name{
+  font-weight: 600;
+  font-size: 14px;
+}
 
 .sort-btn {
   display: flex;
@@ -206,6 +210,7 @@ th:first-child,
 td:first-child {
   text-align: left;
   padding-left: 16px;
+ 
 }
 
 tbody tr:hover {

@@ -53,12 +53,17 @@ export const addToCartService = async ({
   let cart = await findCartByUserId(userId);
 
   if (!cart) {
+
     if (quantity > MAX_QTY) {
-      throw new Error(`Maximum ${MAX_QTY} allowed per product`);
+      throw new Error(
+        `Maximum ${MAX_QTY} allowed per product`
+      );
     }
 
     if (quantity > variant.stock) {
-      throw new Error(`Only ${variant.stock} available in stock`);
+      throw new Error(
+        `Only ${variant.stock} available in stock`
+      );
     }
 
     cart = await createCart(userId, {
@@ -69,27 +74,29 @@ export const addToCartService = async ({
     return {
       success: true,
       message: "Added to cart",
+      cartCount: quantity,
     };
   }
 
   const existingItem = cart.items.find(
-    item =>
-      item.variantId.toString() === variantId.toString()
+    (item) =>
+      item.variantId.toString() === variantId
   );
 
   if (existingItem) {
 
-    const newQty = existingItem.quantity + quantity;
+    const newQty =
+      existingItem.quantity + quantity;
 
     if (newQty > MAX_QTY) {
       throw new Error(
-        `You already have ${existingItem.quantity} of this item in your cart. Maximum ${MAX_QTY} allowed per product`
+        `Maximum ${MAX_QTY} allowed per product`
       );
     }
 
     if (newQty > variant.stock) {
       throw new Error(
-        `You already have ${existingItem.quantity} of this item in your cart, only ${variant.stock} available in stock`
+        `Only ${variant.stock} available in stock`
       );
     }
 
@@ -98,11 +105,15 @@ export const addToCartService = async ({
   } else {
 
     if (quantity > MAX_QTY) {
-      throw new Error(`Maximum ${MAX_QTY} allowed per product`);
+      throw new Error(
+        `Maximum ${MAX_QTY} allowed per product`
+      );
     }
 
     if (quantity > variant.stock) {
-      throw new Error(`Only ${variant.stock} available in stock`);
+      throw new Error(
+        `Only ${variant.stock} available in stock`
+      );
     }
 
     cart.items.push({
@@ -111,11 +122,17 @@ export const addToCartService = async ({
     });
   }
 
- await saveCart(cart);
+  await cart.save();
+
+  const cartCount = cart.items.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   return {
     success: true,
     message: "Added to cart",
+    cartCount,
   };
 };
 
@@ -185,6 +202,7 @@ export const getCartService = async (userId) => {
     } else {
       invalid = true;
     }
+
 
     return {
       _id: item._id,
