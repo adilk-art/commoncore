@@ -566,12 +566,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+   text-align: center;
 }
 
 .pd-related-price {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-main);
+  text-align: center;
 }
 
 .pd-reviews {

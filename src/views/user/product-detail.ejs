@@ -253,11 +253,33 @@
         <div class="pd-related-grid">
           <% relatedProducts.forEach(item => { %>
             <a href="/user/product/<%= item._id %>" class="pd-related-card">
-              <!-- <button type="button" class="pd-related-wish" aria-label="Wishlist">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <form class="related-wishlist-form">
+              <input
+                type="hidden"
+                name="productId"
+                value="<%= item._id %>"
+              />
+
+              <button
+                type="submit"
+                class="pd-related-wish <%= item.isWishlisted ? 'pd-related-wish--active' : '' %>"
+                aria-label="Wishlist"
+              >
+
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="<%= item.isWishlisted ? 'currentColor' : 'none' %>"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
-              </button> -->
+
+              </button>
+
+            </form>
               <div class="pd-related-image-wrap">
                 <img src="<%= item.defaultImage %>" alt="<%= item.name %>" class="pd-related-image" loading="lazy" />
               </div>
