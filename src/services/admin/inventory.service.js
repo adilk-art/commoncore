@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import {
   findInventoryProducts,
   countInventoryProducts,
@@ -5,6 +6,7 @@ import {
   findVariantsByProductId,
   findVariantById,
   saveVariant,
+  findAllCategories
 } from "../../repositories/admin/inventory.repository.js";
 
 export const getInventoryPageService = async ({
@@ -13,38 +15,124 @@ export const getInventoryPageService = async ({
   skip,
   search,
   sort,
+  category,
+  stock,
 }) => {
+
   const filter = {};
 
   if (search) {
+
     filter.name = {
       $regex: search,
       $options: "i",
     };
+
   }
 
-  let sortOrder = { createdAt: -1 };
+  if (category) {
+
+    filter.categoryId =
+      new mongoose.Types.ObjectId(category);
+
+  }
+
+  let sortOrder = {
+    createdAt: -1,
+  };
 
   if (sort === "oldest") {
-    sortOrder = { createdAt: 1 };
+
+    sortOrder = {
+      createdAt: 1,
+    };
+
   }
 
-  const [products, productCount, stats] = await Promise.all([
-    findInventoryProducts(limit, skip, filter, sortOrder),
-    countInventoryProducts(filter),
+  const stockFilter = stock || "";
+
+  const [
+    products,
+    stats,
+    categories,
+  ] = await Promise.all([
+
+    findInventoryProducts(
+      limit,
+      skip,
+      filter,
+      sortOrder,
+      stockFilter,
+    ),
+
     getInventoryStats(),
+
+    findAllCategories(),
+
   ]);
+
+  let filteredCount = 0;
+
+  if (stockFilter) {
+
+    const allFilteredProducts =
+      await findInventoryProducts(
+        999999,
+        0,
+        filter,
+        sortOrder,
+        stockFilter,
+      );
+
+    filteredCount =
+      allFilteredProducts.length;
+
+  } else {
+
+    filteredCount =
+      await countInventoryProducts(filter);
+
+  }
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCount / limit),
+  );
 
   return {
     products,
-    productCount,
-    totalPages: Math.ceil(productCount / limit),
+
+    productCount: filteredCount,
+
+    totalPages,
+
+    currentPage: page,
+
+    limit,
+
+    skip,
+
+    search,
+
+    sort,
+
+    category,
+
+    stock,
+
+    categories,
 
     totalProducts: stats.totalProducts,
+
     totalVariants: stats.totalVariants,
-    lowStockVariants: stats.lowStockVariants,
-    outOfStockVariants: stats.outOfStockVariants,
+
+    lowStockVariants:
+      stats.lowStockVariants,
+
+    outOfStockVariants:
+      stats.outOfStockVariants,
   };
+
 };
 
 export const getInventoryVariantsService = async (productId) => {

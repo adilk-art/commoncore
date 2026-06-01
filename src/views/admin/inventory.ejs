@@ -18,6 +18,8 @@
   title: "Inventory"
 }) %>
 
+<%- include("./partials/logout-modal") %>
+
 <div class="layout">
 
   <%- include("./partials/sidebar", {
@@ -31,6 +33,7 @@
       <div class="page-top">
 
         <div>
+
           <p class="breadcrumb">
             Admin Dashboard > Inventory
           </p>
@@ -38,6 +41,7 @@
           <h2 class="page-title">
             Inventory Management
           </h2>
+
         </div>
 
       </div>
@@ -45,30 +49,45 @@
       <div class="stats-grid">
 
         <div class="stat-card">
+
           <div class="stat-top">
+
             <p>Total Products</p>
+
             <i class="fa-solid fa-box"></i>
+
           </div>
 
           <h3><%= totalProducts %></h3>
+
         </div>
 
         <div class="stat-card">
+
           <div class="stat-top">
+
             <p>Low Stock Variants</p>
+
             <i class="fa-solid fa-triangle-exclamation"></i>
+
           </div>
 
           <h3><%= lowStockVariants %></h3>
+
         </div>
 
         <div class="stat-card">
+
           <div class="stat-top">
+
             <p>Out Of Stock Variants</p>
+
             <i class="fa-solid fa-box-open"></i>
+
           </div>
 
           <h3><%= outOfStockVariants %></h3>
+
         </div>
 
       </div>
@@ -77,55 +96,130 @@
 
         <div class="table-header">
 
-          <h3>
-            Inventory
-          </h3>
+  <h3>
+    Inventory
+  </h3>
 
-          <form method="GET" action="/admin/inventory" class="sort-toggle">
+  <div class="table-actions">
 
-            <button
-              type="submit"
-              name="sort"
-              value="latest"
-              class="sort-btn <%=sort==='latest'?'active':'' %>"
-            >
-            <i class="fa-solid fa-arrow-down-wide-short"></i>
-              Latest
-            </button>
+    <form
+      method="GET"
+      action="/admin/inventory"
+      class="search-box"
+    >
 
-            <button
-              type="submit"
-              name="sort"
-              value="oldest"
-              class="sort-btn <%=sort==='oldest'?'active':'' %>"
-            >
-            <i class="fa-solid fa-arrow-up-wide-short"></i>
-              Oldest
-            </button>
+      <input
+        type="hidden"
+        name="page"
+        value="1"
+      >
 
-          </form>
+      <input
+        type="text"
+        name="search"
+        value="<%= search || '' %>"
+        placeholder="Search inventory..."
+      >
 
-          <form method="GET" action="/admin/inventory" class="search-box">
+      <select
+        name="category"
+      >
 
-            <input
-              type="text"
-              name="search"
-              value="<%= search || '' %>"
-              placeholder="Search inventory..."
-            >
+        <option value="">
+          All Categories
+        </option>
 
-            <button type="submit" class="search-btn">
-              <i class="fa fa-search"></i>
-            </button>
+        <% categories.forEach(categoryItem => { %>
 
-          </form>
+          <option
+            value="<%= categoryItem._id %>"
+            <%= category === categoryItem._id.toString()
+            ? 'selected'
+            : '' %>
+          >
+            <%= categoryItem.name %>
+          </option>
 
-        </div>
+        <% }) %>
+
+      </select>
+
+      <select name="stock">
+
+        <option value="">
+          All Stock
+        </option>
+
+        <option
+          value="in"
+          <%= stock === 'in' ? 'selected' : '' %>
+        >
+          In Stock
+        </option>
+
+        <option
+          value="low"
+          <%= stock === 'low' ? 'selected' : '' %>
+        >
+          Low Stock
+        </option>
+
+        <option
+          value="out"
+          <%= stock === 'out' ? 'selected' : '' %>
+        >
+          Out Of Stock
+        </option>
+
+      </select>
+
+      <select name="sort">
+
+        <option
+          value="latest"
+          <%= sort === 'latest' ? 'selected' : '' %>
+        >
+          Latest
+        </option>
+
+        <option
+          value="oldest"
+          <%= sort === 'oldest' ? 'selected' : '' %>
+        >
+          Oldest
+        </option>
+
+      </select>
+
+      <button type="submit" class="search-btn">
+
+        <i class="fa fa-search"></i>
+
+      </button>
+
+      <% if(search || category || stock || sort !== "latest"){ %>
+
+        <a
+          href="/admin/inventory"
+          class="clear-btn"
+        >
+          Clear Filters
+        </a>
+
+      <% } %>
+
+    </form>
+
+  </div>
+
+</div>
 
         <table>
 
           <thead>
+
             <tr>
+
               <th>Image</th>
               <th>Product</th>
               <th>Total Variants</th>
@@ -134,118 +228,212 @@
               <th>Out Of Stock Variants</th>
               <th>Status</th>
               <th>Actions</th>
+
             </tr>
+
           </thead>
 
           <tbody>
 
-          <% products.forEach(product => { %>
+          <% if(products.length > 0){ %>
 
-            <tr>
+            <% products.forEach(product => { %>
 
-            <td>
+              <tr>
 
-            <% if (product.defaultImage) { %>
+                <td>
 
-                <img
-                src="<%= product.defaultImage %>"
-                class="product-img"
-                alt="<%= product.name %>"
-                >
+                  <% if (product.defaultImage) { %>
 
-            <% } else { %>
+                    <img
+                      src="<%= product.defaultImage %>"
+                      class="product-img"
+                      alt="<%= product.name %>"
+                    >
 
-                <div class="product-img-placeholder">
-                No Image
-                </div>
+                  <% } else { %>
 
-            <% } %>
+                    <div class="product-img-placeholder">
+                      No Image
+                    </div>
 
-            </td>
+                  <% } %>
 
-              <td class="prod-name">
-                <%= product.name %>
-              </td>
+                </td>
 
-              <td>
-                <%= product.totalVariants %>
-              </td>
+                <td class="prod-name">
+                  <%= product.name %>
+                </td>
 
-              <td>
+                <td>
+                  <%= product.totalVariants %>
+                </td>
 
-                <%
+                <td>
+
+                  <%
                     let stockClass = "good";
 
                     if (product.totalStock === 0) {
-                    stockClass = "out";
+                      stockClass = "out";
                     } else if (product.totalStock <= 10) {
-                    stockClass = "low";
+                      stockClass = "low";
                     }
-                %>
+                  %>
 
-                <span class="stock-count <%= stockClass %>">
+                  <span class="stock-count <%= stockClass %>">
                     <%= product.totalStock %>
-                </span>
+                  </span>
 
                 </td>
 
                 <td>
 
-                <% if (product.lowStockVariants > 0) { %>
+                  <% if (product.lowStockVariants > 0) { %>
 
                     <span class="variant-warning low">
-                    <%= product.lowStockVariants %>
+                      <%= product.lowStockVariants %>
                     </span>
 
-                <% } else { %>
+                  <% } else { %>
 
                     <%= product.lowStockVariants %>
 
-                <% } %>
+                  <% } %>
 
                 </td>
 
                 <td>
 
-                <% if (product.outOfStockVariants > 0) { %>
+                  <% if (product.outOfStockVariants > 0) { %>
 
                     <span class="variant-warning out">
-                    <%= product.outOfStockVariants %>
+                      <%= product.outOfStockVariants %>
                     </span>
 
-                <% } else { %>
+                  <% } else { %>
 
                     <%= product.outOfStockVariants %>
 
-                <% } %>
+                  <% } %>
 
                 </td>
 
-              <td>
-                <span class="status <%= product.isActive ? 'active' : 'hide' %>">
-                  <%= product.isActive ? 'Active' : 'Hidden' %>
-                </span>
+                <td>
+
+                  <span class="status <%= product.isActive ? 'active' : 'hide' %>">
+
+                    <%= product.isActive ? 'Active' : 'Hidden' %>
+
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <button
+                    class="manage-stock-btn"
+                    data-id="<%= product._id %>"
+                  >
+                    Manage Stock
+                  </button>
+
+                </td>
+
+              </tr>
+
+            <% }) %>
+
+          <% } else { %>
+
+            <tr>
+
+              <td colspan="8" class="empty-row">
+
+                <div class="empty-state">
+
+                  <i class="fa-solid fa-box-open"></i>
+
+                  <h3>
+                    No Inventory Found
+                  </h3>
+
+                  <p>
+                    Products will appear here once added
+                  </p>
+
+                </div>
+
               </td>
-
-              
-<td>
-
-  <button
-    class="manage-stock-btn"
-    data-id="<%= product._id %>"
-  >
-    Manage Stock
-  </button>
-
-</td>
 
             </tr>
 
-          <% }) %>
+          <% } %>
 
           </tbody>
 
         </table>
+
+        <% if (totalPages > 1) { %>
+
+        <div class="pagination">
+
+          <p class="results-text">
+
+            Showing <%= skip + 1 %>
+            to <%= Math.min(currentPage * limit, productCount) %>
+            of <%= productCount %> results
+
+          </p>
+
+          <% if(currentPage > 1){ %>
+
+            <a
+              href="/admin/inventory?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&stock=<%= stock %>"
+              class="nav-btn"
+            >
+              Prev
+            </a>
+
+          <% } else { %>
+
+            <span class="nav-btn disabled">
+              Prev
+            </span>
+
+          <% } %>
+
+          <% for(let i = 1; i <= totalPages; i++){ %>
+
+            <a
+              href="/admin/inventory?page=<%= i %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&stock=<%= stock %>"
+              class="page-btn <%= currentPage === i ? 'active' : '' %>"
+            >
+              <%= i %>
+            </a>
+
+          <% } %>
+
+          <% if(currentPage < totalPages){ %>
+
+            <a
+              class="nav-btn"
+              href="/admin/inventory?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&stock=<%= stock %>"
+            >
+              Next
+            </a>
+
+          <% } else { %>
+
+            <span class="nav-btn disabled">
+              Next
+            </span>
+
+          <% } %>
+
+        </div>
+
+        <% } %>
 
       </div>
 
@@ -256,22 +444,28 @@
 </div>
 
 <div class="stock-modal hidden">
+
   <div class="stock-modal-content">
 
     <div class="stock-modal-header">
-      <h3>Manage Stock</h3>
+
+      <h3>
+        Manage Stock
+      </h3>
 
       <button class="close-stock-modal">
         ×
       </button>
+
     </div>
 
     <div class="variants-container"></div>
 
   </div>
-</div>
-  <%- include("./partials/scripts") %>
 
+</div>
+
+<%- include("./partials/scripts") %>
 
 <script src="/js/admin/inventory.js"></script>
 

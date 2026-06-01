@@ -1,5 +1,6 @@
 import Product from "../../models/product.model.js";
 import Variant from "../../models/variant.model.js";
+import Category from "../../models/category.model.js";
 
 
 export const findInventoryProducts = async (
@@ -7,6 +8,7 @@ export const findInventoryProducts = async (
   skip,
   filter,
   sortOrder,
+  stockFilter,
 ) => {
   return await Product.aggregate([
     {
@@ -86,13 +88,41 @@ export const findInventoryProducts = async (
                 $arrayElemAt: ["$variants", 0],
               },
             },
+
             in: {
-              $arrayElemAt: ["$$firstVariant.images.url", 0],
+              $arrayElemAt: [
+                "$$firstVariant.images.url",
+                0,
+              ],
             },
           },
         },
       },
     },
+
+    ...(stockFilter
+      ? [
+          {
+            $match:
+              stockFilter === "out"
+                ? {
+                    totalStock: 0,
+                  }
+                : stockFilter === "low"
+                ? {
+                    totalStock: {
+                      $gt: 0,
+                      $lte: 10,
+                    },
+                  }
+                : {
+                    totalStock: {
+                      $gt: 10,
+                    },
+                  },
+          },
+        ]
+      : []),
 
     {
       $sort: sortOrder,
@@ -155,4 +185,12 @@ export const findVariantById = async (variantId) => {
 
 export const saveVariant = async (variant) => {
   return await variant.save();
+};
+
+export const findAllCategories = async () => {
+  return await Category.find({
+    isActive: true,
+  }).sort({
+    name: 1,
+  });
 };

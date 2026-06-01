@@ -3,11 +3,18 @@ import {getInventoryPageService,getInventoryVariantsService,updateVariantStockSe
 export const getInventoryPage = async (req, res, next) => {
   try {
     const page = Number(req.query.page) || 1;
-    const limit = 10;
+
+    const limit = 6;
+
     const skip = (page - 1) * limit;
 
     const search = req.query.search?.trim() || "";
+
     const sort = req.query.sort || "latest";
+
+    const category = req.query.category || "";
+
+    const stock = req.query.stock || "";
 
     const result = await getInventoryPageService({
       page,
@@ -15,10 +22,12 @@ export const getInventoryPage = async (req, res, next) => {
       skip,
       search,
       sort,
+      category,
+      stock,
     });
-
     res.render("admin/inventory.ejs", {
       products: result.products,
+
       totalProducts: result.totalProducts,
       totalVariants: result.totalVariants,
       lowStockVariants: result.lowStockVariants,
@@ -26,13 +35,21 @@ export const getInventoryPage = async (req, res, next) => {
 
       productCount: result.productCount,
       totalPages: result.totalPages,
+
       currentPage: page,
       limit,
       skip,
+
       search,
       sort,
+      category,
+      stock,
+
+      categories: result.categories,
     });
+
   } catch (error) {
+    console.error(error)
     next(error);
   }
 };
