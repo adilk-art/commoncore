@@ -104,36 +104,37 @@ export const getShopPageService = async (query, userId) => {
 
 export const getProductDetailService = async ({ productId, userId }) => {
   if (!mongoose.Types.ObjectId.isValid(productId)) {
-    throw new Error("Invalid product");
+    const error = new Error("Invalid product");
+    error.statusCode = 404;
+    throw error;
   }
 
   const product = await findProductDetail(productId);
-  if (
-  !product ||
-  !product.isActive ||
-  !product.categoryId?.isActive
-) {
 
-  const error =
-    new Error("Product unavailable");
+  if (!product) {
+    const error = new Error("Product not found");
+    error.statusCode = 404;
+    throw error;
+  }
 
-  error.statusCode = 404;
+  const isUnavailable =
+    !product.isActive ||
+    !product.categoryId?.isActive;
 
-  throw error;
-}
+  const activeVariants = product.variants.filter(
+    (item) => item.isActive,
+  );
 
-  const activeVariants = product.variants.filter((item) => item.isActive);
   if (!activeVariants.length) {
+    const error = new Error("Product unavailable");
+    error.statusCode = 404;
+    throw error;
+  }
 
-  const error =
-    new Error("Product unavailable");
+  let selectedVariant = activeVariants.find(
+    (v) => v.isDefault,
+  );
 
-  error.statusCode = 404;
-
-  throw error;
-}
-
-  let selectedVariant = activeVariants.find((v) => v.isDefault);    //default variant selection
   if (!selectedVariant) {
     selectedVariant = activeVariants[0];
   }
@@ -144,6 +145,7 @@ export const getProductDetailService = async ({ productId, userId }) => {
   );
 
   let isWishlisted = false;
+
   if (userId) {
     const wishlist = await findWishlistByUserId(userId);
 
@@ -158,6 +160,7 @@ export const getProductDetailService = async ({ productId, userId }) => {
     selectedVariant,
     relatedProducts,
     isWishlisted,
+    isUnavailable,
   };
 };
 

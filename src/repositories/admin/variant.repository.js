@@ -47,3 +47,32 @@ export const getProductInactiveVariantsCount = async (productId) => {
   return await Variant.countDocuments({ productId, isActive: false });
 };
 
+export const reduceVariantStock = async (variantId, quantity) => {
+  return Variant.findByIdAndUpdate(
+    variantId,
+    {
+      $inc: {
+        stock: -quantity,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+};
+
+export const increaseVariantStock = (
+  variantId,
+  quantity,
+) => {
+
+  return Variant.findByIdAndUpdate(
+    variantId,
+    {
+      $inc: {
+        stock: quantity,
+      },
+    }
+  );
+
+};

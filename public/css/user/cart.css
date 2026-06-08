@@ -261,6 +261,11 @@
   pointer-events:none;
   opacity:.5;
 }
+.summary-btn:disabled{
+  opacity: .5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .cart-empty{
   padding:60px 20px;

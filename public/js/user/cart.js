@@ -82,3 +82,37 @@ document.querySelectorAll(".move-wishlist").forEach((btn) => {
     }
   });
 });
+
+const checkoutBtn =
+  document.getElementById("checkoutBtn");
+
+if (checkoutBtn) {
+
+  checkoutBtn.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await axios.get("/user/checkout");
+
+        window.location.href =
+          "/user/checkout";
+
+      } catch (error) {
+
+        userToast(
+          error.response?.data?.message ||
+          "Unable to proceed to checkout"
+        );
+
+        setTimeout(() => {
+          location.reload();
+        }, 1200);
+
+      }
+
+    }
+  );
+
+}

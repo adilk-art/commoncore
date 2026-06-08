@@ -4,17 +4,20 @@ import {
   getBuyNowCheckoutService,
 } from "../../services/user/checkout.service.js";
 
-export const loadCheckout = async (req, res) => {
+export const loadCheckout = async (req, res, next) => {
   try {
     const data = await getCheckoutPageService(req.session.userId);
     res.render("user/checkout", data);
   } catch (error) {
-    res.redirect("/user/cart");
+    next(error);
   }
 };
 
-export const loadBuyNowCheckout = async (req, res) => {
+
+
+export const initiateBuyNow = async (req, res) => {
   try {
+
     const userId = req.session.userId;
     if (!userId) {
       return res
@@ -29,9 +32,11 @@ export const loadBuyNowCheckout = async (req, res) => {
         .json({ success: false, message: "Invalid request" });
     }
 
+
     const { qty } = await validateBuyNowService(variantId, quantity);
 
     req.session.buyNow = { variantId, quantity: qty };
+
 
     res.json({ success: true, redirect: "/user/checkout/buy-now" });
   } catch (error) {
@@ -39,8 +44,9 @@ export const loadBuyNowCheckout = async (req, res) => {
   }
 };
 
-export const renderBuyNowCheckout = async (req, res) => {
+export const getBuyNowCheckoutPage = async (req, res) => {
   try {
+
     const { variantId, quantity } = req.session.buyNow || {};
     if (!variantId) return res.redirect("/user/shop");
 
@@ -49,8 +55,8 @@ export const renderBuyNowCheckout = async (req, res) => {
       variantId,
       quantity,
     );
-
-    res.render("user/checkout", data);
+  
+    res.render("user/checkout.ejs", data);
   } catch (error) {
     res.redirect("/user/shop");
   }

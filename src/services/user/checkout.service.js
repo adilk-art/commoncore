@@ -6,23 +6,47 @@ export const getCheckoutPageService = async (userId) => {
   const cart = await getCartService(userId);
 
   if (!cart || cart.items.length === 0) {
-    throw new Error("Cart empty");
+    throw new Error("Your cart is empty.");
   }
 
+  const invalidCart = cart.invalid;
+
+  const message = invalidCart
+    ? "Some items in your cart are unavailable. Please review your cart."
+    : null;
+
   const addresses = await getAddressesService(userId);
+
+  const gstAmount = cart.items.reduce((total, item) => {
+    const itemSubtotal = item.variant.price * item.quantity;    
+    const gstRate = item.product.gstRate; 
+    const taxableValue = itemSubtotal / (1 + gstRate / 100);
+    const itemGst = itemSubtotal - taxableValue;
+    return total + itemGst;
+  }, 0);
+
+
   const shipping = cart.subtotal >= 999 ? 0 : 99;
   const total = cart.subtotal + shipping;
 
-  return { cart, addresses, shipping, total };
+  return {
+    cart,
+    addresses,
+    gstAmount: Number(gstAmount.toFixed(2)),
+    shipping,
+    total,
+    invalidCart,
+    message,
+    isBuyNow: false,
+    buyNow: null,
+  };
 };
 
 export const validateBuyNowService = async (variantId, quantity) => {
   const qty = parseInt(quantity);
-
   if (!qty || qty < 1 || qty > 5) {
     throw new Error("Invalid quantity");
   }
-
   const variant = await findActiveVariant(variantId);
   if (!variant) throw new Error("Product not found");
 
@@ -51,12 +75,31 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
 
   const addresses = await getAddressesService(userId);
 
+  const gstAmount = [item].reduce((total, item) => {
+  const gstRate = item.product.gstRate || 0;
+  const taxableValue =
+    item.subtotal / (1 + gstRate / 100);
+  return total + (item.subtotal - taxableValue);
+}, 0);
+
+
   return {
-    cart: { items: [item], subtotal },
+    cart: {
+      items: [item],
+      subtotal,
+    },
     addresses,
     shipping,
     total,
+    gstAmount: Number(gstAmount.toFixed(2)),
+
+    invalidCart: false,
+    message: null,
+
     isBuyNow: true,
-    buyNow: { variantId, quantity: qty },
+    buyNow: {
+      variantId,
+      quantity: qty,
+    },
   };
 };

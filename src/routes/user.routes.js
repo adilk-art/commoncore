@@ -6,6 +6,7 @@ import * as shopController from "../controllers/user/shop.controller.js"
 import * as cartController from "../controllers/user/cart.controller.js"
 import * as wishlistController from "../controllers/user/wishlist.controller.js"
 import * as checkoutController from "../controllers/user/checkout.controller.js"
+import * as orderController from "../controllers/user/order.controller.js"
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -61,9 +62,15 @@ router.post("/wishlist/add-all-to-cart",isAuthenticated,wishlistController.addAl
 router.get("/wishlist/variants/:productId",isAuthenticated,wishlistController.getWishlistVariants);  //getting available variants to add cart
 
 router.get("/checkout", isAuthenticated, checkoutController.loadCheckout);
-router.post("/checkout/buy-now", checkoutController.loadBuyNowCheckout);
-router.get("/checkout/buy-now", isAuthenticated, checkoutController.renderBuyNowCheckout);
+router.post("/checkout/buy-now",checkoutController.initiateBuyNow);
+router.get("/checkout/buy-now", isAuthenticated, checkoutController.getBuyNowCheckoutPage);
 
+router.post("/order/place",isAuthenticated,orderController.placeOrder)
+router.get("/order/success/:orderId",isAuthenticated,orderController.loadOrderSuccessPage)
+router.get("/order/:orderId",isAuthenticated,orderController.loadOrderDetail);
+router.patch("/order/:orderId/cancel",isAuthenticated,orderController.cancelOrder);
+router.patch("/order/:orderId/items/:itemId/cancel",isAuthenticated,orderController.cancelOrderItem);
+router.get("/order/:orderId/invoice",isAuthenticated,orderController.downloadInvoice);
 
 
 router.get('/auth/google',

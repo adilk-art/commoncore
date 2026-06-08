@@ -202,12 +202,13 @@
 </p>
         <% } %>
 
-        <a
-          href="/user/checkout"
+        <button
           class="summary-btn <%= cart.invalid ? 'summary-btn-disabled' : '' %>"
+          id="checkoutBtn"
+          <%= cart.invalid ? 'disabled' : '' %>
         >
           Proceed to Checkout →
-        </a>
+        </button>
 
       </aside>
 

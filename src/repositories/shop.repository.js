@@ -2,15 +2,8 @@ import Category from "../models/category.model.js";
 import Variant from "../models/variant.model.js";
 import Product from "../models/product.model.js";
 
-export const getShopProducts = async (
-  filter,
-  sort,
-  skip,
-  limit
-) => {
-
+export const getShopProducts = async (filter, sort, skip, limit) => {
   return await Product.aggregate([
-
     {
       $match: filter,
     },
@@ -63,22 +56,13 @@ export const getShopProducts = async (
         previewVariant: {
           $cond: {
             if: {
-              $gt: [
-                { $size: "$inStockVariants" },
-                0,
-              ],
+              $gt: [{ $size: "$inStockVariants" }, 0],
             },
             then: {
-              $arrayElemAt: [
-                "$inStockVariants",
-                0,
-              ],
+              $arrayElemAt: ["$inStockVariants", 0],
             },
             else: {
-              $arrayElemAt: [
-                "$activeVariants",
-                0,
-              ],
+              $arrayElemAt: ["$activeVariants", 0],
             },
           },
         },
@@ -88,17 +72,11 @@ export const getShopProducts = async (
     {
       $addFields: {
         defaultImage: {
-          $arrayElemAt: [
-            "$previewVariant.images.url",
-            0,
-          ],
+          $arrayElemAt: ["$previewVariant.images.url", 0],
         },
 
         inStock: {
-          $gt: [
-            { $size: "$inStockVariants" },
-            0,
-          ],
+          $gt: [{ $size: "$inStockVariants" }, 0],
         },
       },
     },
@@ -113,7 +91,7 @@ export const getShopProducts = async (
     },
 
     {
-  $unwind: "$categoryId",
+      $unwind: "$categoryId",
     },
 
     {
@@ -139,9 +117,7 @@ export const getShopProducts = async (
     {
       $limit: limit,
     },
-
   ]);
-
 };
 
 export const countShopProducts = async (filter) => {
@@ -152,12 +128,8 @@ export const getShopCategories = async () => {
   return await Category.find({ isActive: true }).sort({ name: 1 });
 };
 
-
 export const findProductDetail = async (productId) => {
-  const product = await Product.findOne({
-    _id: productId,
-    isActive: true,
-  })
+  const product = await Product.findById(productId)
     .populate("categoryId")
     .lean();
 
@@ -177,7 +149,6 @@ export const findProductDetail = async (productId) => {
 
   return product;
 };
-
 
 export const findRelatedProducts = async (categoryId, currentProductId) => {
   return await Product.aggregate([
@@ -264,4 +235,3 @@ export const findRelatedProducts = async (categoryId, currentProductId) => {
     },
   ]);
 };
-

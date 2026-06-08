@@ -41,6 +41,10 @@ const productSchema = new Schema(
       type: Number,
       required: true,
     },
+    gstRate: {
+      type: Number,
+      default: 5,
+    },
   },
   { timestamps: true },
 );

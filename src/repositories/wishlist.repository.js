@@ -1,5 +1,3 @@
-// repositories/user/wishlist.repository.js
-
 import Wishlist from "../models/wishlist.model.js";
 import Product from "../models/product.model.js";
 import Variant from "../models/variant.model.js";

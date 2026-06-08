@@ -1,19 +1,17 @@
-import {getInventoryPageService,getInventoryVariantsService,updateVariantStockService} from "../../services/admin/inventory.service.js";
+import {
+  getInventoryPageService,
+  getInventoryVariantsService,
+  updateVariantStockService,
+} from "../../services/admin/inventory.service.js";
 
 export const getInventoryPage = async (req, res, next) => {
   try {
     const page = Number(req.query.page) || 1;
-
     const limit = 6;
-
     const skip = (page - 1) * limit;
-
     const search = req.query.search?.trim() || "";
-
     const sort = req.query.sort || "latest";
-
     const category = req.query.category || "";
-
     const stock = req.query.stock || "";
 
     const result = await getInventoryPageService({
@@ -47,9 +45,8 @@ export const getInventoryPage = async (req, res, next) => {
 
       categories: result.categories,
     });
-
   } catch (error) {
-    console.error(error)
+    console.error(error);
     next(error);
   }
 };

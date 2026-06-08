@@ -101,15 +101,19 @@ ul{
 
 .primary-btn{
   height:45px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--primary);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 0 25px;
-  cursor: pointer;
-  transition: 0.2s ease;
+  border:none;
+  border-radius:var(--radius-sm);
+  background:var(--primary);
+  color:#fff;
+  font-size:14px;
+  font-weight:500;
+  padding:0 25px;
+  cursor:pointer;
+  transition:0.2s ease;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .primary-btn:hover{
@@ -117,16 +121,22 @@ ul{
 }
 
 .secondary-btn{
-  height: 42px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: #fff;
-  color: var(--text-main);
-  font-size: 14px;
-  font-weight: 400;
-  padding: 0 18px;
-  cursor: pointer;
-  transition: 0.2s ease;
+  height:46px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:#fff;
+  color:var(--text-main);
+  font-size:14px;
+  font-weight:400;
+  padding:0 18px;
+  cursor:pointer;
+  transition:0.2s ease;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  text-decoration:none;
 }
 
 .secondary-btn:hover{

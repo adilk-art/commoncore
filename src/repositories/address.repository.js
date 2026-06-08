@@ -19,3 +19,12 @@ export const deleteAddressById=(id)=>Address.findByIdAndDelete(id);
 export const clearDefault=(userId)=>{
     return Address.updateMany({userId},{isDefault:false});}
     
+export const getUserAddressById =
+  (addressId, userId) => {
+
+    return Address.findOne({
+      _id: addressId,
+      userId,
+    });
+
+  };

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <title>
+    Order Details — Commoncore
+  </title>
+
+  <%- include('../partials/user-head') %>
+
+  <link
+    rel="stylesheet"
+    href="/css/user/order-detail.css"
+  >
+
+</head>
+
+<body>
+
+<%- include('../partials/user-header') %>
+
+<main class="order-detail-page">
+
+  <% const hasMultipleItems = order.items.length > 1; %>
+
+  <!-- HEADER -->
+
+  <section class="order-header card card-md">
+
+    <div>
+
+      <h1 class="order-number">
+        <%= order.orderNumber %>
+      </h1>
+
+      <p class="order-date">
+        Placed on
+        <%= new Date(order.createdAt).toLocaleDateString("en-IN",{
+          day:"numeric",
+          month:"long",
+          year:"numeric"
+        }) %>
+      </p>
+
+    </div>
+
+   <div class="order-header-right">
+
+  <span class="order-status-badge
+<%= fullyCancelled
+      ? 'cancelled'
+      : partiallyCancelled
+        ? 'partially-cancelled'
+        : order.orderStatus.toLowerCase()
+%>">
+  <%= fullyCancelled
+        ? 'Cancelled'
+        : partiallyCancelled
+          ? 'Partially Cancelled'
+          : order.orderStatus
+  %>
+</span>
+
+  <a
+    href="/user/order/<%= order._id %>/invoice"
+    class="invoice-btn"
+  >
+    Download Invoice
+  </a>
+
+</div>
+
+  </section>
+
+  <!-- TRACKING -->
+
+<% if(fullyCancelled){ %>
+
+<section class="cancelled-card card card-md">
+
+  <div class="cancelled-icon">
+    ✕
+  </div>
+
+  <div>
+
+    <h2>
+      Order Cancelled
+    </h2>
+
+    <p>
+      All items in this order were cancelled.
+    </p>
+
+  </div>
+
+</section>
+
+<% } else { %>
+
+  <% if(partiallyCancelled){ %>
+
+  <section class="partial-cancel-card card card-md">
+
+    <div class="partial-icon">
+      !
+    </div>
+
+    <div>
+
+      <h2>
+        Partially Cancelled
+      </h2>
+
+      <p>
+        Some items in this order have been cancelled.
+      </p>
+
+    </div>
+
+  </section>
+
+  <% } %>
+
+  <section class="tracking-card card card-md">
+
+    <div class="track-step completed">
+      <div class="track-dot"></div>
+      <span>Placed</span>
+    </div>
+
+    <div class="track-line active"></div>
+
+    <div class="track-step <%= ['Processing','Shipped','Delivered'].includes(order.orderStatus) ? 'completed' : '' %>">
+      <div class="track-dot"></div>
+      <span>Processed</span>
+    </div>
+
+    <div class="track-line <%= ['Shipped','Delivered'].includes(order.orderStatus) ? 'active' : '' %>"></div>
+
+    <div class="track-step <%= ['Shipped','Delivered'].includes(order.orderStatus) ? 'completed' : '' %>">
+      <div class="track-dot"></div>
+      <span>Shipped</span>
+    </div>
+
+    <div class="track-line <%= order.orderStatus === 'Delivered' ? 'active' : '' %>"></div>
+
+    <div class="track-step <%= order.orderStatus === 'Delivered' ? 'completed' : '' %>">
+      <div class="track-dot"></div>
+      <span>Delivered</span>
+    </div>
+
+    <div class="tracking-footer">
+  
+    <% if(order.orderStatus === "Delivered"){ %>
+  
+      <span>
+        Delivered On
+      </span>
+  
+      <strong>
+        <%= new Date(order.updatedAt)
+              .toLocaleDateString("en-IN",{
+                day:"numeric",
+                month:"long",
+                year:"numeric"
+              }) %>
+      </strong>
+  
+    <% } else { %>
+  
+      <span>
+        Expected Delivery
+      </span>
+  
+      <strong>
+        <%= new Date(order.estimatedDeliveryDate)
+              .toLocaleDateString("en-IN",{
+                day:"numeric",
+                month:"long",
+                year:"numeric"
+              }) %>
+      </strong>
+  
+    <% } %>
+  
+  </div>
+  </section>
+
+<% } %>
+
+  <!-- INFO GRID -->
+
+ <section class="info-grid">
+
+  <!-- Shipping Card -->
+  <div class="card card-md">
+
+    <h3 class="info-title">
+      Shipping Details
+    </h3>
+
+<div class="shipping-box">
+
+  <h4>
+    <%= order.shippingAddress.fullName %>
+  </h4>
+
+  <p>
+    <%= order.shippingAddress.line1 %>
+  </p>
+
+  <% if(order.shippingAddress.line2){ %>
+
+  <p>
+    <%= order.shippingAddress.line2 %>
+  </p>
+
+  <% } %>
+
+  <p>
+    <%= order.shippingAddress.city %>,
+    <%= order.shippingAddress.state %>
+  </p>
+
+  <p>
+    <%= order.shippingAddress.pincode %>
+  </p>
+
+  <p>
+    +91 <%= order.shippingAddress.phone %>
+  </p>
+
+</div>
+
+  </div>
+
+  <!-- Order Information Card -->
+  <div class="card card-md">
+
+    <h3 class="info-title">
+      Order Information
+    </h3>
+
+    <div class="order-info-box">
+
+      <div class="info-row">
+        <span>Items</span>
+        <p>
+          <%= order.items.length %>
+        </p>
+      </div>
+
+      <div class="info-row">
+        <span>Payment Method</span>
+        <strong>
+          <%= order.paymentMethod %>
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>Payment Status</span>
+
+        <strong class="payment-status
+          <%= order.paymentStatus.toLowerCase() %>">
+
+          <%= order.paymentStatus %>
+
+        </strong>
+      </div>
+
+      <div class="info-row">
+        <span>Status</span>
+
+        <p>
+          <%= fullyCancelled
+            ? "Cancelled"
+            : partiallyCancelled
+              ? "Partially Cancelled"
+              : order.orderStatus
+          %>
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+  <!-- ORDER SUMMARY -->
+
+<section class="card card-md summary-card">
+
+  <h2 class="summary-title">
+    Order Summary
+  </h2>
+
+  <% order.items.forEach(item => { %>
+
+  <div class="summary-item">
+
+    <img
+      src="<%= item.variantId.images?.[0]?.url %>"
+      alt="<%= item.productName %>"
+    >
+
+    <div class="summary-item-content">
+
+      <h4>
+        <%= item.productName %>
+      </h4>
+
+      <p class="item-variant">
+
+        <%= item.color %> /
+        <%= item.size %>
+
+        · Qty <%= item.quantity %>
+
+      </p>
+
+      <span
+        class="item-status <%= item.status.toLowerCase() %>"
+      >
+        <%= item.status %>
+      </span>
+
+    </div>
+
+   <div class="summary-item-right">
+
+  <div class="item-price-breakdown">
+
+    <span class="unit-price">
+      ₹<%= item.unitPrice.toLocaleString("en-IN") %>
+      ×
+      <%= item.quantity %>
+    </span>
+
+    <strong
+      class="<%= item.status === 'Cancelled'
+        ? 'price-cancelled'
+        : '' %>"
+    >
+      ₹<%= (
+        item.unitPrice * item.quantity
+      ).toLocaleString("en-IN") %>
+    </strong>
+
+  </div>
+
+  <% if (
+    item.status === "Placed" ||
+    item.status === "Processing"
+  ) { %>
+
+  <button
+  class="secondary-btn cancel-item-btn"
+  data-item-id="<%= item._id %>"
+  data-order-id="<%= order._id %>"
+  data-name="<%= item.productName %>"
+  data-image="<%= item.variantId.images?.[0]?.url %>"
+  data-size="<%= item.size %>"
+  data-color="<%= item.color %>"
+  data-price="<%= item.unitPrice * item.quantity %>"
+>
+  Cancel Item
+</button>
+
+  <% } %>
+
+</div>
+
+  </div>
+
+  <% }) %>
+
+<div class="summary-divider"></div>
+
+<% if(fullyCancelled){ %>
+
+<div class="summary-row">
+  <span>Items Subtotal</span>
+  <span>
+    ₹<%= order.subtotal.toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>Shipping</span>
+  <span>
+    <%= order.shippingFee === 0
+      ? "Free"
+      : `₹${order.shippingFee}` %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>GST Included</span>
+  <span>
+    ₹<%= order.items.reduce((total,item)=>{
+
+      const itemSubtotal =
+        item.unitPrice * item.quantity;
+
+      const taxable =
+        itemSubtotal / (1 + item.gstRate / 100);
+
+      return total + (itemSubtotal - taxable);
+
+    },0).toFixed(2) %>
+  </span>
+</div>
+
+<div class="summary-divider"></div>
+
+<div class="summary-row total-row">
+  <span>Order Total</span>
+  <span>
+    ₹<%= order.total.toLocaleString("en-IN") %>
+  </span>
+</div>
+
+
+
+<div class="summary-divider"></div>
+
+
+<% } else { %>
+
+<div class="summary-row">
+  <span>Original Subtotal</span>
+  <span>
+    ₹<%= order.subtotal.toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<% if(cancelledAmount > 0){ %>
+
+<div class="summary-row summary-cancelled">
+  <span>Cancelled Items</span>
+  <span>
+    -₹<%= cancelledAmount.toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<% } %>
+<% if(cancelledAmount > 0){ %>
+
+<div class="summary-row">
+  <span>Active Subtotal</span>
+  <span>
+    ₹<%= activeSubtotal.toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<% } %>
+<div class="summary-row">
+  <span>Shipping</span>
+  <span>
+    <%= order.shippingFee === 0
+      ? "Free"
+      : `₹${order.shippingFee}` %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>GST Included</span>
+  <span>
+    ₹<%= gstAmount.toFixed(2) %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>Payment</span>
+  <span>
+    <%= order.paymentMethod %>
+  </span>
+</div>
+
+<div class="summary-divider"></div>
+
+<div class="summary-row total-row">
+  <span>
+
+    <%= partiallyCancelled
+      ? "Amount Payable"
+      : "Order Total"
+    %>
+
+  </span>
+  <span>
+    ₹<%= currentValue.toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<% } %>
+
+</section>
+
+ <!-- ACTIONS -->
+
+<div class="order-actions">
+
+  <% if(
+    order.orderStatus === "Placed" ||
+    order.orderStatus === "Processing"
+  ){ %>
+
+  <button
+    class="secondary-btn cancel-order-btn"
+    data-order-id="<%= order._id %>"
+  >
+    Cancel Order
+  </button>
+
+  <% } %>
+
+  <a
+    href="/user/shop"
+    class="primary-btn continue-shopping-btn"
+  >
+    Continue Shopping
+  </a>
+
+</div>
+
+  <div
+  id="cancelItemModal"
+  class="cancel-modal hidden"
+>
+
+  <div class="cancel-modal-content">
+
+    <div class="modal-header">
+
+      <h2>
+        Cancel Order
+      </h2>
+
+      <button
+        type="button"
+        id="closeCancelModal"
+        class="modal-close"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div class="cancel-product">
+
+      <img
+        id="modalImage"
+        src=""
+        alt=""
+      >
+
+      <div>
+
+        <h3 id="modalName"></h3>
+
+        <p id="modalColor"></p>
+
+        <p id="modalSize"></p>
+
+        <strong id="modalPrice"></strong>
+
+      </div>
+
+    </div>
+
+    <div class="modal-field">
+
+      <label>
+        Reason
+      </label>
+
+      <select
+        id="cancelReason"
+        class="select-field"
+      >
+        <option value="">
+          Select Reason
+        </option>
+
+        <option value="Ordered by mistake">
+          Ordered by mistake
+        </option>
+
+        <option value="Found better product">
+          Found better product
+        </option>
+
+        <option value="Delivery taking too long">
+          Delivery taking too long
+        </option>
+
+        <option value="Changed my mind">
+          Changed my mind
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="modal-field">
+
+      <label>
+        Comments
+      </label>
+
+      <textarea
+        id="cancelComment"
+        class="input-field cancel-comment"
+        placeholder="Additional comments"
+      ></textarea>
+
+    </div>
+
+    <div class="cancel-modal-actions">
+
+      <button
+        id="keepItemBtn"
+        class="secondary-btn"
+      >
+        Cancel
+      </button>
+
+      <button
+        id="confirmCancelItem"
+        class="primary-btn"
+      >
+        Confirm Cancellation
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+</main>
+
+<%- include('../partials/user-scripts') %>
+  <script src="/js/user/orderDetail.js"></script>
+
+
+</body>
+</html>

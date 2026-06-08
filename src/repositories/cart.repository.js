@@ -41,3 +41,18 @@ export const findPurchasableVariants = async (
     });
 
 };
+
+
+export const clearCart = async (userId) => {
+  return Cart.findOneAndUpdate(
+    { userId },
+    {
+      $set: {
+        items: [],
+      },
+    },
+    {
+      new: true,
+    }
+  );
+};

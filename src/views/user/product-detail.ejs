@@ -80,13 +80,33 @@
 
         <!-- Stock -->
         <div class="pd-stock-row" id="stockRow">
-          <% if (selectedVariant.stock > 10) { %>
-            <span class="pd-stock pd-stock--green">In Stock</span>
+
+          <% if (isUnavailable) { %>
+
+            <span class="pd-stock pd-stock--red">
+              Product Unavailable
+            </span>
+
+          <% } else if (selectedVariant.stock > 10) { %>
+
+            <span class="pd-stock pd-stock--green">
+              In Stock
+            </span>
+
           <% } else if (selectedVariant.stock > 0) { %>
-            <span class="pd-stock pd-stock--orange">Only <%= selectedVariant.stock %> left</span>
+
+            <span class="pd-stock pd-stock--orange">
+              Only <%= selectedVariant.stock %> left
+            </span>
+
           <% } else { %>
-            <span class="pd-stock pd-stock--red">Out of Stock</span>
+
+            <span class="pd-stock pd-stock--red">
+              Out of Stock
+            </span>
+
           <% } %>
+
         </div>
 
         <!-- Color -->
@@ -169,8 +189,10 @@
               type="submit"
               class="pd-cart-btn"
               id="cartBtn"
-              <%= selectedVariant.stock <= 0 ? 'disabled' : '' %>
-            >Add to Cart</button>
+              <%= isUnavailable || selectedVariant.stock <= 0 ? 'disabled' : '' %>
+            >
+              Add to Cart
+            </button>
           </form>
 
           <form action="/user/checkout/buy-now" method="POST" class="pd-action-form" id="buyForm">
@@ -180,8 +202,10 @@
               type="submit"
               class="pd-buy-btn"
               id="buyBtn"
-              <%= selectedVariant.stock <= 0 ? 'disabled' : '' %>
-            >Buy Now</button>
+              <%= isUnavailable || selectedVariant.stock <= 0 ? 'disabled' : '' %>
+            >
+              Buy Now
+            </button>
           </form>
 <form
   action="/user/wishlist/add"
@@ -410,7 +434,9 @@
   <script>
     window.__VARIANTS__ = <%- variantsJson %>;
     window.__SELECTED_ID__ = '<%= selectedVariant._id %>';
+    window.__IS_UNAVAILABLE__ = <%= isUnavailable %>;
   </script>
+
   <script src="/js/user/productDetail.js"></script>
 
 </body>

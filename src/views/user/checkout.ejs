@@ -4,7 +4,7 @@
 <head>
 
   <title>
-    Checkout — Stitch
+    Checkout — Commoncore
   </title>
 
   <%- include('../partials/user-head') %>
@@ -22,7 +22,34 @@
 
 <main class="checkout-page">
 
-  <div class="checkout-layout">
+  <% if (invalidCart) { %>
+
+    <div class="checkout-warning card card-md">
+
+      <div>
+
+        <h2 class="text-section-title">
+          Some items in your cart are unavailable
+        </h2>
+
+        <p class="text-body">
+          <%= message %>
+        </p>
+
+      </div>
+
+      <a
+        href="/user/cart"
+        class="primary-btn"
+      >
+        Review Cart
+      </a>
+
+    </div>
+
+  <% } %>
+
+  <div class="checkout-layout <%= invalidCart ? 'checkout-disabled' : '' %>">
 
     <!-- LEFT -->
 
@@ -46,73 +73,92 @@
 
         <div class="checkout-address-grid">
 
-          <% addresses.forEach(address => { %>
+  <% addresses.forEach(address => { %>
 
-            <label
-              class="checkout-address <%= address.isDefault ? 'active' : '' %>"
-            >
+    <label
+      class="checkout-address <%= address.isDefault ? 'active' : '' %>"
+    >
 
-              <input
-                type="radio"
-                name="address"
-                value="<%= address._id %>"
-                class="hidden address-radio"
-                <%= address.isDefault ? 'checked' : '' %>
-              >
+      <input
+        type="radio"
+        name="address"
+        value="<%= address._id %>"
+        class="hidden address-radio"
+        <%= address.isDefault ? 'checked' : '' %>
+      >
 
-              <% if(address.isDefault){ %>
+      <div class="checkout-address-top">
 
-                <span class="address-badge">
-                  Default
-                </span>
+        <% if(address.isDefault){ %>
 
-              <% } %>
+          <span class="address-badge">
+            Default
+          </span>
 
-              <h3 class="address-name">
-                <%= address.fullName %>
-              </h3>
+        <% } %>
 
-              <p class="address-text">
-                <%= address.line1 %>
-              </p>
+        <button
+          type="button"
+          class="checkout-edit-address-btn"
+          data-id="<%= address._id %>"
+          data-fullname="<%= address.fullName %>"
+          data-phone="<%= address.phone %>"
+          data-line1="<%= address.line1 %>"
+          data-line2="<%= address.line2 || '' %>"
+          data-city="<%= address.city %>"
+          data-state="<%= address.state %>"
+          data-pincode="<%= address.pincode %>"
+          data-default="<%= address.isDefault %>"
+        >
+          Edit
+        </button>
 
-              <% if(address.line2){ %>
+      </div>
 
-                <p class="address-text">
-                  <%= address.line2 %>
-                </p>
+      <h3 class="address-name">
+        <%= address.fullName %>
+      </h3>
 
-              <% } %>
+      <p class="address-text">
+        <%= address.line1 %>
+      </p>
 
-              <p class="address-text">
-                <%= address.city %>,
-                <%= address.state %>
-              </p>
+      <% if(address.line2){ %>
 
-              <p class="address-text">
-                <%= address.pincode %>
-              </p>
+        <p class="address-text">
+          <%= address.line2 %>
+        </p>
 
-              <p class="address-phone">
-                +91 <%= address.phone %>
-              </p>
+      <% } %>
 
-            </label>
+      <p class="address-text">
+        <%= address.city %>,
+        <%= address.state %>
+      </p>
 
-          <% }) %>
+      <p class="address-text">
+        <%= address.pincode %>
+      </p>
 
-          <a
-            href="/user/address"
-            class="add-address-card"
-          >
+      <p class="address-phone">
+        +91 <%= address.phone %>
+      </p>
 
-            <span>
-              + Add Address
-            </span>
+    </label>
 
-          </a>
+  <% }) %>
 
-        </div>
+  <button
+    type="button"
+    class="add-address-card"
+    id="openAddAddressModal"
+  >
+    <span>
+      + Add Address
+    </span>
+  </button>
+
+</div>
 
       </section>
 
@@ -122,24 +168,26 @@
 
         <div class="checkout-section-head">
 
-          <div class="checkout-step">
-            2
-          </div>
+      <div class="checkout-step">
+        2
+      </div>
 
-          <h2 class="text-section-title">
-            Payment Method
-          </h2>
+      <h2 class="text-section-title">
+        Payment Method
+      </h2>
 
-        </div>
+      
+
+    </div>
 
         <div class="payment-options">
 
-          <label class="payment-option active">
+          <!-- <label class="payment-option active">
 
             <input
               type="radio"
               name="payment"
-              value="razorpay"
+              value="Razorpay"
               checked
               class="hidden payment-radio"
             >
@@ -156,14 +204,15 @@
 
             </div>
 
-          </label>
+          </label> -->
 
-          <label class="payment-option">
+          <label class="payment-option active">
 
             <input
               type="radio"
               name="payment"
-              value="cod"
+              value="CashOnDelivery"
+              checked
               class="hidden payment-radio"
             >
 
@@ -235,27 +284,24 @@
       <div class="summary-divider"></div>
 
       <div class="summary-row">
-
-        <span>
-          Subtotal
-        </span>
-
+        <span>Subtotal</span>
         <span>
           ₹<%= cart.subtotal.toLocaleString('en-IN') %>
         </span>
-
       </div>
 
       <div class="summary-row">
-
+        <span>GST Included</span>
         <span>
-          Shipping
+          ₹<%= gstAmount.toFixed(2) %>
         </span>
+      </div>
 
+      <div class="summary-row">
+        <span>Shipping</span>
         <span>
           <%= shipping === 0 ? 'Free' : `₹${shipping}` %>
         </span>
-
       </div>
 
       <div class="summary-divider"></div>
@@ -263,27 +309,162 @@
       <div class="summary-row summary-total">
 
         <span>
-          Total
+          Total      
+          <span class="text-muted gst-note">
+          (Inclusive of GST.)
+          </span>
         </span>
-
+        
         <span>
           ₹<%= total.toLocaleString('en-IN') %>
         </span>
-
+        
       </div>
+
 
       <button
         class="primary-btn place-order-btn"
         id="placeOrderBtn"
+        <%= invalidCart ? 'disabled' : '' %>
       >
         Place Order
       </button>
 
     </aside>
-
+    <input type="hidden" id="isBuyNow" value="<%= isBuyNow ? 'true' : 'false' %>">
+    <% if (isBuyNow) { %>
+      <input type="hidden" id="buyNowVariantId" value="<%= buyNow.variantId %>">
+      <input type="hidden" id="buyNowQuantity" value="<%= buyNow.quantity %>">
+    <% } %>
   </div>
 
 </main>
+<div
+  class="checkout-address-modal"
+  id="addressModal"
+>
+
+  <div class="checkout-address-modal-content">
+
+    <h3 id="addressFormTitle">
+      Add New Address
+    </h3>
+
+    <form id="addressForm">
+
+      <input
+        type="hidden"
+        name="addressId"
+        id="addressId"
+      >
+
+      <input
+        type="text"
+        name="fullName"
+        placeholder="Full Name"
+      >
+
+      <span
+        class="error-msg"
+        id="fullNameError"
+      ></span>
+
+      <input
+        type="text"
+        name="phone"
+        placeholder="Phone Number"
+      >
+
+      <span
+        class="error-msg"
+        id="phoneError"
+      ></span>
+
+      <input
+        type="text"
+        name="line1"
+        placeholder="House / Street / Area"
+      >
+
+      <span
+        class="error-msg"
+        id="line1Error"
+      ></span>
+
+      <input
+        type="text"
+        name="line2"
+        placeholder="Landmark (Optional)"
+      >
+
+      <input
+        type="text"
+        name="city"
+        placeholder="City"
+      >
+
+      <span
+        class="error-msg"
+        id="cityError"
+      ></span>
+
+      <input
+        type="text"
+        name="state"
+        placeholder="State"
+      >
+
+      <span
+        class="error-msg"
+        id="stateError"
+      ></span>
+
+      <input
+        type="text"
+        name="pincode"
+        placeholder="Pincode"
+      >
+
+      <span
+        class="error-msg"
+        id="pincodeError"
+      ></span>
+
+      <label class="checkout-default-checkbox">
+
+        <input
+          type="checkbox"
+          name="isDefault"
+        >
+
+        Set as Default Address
+
+      </label>
+
+      <div class="checkout-address-form-actions">
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Save Address
+        </button>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="closeAddressModal"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
 
 <%- include('../partials/user-scripts') %>
 
