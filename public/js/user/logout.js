@@ -1,7 +1,23 @@
 function openUserLogoutModal() {
-  document.getElementById("userLogoutModal").style.display = "flex";
+  const modal = document.getElementById("userLogoutModal");
+
+  if (modal) {
+    modal.style.display = "flex";
+  }
 }
 
 function closeUserLogoutModal() {
-  document.getElementById("userLogoutModal").style.display = "none";
+  const modal = document.getElementById("userLogoutModal");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
 }
+
+window.addEventListener("click", (e) => {
+  const modal = document.getElementById("userLogoutModal");
+
+  if (e.target === modal) {
+    closeUserLogoutModal();
+  }
+});

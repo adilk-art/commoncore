@@ -9,18 +9,18 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
   >
 
+  <link rel="stylesheet" href="/css/user/standard.css">
   <link rel="stylesheet" href="/css/user/style.css">
-  <link rel="stylesheet" href="/css/user/profile.css">
   <link rel="stylesheet" href="/css/user/address.css">
-  <link rel="stylesheet" href="/css/user/global.css">
   <link rel="stylesheet" href="/css/user/toast.css">
     <link rel="stylesheet" href="/css/user/user-header.css">
-  <link rel="stylesheet" href="/css/user/standard.css">
 </head>
 
 <body>
 
   <%- include("../partials/user-header") %>
+  <%- include("../partials/user-logout-modal") %>
+
 
   <div class="account-container">
 
@@ -93,7 +93,8 @@
                   <% if (addr.isDefault) { %>
 
                     <span class="default-tag">
-                      DEFAULT
+                      <i class="fa-solid fa-star"></i>
+                      Default
                     </span>
 
                   <% } %>
@@ -120,45 +121,46 @@
                     +91 <%= addr.phone %>
                   </p>
 
-                  <div class="actions">
+                 <div class="actions">
 
-                    <button
-                      type="button"
-                      class="btn edit editAddressBtn"
-                      data-id="<%= addr._id %>"
-                      data-fullname="<%= addr.fullName %>"
-                      data-phone="<%= addr.phone %>"
-                      data-line1="<%= addr.line1 %>"
-                      data-line2="<%= addr.line2 %>"
-                      data-city="<%= addr.city %>"
-                      data-state="<%= addr.state %>"
-                      data-pincode="<%= addr.pincode %>"
-                      data-default="<%= addr.isDefault %>"
-                    >
-                      Edit
-                    </button>
+  <button
+    type="button"
+    class="action-link editAddressBtn"
+    data-id="<%= addr._id %>"
+    data-fullname="<%= addr.fullName %>"
+    data-phone="<%= addr.phone %>"
+    data-line1="<%= addr.line1 %>"
+    data-line2="<%= addr.line2 %>"
+    data-city="<%= addr.city %>"
+    data-state="<%= addr.state %>"
+    data-pincode="<%= addr.pincode %>"
+    data-default="<%= addr.isDefault %>"
+  >
+    <i class="fa-regular fa-pen-to-square"></i>
+    Edit
+  </button>
 
-                    <a
-                      href="#"
-                      class="btn delete"
-                      onclick="openDeleteModal('<%=addr._id%>');return false;"
-                    >
-                      Delete
-                    </a>
+  <a
+    href="#"
+    class="action-link delete-link"
+    onclick="openDeleteModal('<%= addr._id %>');return false;"
+  >
+    <i class="fa-regular fa-trash-can"></i>
+    Delete
+  </a>
 
-                    <% if (!addr.isDefault) { %>
+  <% if (!addr.isDefault) { %>
+    <a
+      href="#"
+      onclick="setDefault('<%= addr._id %>')"
+      class="action-link default-link"
+    >
+      <i class="fa-solid fa-check"></i>
+      Set Default
+    </a>
+  <% } %>
 
-                      <a
-                        href="#"
-                        onclick="setDefault('<%=addr._id%>')"
-                        class="btn default"
-                      >
-                        Set Default
-                      </a>
-
-                    <% } %>
-
-                  </div>
+</div>
 
                 </div>
 

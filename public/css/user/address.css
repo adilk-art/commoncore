@@ -58,17 +58,25 @@
 .address-card:hover {
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
-
 .default-tag {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: #111;
-  color: #fff;
+  top: 18px;
+  right: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  background: #eef3ff;
+  color: #4e5566;
+
+  border: 1px solid #dbe4ff;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
   font-size: 11px;
   font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 5px;
 }
 
 .address-card h3 {
@@ -105,19 +113,56 @@
   cursor: pointer;
 }
 
-.btn.edit {
-  background: #4b5563;
-  color: #fff;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
 }
 
-.btn.delete {
-  background: #e74c3c;
-  color: #fff;
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: none;
+  border: none;
+
+  padding: 0;
+  margin: 0;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  color: #666;
+  cursor: pointer;
+
+  transition: 0.2s ease;
 }
 
-.btn.default {
-  background: #2ecc71;
-  color: #fff;
+.action-link i {
+  font-size: 13px;
+}
+
+.action-link:hover {
+  color: #4e5566;
+}
+
+.delete-link {
+  color: #dc2626;
+}
+
+.delete-link:hover {
+  
+  color: #a1a1aa
+}
+
+.default-link {
+  color: #4e5566;
+}
+
+.default-link:hover {
+  color: #2f3542;
 }
 
 .btn.cancel {

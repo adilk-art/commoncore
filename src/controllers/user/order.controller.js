@@ -1,11 +1,39 @@
 import {
+  getUserOrdersService,
   placeOrderService,
   getOrderSuccessService,
   getOrderDetailService,
   cancelOrderItemService,
   cancelOrderService,
-  downloadInvoiceService,
+  downloadInvoiceService, 
 } from "../../services/user/order.service.js";
+
+export const loadOrdersPage = async (req, res, next) => {
+  try {
+
+    const page =
+      Number(req.query.page) || 1;
+
+    const search =
+      req.query.search || "";
+
+    const data =
+      await getUserOrdersService({
+        userId: req.session.userId,
+        page,
+        search,
+      });
+
+    res.render(
+      "user/orders",
+      data
+    );
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const placeOrder = async (req, res, next) => {
   try {

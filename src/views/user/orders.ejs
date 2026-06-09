@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>My Orders</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  >
+
+  <link rel="stylesheet" href="/css/user/standard.css">
+  <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/profile.css">
+  <link rel="stylesheet" href="/css/user/orders.css">
+  <link rel="stylesheet" href="/css/user/global.css">
+  <link rel="stylesheet" href="/css/user/toast.css">
+  <link rel="stylesheet" href="/css/user/user-header.css">
+
+</head>
+
+<body>
+
+  <%- include("../partials/user-header") %>
+  <%- include("../partials/user-logout-modal") %>
+
+  <div class="account-container">
+
+    <%- include("../partials/sidebar", { active: "orders" }) %>
+
+    <div class="main-content">
+
+  <div class="page-header">
+
+    <h2 class="page-title">
+      MY ORDERS
+    </h2>
+
+  </div>
+
+  <form
+    class="search-bar"
+    method="GET"
+    action="/user/orders"
+  >
+
+    <i class="fa-solid fa-magnifying-glass"></i>
+
+    <input
+      type="text"
+      name="search"
+      placeholder="Search Order ID..."
+      value="<%= search || '' %>"
+    >
+
+    <button
+      type="button"
+      class="clear-search <%= !search ? 'hidden' : '' %>"
+      onclick="window.location.href='/user/orders'"
+    >
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+  </form>
+
+  <% if (orders.length === 0) { %>
+
+    <div class="empty-orders">
+
+      <div class="empty-box">
+
+        <div class="icon">
+          📦
+        </div>
+
+        <% if (search) { %>
+
+          <h3>
+            No matching orders found
+          </h3>
+
+          <p>
+            Try searching with another order number.
+          </p>
+
+        <% } else { %>
+
+          <h3>
+            No Orders Yet
+          </h3>
+
+          <p>
+            Start shopping to see your orders here.
+          </p>
+
+        <% } %>
+
+      </div>
+
+    </div>
+
+  <% } else { %>
+
+    <div class="orders-list">
+
+      <% orders.forEach(order => { %>
+
+        <%
+          const firstItem = order.items[0];
+
+          const totalItems = order.items.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
+        %>
+
+        <div class="order-row">
+
+          <div class="product-image">
+
+            <img
+              src="<%= firstItem.productImage || '/images/default-product.jpg' %>"
+              alt="<%= firstItem.productName %>"
+            >
+
+          </div>
+
+          <div>
+
+            <span class="column-title">
+              ORDER ID
+            </span>
+
+            <h4>
+              <%= order.orderNumber %>
+            </h4>
+
+          </div>
+
+          <div>
+
+            <span class="column-title">
+              PRODUCT DETAILS
+            </span>
+
+            <p class="product-name">
+
+              <%= firstItem.productName %>
+
+              <% if(order.items.length > 1){ %>
+                <br>
+                + <%= order.items.length - 1 %> more
+              <% } %>
+
+            </p>
+
+          </div>
+
+          <div>
+
+            <span class="column-title">
+              TOTAL ITEMS
+            </span>
+
+            <h4>
+              <%= totalItems %> Item<%= totalItems > 1 ? 's' : '' %>
+            </h4>
+
+          </div>
+
+          <div>
+
+            <span class="column-title">
+              AMOUNT
+            </span>
+
+            <h4>
+              ₹<%= order.total.toFixed(2) %>
+            </h4>
+
+          </div>
+
+          <div>
+
+            <span class="column-title">
+              ORDER DATE
+            </span>
+
+            <p>
+              <%= new Date(order.createdAt)
+                .toLocaleDateString("en-IN") %>
+            </p>
+
+          </div>
+
+          <div>
+
+            <span
+              class="status-badge status-<%= order.orderStatus.toLowerCase() %>"
+            >
+              <%= order.orderStatus %>
+            </span>
+
+          </div>
+
+          <div>
+
+            <a
+              href="/user/order/<%= order._id %>"
+              class="view-btn"
+            >
+              View Details
+            </a>
+
+          </div>
+
+        </div>
+
+      <% }) %>
+
+    </div>
+
+  <% } %>
+
+  <% if (totalPages > 1) { %>
+
+    <div class="pagination">
+
+      <% for(let i = 1; i <= totalPages; i++) { %>
+
+        <a
+          href="/user/orders?page=<%= i %>&search=<%= search || '' %>"
+          class="<%= currentPage === i ? 'active' : '' %>"
+        >
+          <%= i %>
+        </a>
+
+      <% } %>
+
+    </div>
+
+  <% } %>
+
+</div>
+
+  </div>
+
+  <script src="/js/user/logout.js"></script>
+  <script src="/js/utils/toast.js"></script>
+
+</body>
+
+</html>

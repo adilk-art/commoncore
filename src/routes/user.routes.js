@@ -65,6 +65,7 @@ router.get("/checkout", isAuthenticated, checkoutController.loadCheckout);
 router.post("/checkout/buy-now",checkoutController.initiateBuyNow);
 router.get("/checkout/buy-now", isAuthenticated, checkoutController.getBuyNowCheckoutPage);
 
+router.get("/orders",isAuthenticated,orderController.loadOrdersPage);
 router.post("/order/place",isAuthenticated,orderController.placeOrder)
 router.get("/order/success/:orderId",isAuthenticated,orderController.loadOrderSuccessPage)
 router.get("/order/:orderId",isAuthenticated,orderController.loadOrderDetail);

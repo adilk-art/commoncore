@@ -6,6 +6,7 @@ import {
   findUserOrderById,
   findOrderById,
   saveOrder,
+  findOrdersByUser 
 } from "../../repositories/order.repository.js";
 import {
   reduceVariantStock,
@@ -14,6 +15,38 @@ import {
 import { clearCart } from "../../repositories/cart.repository.js";
 import { generateInvoicePdf } from "../../utils/invoicePdf.js";
 import { validateBuyNowService } from "./checkout.service.js";
+
+
+export const getUserOrdersService = async ({
+  userId,
+  search,
+  page,
+}) => {
+
+  const limit = 5;
+
+  const {
+    orders,
+    totalOrders,
+  } = await findOrdersByUser({
+    userId,
+    search,
+    page,
+    limit,
+  });
+
+  const totalPages = Math.ceil(
+    totalOrders / limit
+  );
+
+  return {
+    orders,
+    totalPages,
+    currentPage: page,
+    search,
+  };
+};
+
 
 const generateOrderNumber = () => {
   return "ORD-" + Date.now();
@@ -47,11 +80,12 @@ export const placeOrderService = async (userId, payload) => {
     const { variant, qty } = await validateBuyNowService(variantId, quantity);
     const product = variant.productId;
 
-    items = [
+   items = [
   {
     productId: product._id,
     variantId: variant._id,
     productName: product.name,
+    productImage: variant.images?.[0]?.url || "",
     size: variant.size,
     color: variant.color.name,
     quantity: qty,
@@ -60,7 +94,6 @@ export const placeOrderService = async (userId, payload) => {
     status: "Placed",
   },
 ];
-
     subtotal = variant.price * qty;
   } else {
     const cart = await getCartService(userId);
@@ -82,6 +115,7 @@ export const placeOrderService = async (userId, payload) => {
   productId: item.product._id,
   variantId: item.variant._id,
   productName: item.product.name,
+  productImage: item.variant.images?.[0]?.url || "",
   size: item.variant.size,
   color: item.variant.color.name,
   quantity: item.quantity,

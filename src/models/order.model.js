@@ -8,7 +8,7 @@ const orderItemSchema = new Schema({
   productName: String,
   size: String,
   color: String,
-
+  productImage: String,
   quantity: Number,
   unitPrice: Number,
 
