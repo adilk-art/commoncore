@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <%- include("./partials/head", {
+    title: "Orders"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/orders.css"
+  >
+
+</head>
+<body>
+
+<%- include("./partials/header", {
+  title: "Orders"
+}) %>
+
+<%- include("./partials/logout-modal") %>
+
+<div class="layout">
+
+  <%- include("./partials/sidebar", {
+    active: "orders"
+  }) %>
+
+  <div class="main">
+
+    <div class="content">
+
+      <div class="page-top">
+
+        <div>
+
+          <p class="breadcrumb">
+            Admin Dashboard > Orders
+          </p>
+
+          <h2 class="page-title">
+            Order Management
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Total Orders</p>
+
+            <i class="fa-solid fa-bag-shopping"></i>
+
+          </div>
+
+          <h3><%= totalOrders %></h3>
+
+        </div>
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Processing</p>
+
+            <i class="fa-solid fa-gears"></i>
+
+          </div>
+
+          <h3><%= processingOrders %></h3>
+
+        </div>
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Shipped</p>
+
+            <i class="fa-solid fa-truck"></i>
+
+          </div>
+
+          <h3><%= shippedOrders %></h3>
+
+        </div>
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Delivered</p>
+
+            <i class="fa-solid fa-circle-check"></i>
+
+          </div>
+
+          <h3><%= deliveredOrders %></h3>
+
+        </div>
+
+      </div>
+
+      <div class="table-container">
+
+        <div class="table-header">
+
+          <h3>
+            Orders
+          </h3>
+
+          <div class="table-actions">
+
+            <form
+              method="GET"
+              action="/admin/orders"
+              class="search-box"
+            >
+
+              <input
+                type="hidden"
+                name="page"
+                value="1"
+              >
+
+              <input
+                type="text"
+                name="search"
+                value="<%= search || '' %>"
+                placeholder="Order ID or customer name"
+              >
+
+              <select name="status">
+
+                <option value="">
+                  All Status
+                </option>
+
+                <option value="Placed" <%= status === "Placed" ? "selected" : "" %>>
+                  Placed
+                </option>
+
+                <option value="Processing" <%= status === "Processing" ? "selected" : "" %>>
+                  Processing
+                </option>
+
+                <option value="Shipped" <%= status === "Shipped" ? "selected" : "" %>>
+                  Shipped
+                </option>
+
+                <option value="Delivered" <%= status === "Delivered" ? "selected" : "" %>>
+                  Delivered
+                </option>
+
+                <option value="Cancelled" <%= status === "Cancelled" ? "selected" : "" %>>
+                  Cancelled
+                </option>
+
+              </select>
+
+              <select name="payment">
+
+                <option value="">
+                  All Payments
+                </option>
+
+                <option value="CashOnDelivery" <%= payment === "CashOnDelivery" ? "selected" : "" %>>
+                  COD
+                </option>
+
+                <option value="Razorpay" <%= payment === "Razorpay" ? "selected" : "" %>>
+                  Razorpay
+                </option>
+
+                <option value="Wallet" <%= payment === "Wallet" ? "selected" : "" %>>
+                  Wallet
+                </option>
+
+              </select>
+
+              <select name="sort">
+
+                <option value="latest" <%= sort === "latest" ? "selected" : "" %>>
+                  Latest
+                </option>
+
+                <option value="oldest" <%= sort === "oldest" ? "selected" : "" %>>
+                  Oldest
+                </option>
+
+              </select>
+
+              <button
+                type="submit"
+                class="search-btn"
+              >
+                <i class="fa fa-search"></i>
+              </button>
+
+              <% if(search || status || payment || sort !== "latest"){ %>
+
+                <a
+                  href="/admin/orders"
+                  class="clear-btn"
+                >
+                  Clear Filters
+                </a>
+
+              <% } %>
+
+            </form>
+
+          </div>
+
+        </div>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Actions</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+          <% if(orders.length > 0){ %>
+
+            <% orders.forEach(order => { %>
+
+              <tr>
+
+                <td>
+                  <%= order.orderNumber %>
+                </td>
+
+                <td>
+                  <%= order.customerName || "Unknown" %>
+                </td>
+
+                <td>
+                  <%= new Date(order.createdAt).toLocaleDateString("en-IN") %>
+                </td>
+
+                <td>
+                  <%= order.itemCount %>
+                </td>
+
+                <td>
+                  ₹<%= order.total.toLocaleString("en-IN") %>
+                </td>
+
+                <td>
+                  <%= order.paymentMethod %>
+                </td>
+
+                <td>
+
+                  <span
+                    class="status <%= order.orderStatus.toLowerCase() %>"
+                  >
+                    <%= order.orderStatus %>
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <a
+                    href="/admin/orders/<%= order._id %>"
+                    class="view-btn"
+                  >
+                    View Details
+                  </a>
+
+                </td>
+
+              </tr>
+
+            <% }) %>
+
+          <% } else { %>
+
+            <tr>
+
+              <td colspan="8" class="empty-row">
+
+                <div class="empty-state">
+
+                  <i class="fa-solid fa-bag-shopping"></i>
+
+                  <h3>
+                    No Orders Found
+                  </h3>
+
+                  <p>
+                    Orders will appear here once customers place orders
+                  </p>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          <% } %>
+
+          </tbody>
+
+        </table>
+
+      <% if (totalPages > 1) { %>
+
+<div class="pagination">
+
+  <p class="results-text">
+
+    Showing <%= skip + 1 %>
+    to <%= Math.min(currentPage * limit, orderCount) %>
+    of <%= orderCount %> results
+
+  </p>
+
+  <% if(currentPage > 1){ %>
+
+    <a
+      href="/admin/orders?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>&payment=<%= payment %>&sort=<%= sort %>"
+      class="nav-btn"
+    >
+      Prev
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Prev
+    </span>
+
+  <% } %>
+
+  <% for(let i = 1; i <= totalPages; i++){ %>
+
+    <a
+      href="/admin/orders?page=<%= i %>&search=<%= search %>&status=<%= status %>&payment=<%= payment %>&sort=<%= sort %>"
+      class="page-btn <%= currentPage === i ? 'active' : '' %>"
+    >
+      <%= i %>
+    </a>
+
+  <% } %>
+
+  <% if(currentPage < totalPages){ %>
+
+    <a
+      href="/admin/orders?page=<%= currentPage + 1 %>&search=<%= search %>&status=<%= status %>&payment=<%= payment %>&sort=<%= sort %>"
+      class="nav-btn"
+    >
+      Next
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Next
+    </span>
+
+  <% } %>
+
+</div>
+
+<% } %>
+    </div>
+
+
+    </div>
+
+  </div>
+
+</div>
+
+<%- include("./partials/scripts") %>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+@import url("./inventory.css");
+
+/* ORDER PAGE OVERRIDES */
+
+.stats-grid{
+  grid-template-columns: repeat(4,1fr);
+}
+
+.status.placed{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.status.processing{
+  background:#dbeafe;
+  color:#1e40af;
+}
+
+.status.shipped{
+  background:#e0e7ff;
+  color:#4338ca;
+}
+
+.status.delivered{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.status.cancelled{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.view-btn{
+  border:1px solid #dbe1ea;
+  background:#f8fafc;
+  padding:7px 12px;
+  border-radius:999px;
+  color:#374151;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  transition:all .2s ease;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.view-btn:hover{
+  background:#eef2f7;
+  border-color:#cfd6e1;
+  transform:translateY(-1px);
+}
+
+tbody td:first-child{
+  font-weight:600;
+  color:#111827;
+}
+
+tbody td:nth-child(5){
+  font-weight:600;
+  color:#111827;
+}
+
+@media(max-width:1200px){
+  .stats-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:768px){
+  .stats-grid{
+    grid-template-columns:1fr;
+  }
+
+  table{
+    min-width:1000px;
+  }
+}
