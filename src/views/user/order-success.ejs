@@ -128,41 +128,39 @@
       <div class="success-card-head">
 
         <h3 class="text-card-title">
-          Expected Delivery
+          Delivery
         </h3>
 
       </div>
 
-      <div class="delivery-info">
+     <div class="delivery-info">
 
-        <div class="delivery-badge">
-          Arriving Soon
-        </div>
+  <div class="delivery-row">
+    <span>Estimated Delivery</span>
+    <strong>
+      <%= new Date(order.estimatedDeliveryDate).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }) %>
+    </strong>
+  </div>
 
-        <p class="text-body">
-          Estimated delivery within
-          4–7 business days.
-        </p>
+  <div class="delivery-row">
+    <span>Payment Method</span>
+    <strong>
+      <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
+    </strong>
+  </div>
 
-        <div class="delivery-meta">
+  <div class="delivery-row">
+    <span>Order Status</span>
+    <strong>
+      <%= order.orderStatus %>
+    </strong>
+  </div>
 
-          <span>
-            Payment:
-            <strong>
-              <%= order.paymentMethod %>
-            </strong>
-          </span>
-
-          <span>
-            Status:
-            <strong>
-              <%= order.orderStatus %>
-            </strong>
-          </span>
-
-        </div>
-
-      </div>
+</div>
 
     </section>
 

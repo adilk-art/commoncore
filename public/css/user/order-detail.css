@@ -193,7 +193,36 @@
   font-weight:500;
   color:#444;
 }
+.item-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:6px;
+}
 
+.item-title span:first-child{
+  font-size:15px;
+  font-weight:600;
+  color:#111;
+}
+
+.item-title .item-status{
+  height:24px;
+  padding:0 10px;
+  font-size:11px;
+  font-weight:600;
+  border-radius:999px;
+}
+
+.item-status-date{
+  display:block;
+  margin-top:6px;
+  font-size:12.5px;
+  font-weight:500;
+  color:#000000;
+  line-height:1.4;
+}
 /* ACTIONS */
 
 .order-actions{
@@ -366,6 +395,28 @@
 .item-status.returned{
   background:#f5f3ff;
   color:#7c3aed;
+}
+.order-status-badge.placed {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.order-status-badge.partially-delivered {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px dashed #16a34a;
+}
+
+.order-status-badge.partially-shipped {
+  background: #dbeafe;
+  color: #2563eb;
+  border: 1px dashed #2563eb;
+}
+
+.order-status-badge.partially-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px dashed #dc2626;
 }
 
 .cancel-item-btn{
@@ -732,7 +783,123 @@
 .tracking-card{
   flex-wrap:wrap;
 }
+/* TRACKING CARD BASE FIX */
+.tracking-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  flex-wrap: wrap;
+}
 
+/* ensure steps align properly */
+.track-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  position: relative;
+  z-index: 2;
+}
+
+.track-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+/* ACTIVE STEP (completed) */
+.track-step.completed .track-dot {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.track-step.completed span {
+  color: #111;
+  font-weight: 500;
+}
+
+/* LINE DEFAULT */
+.track-line {
+  flex: 1;
+  height: 2px;
+  background: #e5e7eb;
+}
+
+/* ACTIVE LINE */
+.track-line.active {
+  background: #4f46e5;
+}
+/* PARTIAL ORDER INFO CARD */
+.partial-cancel-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-left: 4px solid #f59e0b;
+  background: #fffbeb;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.partial-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* text styling */
+.partial-cancel-card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.partial-cancel-card p {
+  font-size: 13px;
+  color: #78350f;
+}
+.cancelled-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.cancelled-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.cancelled-card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.cancelled-card p {
+  font-size: 13px;
+  color: #7f1d1d;
+}
 .tracking-footer{
   width:100%;
   margin-top:28px;
@@ -830,6 +997,26 @@
   color: #dc2626;
   font-weight: 500;
 }
+/* CURRENT ACTIVE STAGE FEEL */
+.track-step.completed:last-of-type .track-dot {
+  box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.12);
+}
+.item-status-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.item-status-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+.item-status {
+  align-self: flex-start;
+}
+
+
 @media(max-width:900px){
 
   .info-grid{
@@ -945,4 +1132,14 @@
     width:100%;
   }
 
+}
+@media (max-width: 768px) {
+  .tracking-card {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+
+  .track-step {
+    min-width: 140px;
+  }
 }

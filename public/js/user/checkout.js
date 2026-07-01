@@ -42,6 +42,7 @@ paymentCards.forEach((card) => {
 /* PLACE ORDER */
 
 const placeOrderBtn = document.getElementById("placeOrderBtn");
+const originalButtonText = placeOrderBtn.innerHTML;
 
 placeOrderBtn?.addEventListener("click", async (event) => {
   event.preventDefault();
@@ -70,16 +71,24 @@ placeOrderBtn?.addEventListener("click", async (event) => {
   try {
     placeOrderBtn.disabled = true;
 
+    placeOrderBtn.innerHTML = `
+      <span class="btn-spinner"></span>
+      <span>Placing Order...</span>
+    `;
+
     const response = await axios.post("/user/order/place", payload);
     const data = response.data;
 
     if (!data.success) return userToast(data.message);
+    
+    setTimeout(() => {
+      window.location.href = `/user/order/success/${data.order._id}`;
+    }, 3000);
 
-    window.location.href = `/user/order/success/${data.order._id}`;
   } catch (error) {
     const message = error.response?.data?.message || "Failed to place order";
     const code = error.response?.data?.code;
-
+    placeOrderBtn.innerHTML = originalButtonText;
     userToast(message);
 
     if (code === "INVALID_CART") {
@@ -88,7 +97,9 @@ placeOrderBtn?.addEventListener("click", async (event) => {
       }, 500);
     }
   } finally {
-    placeOrderBtn.disabled = false;
+    if (!location.href.includes("/order/success")) {
+  placeOrderBtn.disabled = false;
+}
   }
 });
 

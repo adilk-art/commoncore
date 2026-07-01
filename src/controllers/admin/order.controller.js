@@ -1,4 +1,4 @@
-import { getOrdersPageService } from "../../services/admin/order.service.js";
+import { getOrdersPageService,getOrderDetailService,markCodAsPaidService,updateItemStatusService } from "../../services/admin/order.service.js";
 
 export const getOrdersPage = async (req, res, next) => {
   try {
@@ -38,5 +38,56 @@ export const getOrdersPage = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const getOrderDetailPage = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+
+    const result = await getOrderDetailService(orderId);
+
+    res.render("admin/order-details.ejs", {
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markCodAsPaid = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+
+    await markCodAsPaidService(orderId);
+
+    res.json({
+      success: true,
+      message: "COD marked as paid"
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateItemStatus = async (req, res, next) => {
+  try {
+    const { orderId, itemId, status } = req.body;
+
+    const result = await updateItemStatusService({
+      orderId,
+      itemId,
+      status,
+    });
+
+    res.json({
+  success: true,
+  message: "Item status updated",
+  orderStatus: result.orderStatus,
+  showCodButton: result.showCodButton
+});
+  } catch (err) {
+    next(err);
   }
 };

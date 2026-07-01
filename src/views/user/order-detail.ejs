@@ -47,19 +47,10 @@
 
    <div class="order-header-right">
 
-  <span class="order-status-badge
-<%= fullyCancelled
-      ? 'cancelled'
-      : partiallyCancelled
-        ? 'partially-cancelled'
-        : order.orderStatus.toLowerCase()
-%>">
-  <%= fullyCancelled
-        ? 'Cancelled'
-        : partiallyCancelled
-          ? 'Partially Cancelled'
-          : order.orderStatus
-  %>
+  <% const statusClass = order.orderStatus.toLowerCase().replaceAll(' ', '-'); %>
+<span class="order-status-badge <%= statusClass %>">
+
+ <%= order.orderStatus %>
 </span>
 
   <a
@@ -74,6 +65,18 @@
   </section>
 
   <!-- TRACKING -->
+<%
+const statuses = order.items.map(i => i.status);
+
+const isDelivered = statuses.every(s => s === "Delivered");
+const hasDelivered = statuses.includes("Delivered");
+
+const isShipped = statuses.every(s => s === "Shipped");
+const hasShipped = statuses.includes("Shipped");
+
+const isProcessing = statuses.includes("Processing");
+const isPlaced = statuses.includes("Placed");
+%>
 
 <% if(fullyCancelled){ %>
 
@@ -84,15 +87,8 @@
   </div>
 
   <div>
-
-    <h2>
-      Order Cancelled
-    </h2>
-
-    <p>
-      All items in this order were cancelled.
-    </p>
-
+    <h2>Order Cancelled</h2>
+    <p>All items in this order were cancelled.</p>
   </div>
 
 </section>
@@ -103,89 +99,94 @@
 
   <section class="partial-cancel-card card card-md">
 
-    <div class="partial-icon">
-      !
-    </div>
+    <div class="partial-icon">!</div>
 
     <div>
-
-      <h2>
-        Partially Cancelled
-      </h2>
-
-      <p>
-        Some items in this order have been cancelled.
-      </p>
-
+      <h2>Partially Cancelled</h2>
+      <p>Some items in this order have been cancelled.</p>
     </div>
 
   </section>
 
   <% } %>
 
+  <!-- TRACKING -->
+
   <section class="tracking-card card card-md">
 
+    <!-- PLACED -->
     <div class="track-step completed">
       <div class="track-dot"></div>
       <span>Placed</span>
     </div>
 
-    <div class="track-line active"></div>
+    <div class="track-line <%= isProcessing || hasShipped || hasDelivered ? 'active' : '' %>"></div>
 
-    <div class="track-step <%= ['Processing','Shipped','Delivered'].includes(order.orderStatus) ? 'completed' : '' %>">
+    <!-- PROCESSED -->
+    <div class="track-step <%= isProcessing || hasShipped || hasDelivered ? 'completed' : '' %>">
       <div class="track-dot"></div>
       <span>Processed</span>
     </div>
 
-    <div class="track-line <%= ['Shipped','Delivered'].includes(order.orderStatus) ? 'active' : '' %>"></div>
+    <div class="track-line <%= hasShipped || hasDelivered ? 'active' : '' %>"></div>
 
-    <div class="track-step <%= ['Shipped','Delivered'].includes(order.orderStatus) ? 'completed' : '' %>">
+    <!-- SHIPPED -->
+    <div class="track-step <%= hasShipped || hasDelivered ? 'completed' : '' %>">
       <div class="track-dot"></div>
       <span>Shipped</span>
     </div>
 
-    <div class="track-line <%= order.orderStatus === 'Delivered' ? 'active' : '' %>"></div>
+    <div class="track-line <%= hasDelivered ? 'active' : '' %>"></div>
 
-    <div class="track-step <%= order.orderStatus === 'Delivered' ? 'completed' : '' %>">
+    <!-- DELIVERED -->
+    <div class="track-step <%= hasDelivered ? 'completed' : '' %>">
       <div class="track-dot"></div>
       <span>Delivered</span>
     </div>
 
+    <!-- FOOTER -->
     <div class="tracking-footer">
-  
-    <% if(order.orderStatus === "Delivered"){ %>
-  
-      <span>
-        Delivered On
-      </span>
-  
-      <strong>
-        <%= new Date(order.updatedAt)
-              .toLocaleDateString("en-IN",{
-                day:"numeric",
-                month:"long",
-                year:"numeric"
-              }) %>
-      </strong>
-  
-    <% } else { %>
-  
-      <span>
-        Expected Delivery
-      </span>
-  
-      <strong>
-        <%= new Date(order.estimatedDeliveryDate)
-              .toLocaleDateString("en-IN",{
-                day:"numeric",
-                month:"long",
-                year:"numeric"
-              }) %>
-      </strong>
-  
-    <% } %>
-  
-  </div>
+
+<% if(order.orderStatus === "Delivered"){ %>
+
+  <span>Delivered On</span>
+
+  <strong>
+    <%= new Date(order.updatedAt).toLocaleDateString("en-IN",{
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    }) %>
+  </strong>
+
+<% } else if(order.orderStatus === "Partially Delivered"){ %>
+
+  <span>Remaining items expected by</span>
+
+  <strong>
+    <%= new Date(order.estimatedDeliveryDate).toLocaleDateString("en-IN",{
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    }) %>
+  </strong>
+
+<% } else { %>
+
+  <span>Expected Delivery</span>
+
+  <strong>
+    <%= new Date(order.estimatedDeliveryDate).toLocaleDateString("en-IN",{
+      day:"numeric",
+      month:"long",
+      year:"numeric"
+    }) %>
+  </strong>
+
+<% } %>
+
+</div>
+
   </section>
 
 <% } %>
@@ -255,7 +256,7 @@
       <div class="info-row">
         <span>Payment Method</span>
         <strong>
-          <%= order.paymentMethod %>
+          <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
         </strong>
       </div>
 
@@ -306,28 +307,53 @@
       alt="<%= item.productName %>"
     >
 
-    <div class="summary-item-content">
+   <div class="summary-item-content">
 
-      <h4>
-        <%= item.productName %>
-      </h4>
+  <h4 class="item-title">
 
-      <p class="item-variant">
+    <span><%= item.productName %></span>
 
-        <%= item.color %> /
-        <%= item.size %>
+    <span
+      class="item-status <%= item.status.toLowerCase().replaceAll(' ', '-') %>"
+    >
+      <%= item.status %>
+    </span>
 
-        · Qty <%= item.quantity %>
+  </h4>
 
-      </p>
+  <p class="item-variant">
+    <%= item.color %> /
+    <%= item.size %>
+    · Qty <%= item.quantity %>
+  </p>
 
-      <span
-        class="item-status <%= item.status.toLowerCase() %>"
-      >
-        <%= item.status %>
-      </span>
+  <% if (item.statusUpdatedAt) { %>
 
-    </div>
+    <small class="item-status-date">
+
+      <% if(item.status === "Delivered"){ %>
+        Delivered on
+      <% } else if(item.status === "Shipped"){ %>
+        Shipped on
+      <% } else if(item.status === "Cancelled"){ %>
+        Cancelled on
+      <% } else if(item.status === "Processing"){ %>
+        Processing since
+      <% } else { %>
+        Updated on
+      <% } %>
+
+      <%= new Date(item.statusUpdatedAt).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }) %>
+
+    </small>
+
+  <% } %>
+
+</div>
 
    <div class="summary-item-right">
 
@@ -476,7 +502,7 @@
 <div class="summary-row">
   <span>Payment</span>
   <span>
-    <%= order.paymentMethod %>
+    <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
   </span>
 </div>
 
@@ -486,7 +512,7 @@
   <span>
 
     <%= partiallyCancelled
-      ? "Amount Payable"
+      ? "Total"
       : "Order Total"
     %>
 

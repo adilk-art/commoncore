@@ -160,7 +160,7 @@
                 <option value="Cancelled" <%= status === "Cancelled" ? "selected" : "" %>>
                   Cancelled
                 </option>
-
+               
               </select>
 
               <select name="payment">
@@ -267,19 +267,16 @@
                 </td>
 
                 <td>
-                  <%= order.paymentMethod %>
+                  <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
                 </td>
 
                 <td>
 
-                  <span
-                    class="status <%= order.orderStatus.toLowerCase() %>"
-                  >
+                  <span class="status <%= order.orderStatus.toLowerCase().replaceAll(' ','-') %>">
                     <%= order.orderStatus %>
                   </span>
 
                 </td>
-
                 <td>
 
                   <a

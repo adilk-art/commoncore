@@ -197,7 +197,7 @@
           <div>
 
             <span
-              class="status-badge status-<%= order.orderStatus.toLowerCase() %>"
+              class="status-badge status-<%= order.orderStatus.toLowerCase().replace(/\s+/g, '-') %>"
             >
               <%= order.orderStatus %>
             </span>

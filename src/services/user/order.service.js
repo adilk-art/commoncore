@@ -15,6 +15,7 @@ import {
 import { clearCart } from "../../repositories/cart.repository.js";
 import { generateInvoicePdf } from "../../utils/invoicePdf.js";
 import { validateBuyNowService } from "./checkout.service.js";
+import { calculateOrderStatus } from "../../utils/orderStatus.js";
 
 
 export const getUserOrdersService = async ({
@@ -200,6 +201,7 @@ export const getOrderSuccessService = async (orderId, userId) => {
 
 export const getOrderDetailService = async (orderId, userId) => {
   const order = await findUserOrderById(orderId, userId);
+  order.orderStatus=calculateOrderStatus(order.items);
 
   if (!order) {
     const error = new Error("Order not found");
@@ -295,6 +297,7 @@ export const cancelOrderService = async ({ userId, orderId }) => {
 
 export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
   const order = await findOrderById(orderId);
+
   if (!order) {
     const error = new Error("Order not found");
     error.status = 404;
@@ -308,6 +311,7 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
   }
 
   const item = order.items.id(itemId);
+
   if (!item) {
     const error = new Error("Item not found");
     error.status = 404;
@@ -320,13 +324,18 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
     throw error;
   }
 
+  // 1. Update item
   item.status = "Cancelled";
+
+  // 2. Restore stock
   await increaseVariantStock(item.variantId, item.quantity);
-  const allCancelled = order.items.every((item) => item.status === "Cancelled");
-  if (allCancelled) {
-    order.orderStatus = "Cancelled";
-  }
+
+  // 3. IMPORTANT: recalculate FULL order status
+  order.orderStatus = calculateOrderStatus(order.items);
+
+  // 4. Save
   await saveOrder(order);
+
   return {
     orderStatus: order.orderStatus,
   };

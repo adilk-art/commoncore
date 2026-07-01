@@ -133,7 +133,9 @@
 .delivery-info{
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:10px;
+  justify-content: end;
+
 }
 
 .delivery-badge{
@@ -159,7 +161,6 @@
   flex-direction:column;
   gap:8px;
 
-  margin-top:4px;
 }
 
 .delivery-meta span{
@@ -171,6 +172,37 @@
   color:#111;
   font-weight:600;
 }
+
+.delivery-info{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.delivery-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+
+.delivery-row:last-child{
+  border-bottom:none;
+  padding-bottom:0;
+}
+
+.delivery-row span{
+  font-size:14px;
+  color:#6b7280;
+}
+
+.delivery-row strong{
+  font-size:14px;
+  font-weight:600;
+  color:#111;
+}
+
 
 /* ORDER CARD */
 

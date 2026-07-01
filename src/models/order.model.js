@@ -24,10 +24,14 @@ const orderItemSchema = new Schema({
     ],
     default: "Placed",
   },
-  gstRate: {
-  type: Number,
-  required: true,
+  statusUpdatedAt: {
+  type: Date,
+  default: Date.now
 },
+  gstRate: {
+    type: Number,
+    required: true,
+  },
 });
 
 const orderSchema = new Schema(
@@ -70,7 +74,16 @@ const orderSchema = new Schema(
 
     orderStatus: {
       type: String,
-      enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled"],
+      enum: [
+        "Placed",
+        "Processing",
+        "Partially Shipped",
+        "Shipped",
+        "Partially Delivered",
+        "Delivered",
+        "Partially Cancelled",
+        "Cancelled",
+      ],
       default: "Placed",
     },
 

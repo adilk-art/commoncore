@@ -454,6 +454,36 @@
   color: #dc2626;
   font-size: 12px;
 }
+
+.btn-spinner{
+  width:16px;
+  height:16px;
+
+  border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+
+  border-radius:50%;
+
+  animation:spin .8s linear infinite;
+}
+
+.success-check{
+  font-size:18px;
+  font-weight:700;
+}
+
+#placeOrderBtn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
 /* RESPONSIVE */
 
 @media(max-width:900px){

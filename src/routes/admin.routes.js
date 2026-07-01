@@ -43,7 +43,10 @@ router.get("/inventory/:productId/variants",isAdminAuth,inventoryController.getI
 router.patch("/inventory/variant/:variantId/stock",isAdminAuth,inventoryController.updateVariantStock);
 
 router.get("/orders", isAdminAuth,orderController.getOrdersPage);
-
+router.get( "/orders/:orderId",isAdminAuth,orderController.getOrderDetailPage);
+router.patch("/orders/item-status", orderController.updateItemStatus);
+router.post("/orders/:orderId/mark-paid", isAdminAuth,orderController.markCodAsPaid);
+router.patch("/orders/item-status", isAdminAuth,orderController.updateItemStatus);
 export default router;
 
 
