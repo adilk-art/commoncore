@@ -102,7 +102,7 @@ const isPlaced = statuses.includes("Placed");
     <div class="partial-icon">!</div>
 
     <div>
-      <h2>Partially Cancelled</h2>
+
       <p>Some items in this order have been cancelled.</p>
     </div>
 
@@ -146,8 +146,21 @@ const isPlaced = statuses.includes("Placed");
 
     <!-- FOOTER -->
     <div class="tracking-footer">
+<%
+const activeItems = order.items.filter(item => item.status !== "Cancelled");
 
-<% if(order.orderStatus === "Delivered"){ %>
+const hasPendingActiveItems = activeItems.some(item =>
+  item.status === "Placed" ||
+  item.status === "Processing" ||
+  item.status === "Shipped"
+);
+
+const allActiveItemsDelivered =
+  activeItems.length > 0 &&
+  activeItems.every(item => item.status === "Delivered");
+%>
+
+<% if(allActiveItemsDelivered){ %>
 
   <span>Delivered On</span>
 
@@ -159,19 +172,7 @@ const isPlaced = statuses.includes("Placed");
     }) %>
   </strong>
 
-<% } else if(order.orderStatus === "Partially Delivered"){ %>
-
-  <span>Remaining items expected by</span>
-
-  <strong>
-    <%= new Date(order.estimatedDeliveryDate).toLocaleDateString("en-IN",{
-      day:"numeric",
-      month:"long",
-      year:"numeric"
-    }) %>
-  </strong>
-
-<% } else { %>
+<% } else if(hasPendingActiveItems){ %>
 
   <span>Expected Delivery</span>
 
@@ -377,12 +378,9 @@ const isPlaced = statuses.includes("Placed");
 
   </div>
 
-  <% if (
-    item.status === "Placed" ||
-    item.status === "Processing"
-  ) { %>
+<% if (item.canCancel) { %>
 
-  <button
+<button
   class="secondary-btn cancel-item-btn"
   data-item-id="<%= item._id %>"
   data-order-id="<%= order._id %>"
@@ -395,7 +393,26 @@ const isPlaced = statuses.includes("Placed");
   Cancel Item
 </button>
 
-  <% } %>
+<% } else if (item.canReturn) { %>
+
+<button
+  class="secondary-btn return-item-btn"
+  data-item-id="<%= item._id %>"
+  data-order-id="<%= order._id %>"
+  data-name="<%= item.productName %>"
+  data-image="<%= item.variantId.images?.[0]?.url %>"
+  data-size="<%= item.size %>"
+  data-color="<%= item.color %>"
+  data-price="<%= item.unitPrice * item.quantity %>"
+>
+  Return Item
+</button>
+
+<small class="return-window">
+  <%= item.returnDaysLeft %> day<%= item.returnDaysLeft !== 1 ? "s" : "" %> left
+</small>
+
+<% } %>
 
 </div>
 

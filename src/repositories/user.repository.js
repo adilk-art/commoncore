@@ -22,7 +22,7 @@ export const updateUserByEmail = async (email, updateData) => {
 };
 
 export const updateUserById = async (userId, data) => {
-  return await User.findByIdAndUpdate(userId, data, { new: true });
+  return await User.findByIdAndUpdate(userId, data, {returnDocument: "after",});
 };
 
 export const findUserByGoogleId = async (googleId) => {

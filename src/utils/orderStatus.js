@@ -1,44 +1,53 @@
 export const calculateOrderStatus = (items) => {
+  const statuses = items.map(item => item.status);
 
-  const hasCancelled = items.some(item => item.status === "Cancelled");
-
-  const activeStatuses = items
-    .filter(item => item.status !== "Cancelled")
-    .map(item => item.status);
-
-  if (activeStatuses.length === 0) {
-    return "Cancelled";
-  }
-
-  // All active items are at the same stage
-  if (activeStatuses.every(s => s === "Placed")) {
+  const allPlaced = statuses.every(status => status === "Placed");
+  if (allPlaced) {
     return "Placed";
   }
 
-  if (activeStatuses.every(s => s === "Processing")) {
+  const allProcessing = statuses.every(status => status === "Processing");
+  if (allProcessing) {
     return "Processing";
   }
 
-  if (activeStatuses.every(s => s === "Shipped")) {
-    return hasCancelled ? "Partially Cancelled" : "Shipped";
+  const allShipped = statuses.every(status => status === "Shipped");
+  if (allShipped) {
+    return "Shipped";
   }
 
-  if (activeStatuses.every(s => s === "Delivered")) {
-    return hasCancelled ? "Partially Cancelled" : "Delivered";
+  const allDelivered = statuses.every(status => status === "Delivered");
+  if (allDelivered) {
+    return "Delivered";
   }
 
-  // Mixed active statuses
-  if (hasCancelled) {
-    return "Partially Cancelled";
+  const allCancelled = statuses.every(status => status === "Cancelled");
+  if (allCancelled) {
+    return "Cancelled";
   }
 
-  if (activeStatuses.includes("Delivered")) {
+  if (statuses.includes("Delivered")) {
     return "Partially Delivered";
   }
 
-  if (activeStatuses.includes("Shipped")) {
+  if (statuses.includes("Shipped")) {
     return "Partially Shipped";
   }
 
+  if (statuses.includes("Cancelled")) {
+    return "Partially Cancelled";
+  }
+
   return "Processing";
+};
+
+export const canMarkCodPaid = (items = []) => {
+  const activeItems = items.filter(
+    item => item.status !== "Cancelled"
+  );
+
+  return (
+    activeItems.length > 0 &&
+    activeItems.every(item => item.status === "Delivered")
+  );
 };

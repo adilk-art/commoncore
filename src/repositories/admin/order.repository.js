@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Order from "../../models/order.model.js";
-import { calculateOrderStatus } from "../../utils/orderStatus.js";
+import { calculateOrderStatus,canMarkCodPaid } from "../../utils/orderStatus.js";
 
 
 export const findOrders = async (limit, skip, filter, sortOrder) => {
@@ -220,9 +220,9 @@ export const updateItemStatus = async ({
   await order.save();
 
   const showCodButton =
-  order.paymentMethod === "CashOnDelivery" &&
-  order.paymentStatus === "Pending" &&
-  order.orderStatus === "Delivered";
+      order.paymentMethod === "CashOnDelivery" &&
+      order.paymentStatus === "Pending" &&
+      canMarkCodPaid(order.items);
 
   return {
     orderStatus: order.orderStatus,

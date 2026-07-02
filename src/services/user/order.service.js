@@ -202,12 +202,40 @@ export const getOrderSuccessService = async (orderId, userId) => {
 export const getOrderDetailService = async (orderId, userId) => {
   const order = await findUserOrderById(orderId, userId);
   order.orderStatus=calculateOrderStatus(order.items);
-
+  
   if (!order) {
     const error = new Error("Order not found");
     error.status = 404;
     throw error;
   }
+  const RETURN_WINDOW_DAYS = 14;
+
+  order.items.forEach((item) => {
+    item.canCancel =
+      item.status === "Placed" ||
+      item.status === "Processing";
+
+    item.canReturn = false;
+    item.returnDaysLeft = 0;
+
+    if (
+      item.status === "Delivered" &&
+      item.statusUpdatedAt
+    ) {
+      const diffDays = Math.floor(
+        (Date.now() - new Date(item.statusUpdatedAt).getTime()) /
+        (1000 * 60 * 60 * 24)
+      );
+
+      item.returnDaysLeft = Math.max(
+        0,
+        RETURN_WINDOW_DAYS - diffDays
+      );
+
+      item.canReturn = diffDays < RETURN_WINDOW_DAYS;
+    }
+  });
+
 
   const cancelledAmount = order.items
     .filter((item) => item.status === "Cancelled")

@@ -52,7 +52,7 @@ export const clearCart = async (userId) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     }
   );
 };

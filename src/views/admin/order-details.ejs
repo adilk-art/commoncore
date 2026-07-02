@@ -207,19 +207,15 @@
 
      <div class="cod-section">
 
-  <button
-    type="button"
-    id="markCodPaidBtn"
-    class="cod-paid-btn"
-    data-order-id="<%= order._id %>"
-    <%= (
-      order.paymentMethod !== "CashOnDelivery" ||
-      order.paymentStatus !== "Pending" ||
-      order.orderStatus !== "Delivered"
-    ) ? "disabled" : "" %>
-  >
-    Mark COD Payment Received
-  </button>
+<button
+  type="button"
+  id="markCodPaidBtn"
+  class="cod-paid-btn"
+  data-order-id="<%= order._id %>"
+  <%= !showCodButton ? "disabled" : "" %>
+>
+  Mark COD Payment Received
+</button>
 
 </div>
 

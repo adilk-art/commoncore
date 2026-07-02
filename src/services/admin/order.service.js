@@ -9,6 +9,8 @@ import {
 
 import { calculateOrderStatus } from "../../utils/orderStatus.js";
 import { calculateItemGstAmount } from "../../utils/calculateGst.js";
+import { canMarkCodPaid } from "../../utils/orderStatus.js";
+
 
 export const getOrdersPageService = async ({
   page,
@@ -110,10 +112,15 @@ export const getOrderDetailService = async (orderId) => {
   const partiallyCancelled =
     cancelledAmount > 0 && !fullyCancelled;
 
+  const showCodButton =
+  order.paymentMethod === "CashOnDelivery" &&
+  order.paymentStatus === "Pending" &&
+  canMarkCodPaid(order.items);
+
   return {
   order: {
     ...order,
-    user: order.customer, // normalize naming for UI
+    user: order.customer,
     orderStatus: computedOrderStatus,
   },
 
@@ -130,6 +137,7 @@ export const getOrderDetailService = async (orderId) => {
 
   fullyCancelled,
   partiallyCancelled,
+  showCodButton
 };
 };
 

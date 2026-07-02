@@ -56,7 +56,7 @@ export const reduceVariantStock = async (variantId, quantity) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   );
 };
