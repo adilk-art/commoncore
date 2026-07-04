@@ -269,6 +269,10 @@ th:first-child {
   margin-top: 15px;
   flex-wrap: wrap;
 }
+.results-text {
+  margin-right: auto;
+  color: #666;
+}
 
 .page-btn,
 .nav-btn {

@@ -59,13 +59,13 @@
 
         </div>
 
-        <div class="overview-right">
+        <!-- <div class="overview-right">
             <span class="status <%= order.orderStatus.toLowerCase().replaceAll(' ','-') %> overall-order-status">
               <%= order.orderStatus %>
             </span>
           
 
-        </div>
+        </div> -->
 
       </div>
 
@@ -307,70 +307,94 @@
 
             <div class="item-actions">
 
-              <%
-  const isDelivered = item.status === "Delivered";
-  const isCancelled = item.status === "Cancelled";
-%>
+            <%
+              const lockedStatuses = [
+                "Delivered",
+                "Cancelled",
+                "Return Requested",
+                "Return Accepted",
+                "Return Rejected",
+                "Returned",
+                "Refunded"
+              ];
 
-<form
-  class="status-form"
-  data-item-id="<%= item._id %>"
+              const returnStatuses = [
+                "Return Requested",
+                "Return Accepted",
+                "Return Rejected",
+                "Returned",
+                "Refunded"
+              ];
+
+              const isLockedStatus = lockedStatuses.includes(item.status);
+              const isReturnRelated = returnStatuses.includes(item.status);
+            %>
+
+            <form
+              class="status-form"
+              data-item-id="<%= item._id %>"
+            >
+
+              <select
+  name="status"
+  class="status-select"
+  <%= isLockedStatus ? "disabled" : "" %>
 >
 
-  <select
-    name="status"
-    class="status-select"
-    <%= (isDelivered || isCancelled) ? "disabled" : "" %>
+  <option
+    value="Processing"
+    <%= item.status === "Processing" ? "selected" : "" %>
+    <%= ["Shipped","Delivered"].includes(item.status) ? "disabled" : "" %>
   >
+    Processing
+  </option>
 
-    <option
-      value="Processing"
-      <%= item.status === "Processing" ? "selected" : "" %>
-      <%= ["Shipped","Delivered"].includes(item.status) ? "disabled" : "" %>
-    >
-      Processing
-    </option>
-
-    <option
-      value="Shipped"
-      <%= item.status === "Shipped" ? "selected" : "" %>
-      <%= item.status === "Delivered" ? "disabled" : "" %>
-    >
-      Shipped
-    </option>
-
-    <option
-      value="Delivered"
-      <%= item.status === "Delivered" ? "selected" : "" %>
-    >
-      Delivered
-    </option>
-
-    <option
-      value="Cancelled"
-      <%= item.status === "Cancelled" ? "selected" : "" %>
-      <%= item.status !== "Processing" ? "disabled" : "" %>
-    >
-      Cancelled
-    </option>
-
-  </select>
-
-  <button
-    type="button"
-    class="update-status-btn"
-    <%= (isDelivered || isCancelled) ? "disabled" : "" %>
+  <option
+    value="Shipped"
+    <%= item.status === "Shipped" ? "selected" : "" %>
+    <%= item.status === "Delivered" ? "disabled" : "" %>
   >
-    Update
-  </button>
+    Shipped
+  </option>
+
+  <option
+    value="Delivered"
+    <%= item.status === "Delivered" ? "selected" : "" %>
+  >
+    Delivered
+  </option>
+
+  <option
+    value="Cancelled"
+    <%= item.status === "Cancelled" ? "selected" : "" %>
+    <%= item.status !== "Processing" ? "disabled" : "" %>
+  >
+    Cancelled
+  </option>
+
+</select>
+
+<button
+  type="button"
+  class="update-status-btn"
+  <%= isLockedStatus ? "disabled" : "" %>
+>
+  Update
+</button>
+
 
 </form>
 
-            </div>
+<% if (isReturnRelated) { %>
+  <span class="return-manage-note">
+    This item is in return flow. Manage it from Return Management.
+  </span>
+<% } %>
 
-          </div>
+</div>
+</div>
 
-        <% }) %>
+<% }) %>
 
       </div>
 

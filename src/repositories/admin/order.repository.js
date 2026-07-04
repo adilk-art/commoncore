@@ -27,9 +27,7 @@ export const findOrders = async (limit, skip, filter, sortOrder) => {
 
     {
       $addFields: {
-        itemCount: {
-          $size: "$items",
-        },
+        itemCount: { $size: "$items" },
       },
     },
 
@@ -42,6 +40,7 @@ export const findOrders = async (limit, skip, filter, sortOrder) => {
         orderStatus: 1,
         createdAt: 1,
         itemCount: 1,
+        items: 1,
         customerName: "$user.name",
       },
     },
@@ -174,17 +173,23 @@ export const updateItemStatus = async ({
     "Delivered",
   ];
 
-  if (item.status === "Delivered") {
-    throw new Error(
-      "Delivered items cannot be modified"
-    );
-  }
+  const LOCKED_STATUSES = [
+  "Delivered",
+  "Cancelled",
+  "Return Requested",
+  "Return Accepted",
+  "Return Rejected",
+  "Returned",
+];
 
-  if (item.status === "Cancelled") {
-    throw new Error(
-      "Cancelled items cannot be modified"
-    );
-  }
+if (LOCKED_STATUSES.includes(item.status)) {
+  const error = new Error(
+    ["Return Requested", "Return Accepted", "Return Rejected", "Returned"].includes(item.status)
+      ? "Return-related items must be managed from Return Management"
+      : `${item.status} items cannot be modified`
+  );
+  throw error;
+}
 
   if (
     status === "Cancelled" &&

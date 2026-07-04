@@ -33,28 +33,7 @@
   color: #991b1b;
 }
 
-/* partial states */
 
-/* mixed progress */
-.status.partially-shipped {
-  background: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
-}
-
-/* mixed success */
-.status.partially-delivered {
-  background: #ecfeff;
-  color: #155e75;
-  border: 1px solid #a5f3fc;
-}
-
-/* mixed failure */
-.status.partially-cancelled {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
 
 .view-btn{
   border:1px solid #dbe1ea;
@@ -85,6 +64,29 @@ tbody td:first-child{
 tbody td:nth-child(5){
   font-weight:600;
   color:#111827;
+}
+
+.order-status-cell {
+  min-width: 0;
+}
+
+.status-text {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.status-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-summary-line {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.4;
 }
 
 @media(max-width:1200px){

@@ -14,7 +14,7 @@ import { canMarkCodPaid } from "../../utils/orderStatus.js";
 
 export const getOrdersPageService = async ({
   page,
-  limit,
+ limit,
   skip,
   search,
   status,
@@ -22,25 +22,26 @@ export const getOrdersPageService = async ({
   sort,
 }) => {
   const filter = {};
+
   if (status) {
     filter.orderStatus = status;
   }
+
   if (payment) {
     filter.paymentMethod = payment;
   }
+
   if (search) {
     filter.orderNumber = {
       $regex: search,
       $options: "i",
     };
   }
-  let sortOrder = {
-    createdAt: -1,
-  };
+
+  let sortOrder = { createdAt: -1 };
+
   if (sort === "oldest") {
-    sortOrder = {
-      createdAt: 1,
-    };
+    sortOrder = { createdAt: 1 };
   }
 
   const [orders, stats] = await Promise.all([
@@ -48,10 +49,36 @@ export const getOrdersPageService = async ({
     getOrderStats(),
   ]);
 
+  const preparedOrders = orders.map((order) => {
+    const statusCounts = {};
+
+    order.items.forEach((item) => {
+      statusCounts[item.status] =
+        (statusCounts[item.status] || 0) + item.quantity;
+    });
+
+    const entries = Object.entries(statusCounts);
+
+    const itemsStatusMixed = entries.length > 1;
+    const itemsSingleStatus = entries.length === 1 ? entries[0][0] : null;
+
+    const itemsStatusSummaryLines = entries.map(
+      ([status, qty]) => `${qty} ${status}`,
+    );
+
+    return {
+      ...order,
+      itemsStatusMixed,
+      itemsSingleStatus,
+      itemsStatusSummaryLines,
+    };
+  });
+
   const orderCount = await countOrders(filter);
   const totalPages = Math.max(1, Math.ceil(orderCount / limit));
+
   return {
-    orders,
+    orders: preparedOrders,
     orderCount,
     totalPages,
     totalOrders: stats.totalOrders,

@@ -270,11 +270,25 @@
                   <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
                 </td>
 
-                <td>
+                <td class="order-status-cell">
 
-                  <span class="status <%= order.orderStatus.toLowerCase().replaceAll(' ','-') %>">
-                    <%= order.orderStatus %>
-                  </span>
+                  <% if (!order.itemsStatusMixed) { %>
+
+                    <div class="status-text status-<%= order.itemsSingleStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                      <%= order.itemsSingleStatus %>
+                    </div>
+
+                  <% } else { %>
+
+                    <div class="status-summary-list">
+                      <% order.itemsStatusSummaryLines.forEach(line => { %>
+                        <div class="status-summary-line">
+                          <%= line %>
+                        </div>
+                      <% }) %>
+                    </div>
+
+                  <% } %>
 
                 </td>
                 <td>
