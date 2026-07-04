@@ -7,6 +7,7 @@ import * as cartController from "../controllers/user/cart.controller.js"
 import * as wishlistController from "../controllers/user/wishlist.controller.js"
 import * as checkoutController from "../controllers/user/checkout.controller.js"
 import * as orderController from "../controllers/user/order.controller.js"
+import * as returnController from "../controllers/user/return.controller.js"
 import passport from "passport";
 import { isAuthenticated,isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -72,6 +73,11 @@ router.get("/order/:orderId",isAuthenticated,orderController.loadOrderDetail);
 router.patch("/order/:orderId/cancel",isAuthenticated,orderController.cancelOrder);
 router.patch("/order/:orderId/items/:itemId/cancel",isAuthenticated,orderController.cancelOrderItem);
 router.get("/order/:orderId/invoice",isAuthenticated,orderController.downloadInvoice);
+
+router.get("/returns/request/:orderId/:itemId",isAuthenticated,returnController.loadReturnRequestPage);
+router.post("/returns/request",isAuthenticated,returnController.requestReturn);
+router.get("/returns/:orderId/:itemId",isAuthenticated,returnController.loadReturnDetailPage);
+router.patch("/returns/:returnId/cancel",isAuthenticated,returnController.cancelReturnRequest);
 
 
 router.get('/auth/google',

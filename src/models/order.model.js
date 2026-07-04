@@ -13,17 +13,20 @@ const orderItemSchema = new Schema({
   unitPrice: Number,
 
   status: {
-    type: String,
-    enum: [
-      "Placed",
-      "Processing",
-      "Shipped",
-      "Delivered",
-      "Cancelled",
-      "Returned",
-    ],
-    default: "Placed",
-  },
+  type: String,
+  enum: [
+    "Placed",
+    "Processing",
+    "Shipped",
+    "Delivered",
+    "Cancelled",
+    "Return Requested",
+    "Return Accepted",
+    "Returned",
+    "Refunded",
+  ],
+  default: "Placed",
+},
   statusUpdatedAt: {
   type: Date,
   default: Date.now
@@ -75,15 +78,16 @@ const orderSchema = new Schema(
     orderStatus: {
       type: String,
       enum: [
-        "Placed",
-        "Processing",
-        "Partially Shipped",
-        "Shipped",
-        "Partially Delivered",
-        "Delivered",
-        "Partially Cancelled",
-        "Cancelled",
-      ],
+  "Placed",
+  "Processing",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+  "Return Requested",
+  "Return Accepted",
+  "Returned",
+  "Refunded"
+],
       default: "Placed",
     },
 

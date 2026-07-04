@@ -1,13 +1,11 @@
 import Order from "../models/order.model.js";
 
-
 export const findOrdersByUser = async ({
   userId,
   search = "",
   page = 1,
   limit = 10,
 }) => {
-
   const query = {
     userId,
   };
@@ -22,10 +20,7 @@ export const findOrdersByUser = async ({
   const skip = (page - 1) * limit;
 
   const [orders, totalOrders] = await Promise.all([
-    Order.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit),
+    Order.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
 
     Order.countDocuments(query),
   ]);
@@ -60,4 +55,22 @@ export const saveOrder = (order) => {
 
 export const findOrderById = (orderId) => {
   return Order.findById(orderId).populate("items.variantId");
+};
+
+export const updateOrderItemStatus = (orderId, itemId, status) => {
+  return Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      "items._id": itemId,
+    },
+    {
+      $set: {
+        "items.$.status": status,
+        "items.$.statusUpdatedAt": new Date(),
+      },
+    },
+    {
+      returnDocument: "after",
+    },
+  );
 };

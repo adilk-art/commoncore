@@ -202,9 +202,9 @@
 }
 
 .item-title span:first-child{
-  font-size:15px;
-  font-weight:600;
-  color:#111;
+  font-size:12px;
+  font-weight:500;
+  color:#313131;
 }
 
 .item-title .item-status{
@@ -366,57 +366,62 @@
   font-size:12px;
   font-weight:600;
 }
+.item-status-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-.item-status.placed{
-  background:#eef2ff;
-  color:#4338ca;
-}
+  padding: 6px 12px;
+  border-radius: 999px;
 
-.item-status.processing{
-  background:#fff7ed;
-  color:#c2410c;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
-
-.item-status.shipped{
-  background:#ecfeff;
-  color:#0f766e;
-}
-
-.item-status.delivered{
-  background:#ecfdf5;
-  color:#15803d;
-}
-
-.item-status.cancelled{
-  background:#fef2f2;
-  color:#dc2626;
-}
-
-.item-status.returned{
-  background:#f5f3ff;
-  color:#7c3aed;
-}
-.order-status-badge.placed {
+.item-status-placed {
   background: #eef2ff;
   color: #4338ca;
 }
 
-.order-status-badge.partially-delivered {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px dashed #16a34a;
+.item-status-processing {
+  background: #fff7ed;
+  color: #ea580c;
 }
 
-.order-status-badge.partially-shipped {
+.item-status-shipped {
   background: #dbeafe;
   color: #2563eb;
-  border: 1px dashed #2563eb;
 }
 
-.order-status-badge.partially-cancelled {
+.item-status-delivered {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.item-status-cancelled {
   background: #fee2e2;
   color: #dc2626;
-  border: 1px dashed #dc2626;
+}
+
+.item-status-return-requested {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.item-status-return-accepted {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.item-status-returned {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.item-status-refunded {
+  background: #ecfeff;
+  color: #0f766e;
 }
 
 .cancel-item-btn{
@@ -513,6 +518,7 @@
   display:flex;
   align-items:center;
   font-size:13px;
+  margin-top: 12px;
 }
 
 .info-grid{
@@ -576,7 +582,6 @@
 .summary-item-content{
   flex:1;
 }
-
 .summary-item-content h4{
   font-size:15px;
   margin-bottom:6px;
@@ -1016,7 +1021,16 @@
   align-self: flex-start;
 }
 
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
 
+.return-item-btn {
+  width: 100%;
+}
 @media(max-width:900px){
 
   .info-grid{

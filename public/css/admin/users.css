@@ -207,7 +207,7 @@ tbody tr:hover {
 
 /* ACTIVE PAGE */
 .page-btn.active {
-  background: #5a6474; /* blue like your image */
+  background: #5a6474; 
   color: #fff;
   font-weight: 500;
 }
@@ -232,7 +232,7 @@ tbody tr:hover {
 }
 .clear-btn {
   display: inline-flex;
-  align-items: center;   /* 🔥 vertical center */
+  align-items: center;   
   justify-content: center;
   
   padding: 6px 12px;

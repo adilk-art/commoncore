@@ -83,7 +83,7 @@ placeOrderBtn?.addEventListener("click", async (event) => {
     
     setTimeout(() => {
       window.location.href = `/user/order/success/${data.order._id}`;
-    }, 3000);
+    }, 2000);
 
   } catch (error) {
     const message = error.response?.data?.message || "Failed to place order";

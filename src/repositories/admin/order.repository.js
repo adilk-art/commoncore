@@ -214,8 +214,7 @@ export const updateItemStatus = async ({
   item.status = status;
   item.statusUpdatedAt = new Date();
 
-  order.orderStatus =
-    calculateOrderStatus(order.items);
+  order.orderStatus =status
 
   await order.save();
 

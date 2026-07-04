@@ -22,9 +22,9 @@
   color: #111827;
 }
 
-/* =========================
+/*
    OVERVIEW CARD
-========================= */
+ */
 
 .overview-card {
   background: #fff;
@@ -85,18 +85,17 @@
   color: #111827;
 }
 
-/* =========================
+/*
    DETAILS GRID (FIXED)
-========================= */
+ */
 
 .details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-  align-items: stretch; /* KEY FIX */
+  align-items: stretch;
 }
 
-/* remove grid-template-rows (was causing mismatch) */
 .left-column,
 .right-column {
   display: flex;
@@ -117,9 +116,9 @@
   justify-content: center;
 }
 
-/* =========================
+/*
    CARD BASE (FIXED)
-========================= */
+ */
 
 .card {
   background: #fff;
@@ -129,7 +128,7 @@
 
   display: flex;
   flex-direction: column;
-  /* IMPORTANT: DO NOT force height */
+
 }
 
 .card-title {
@@ -146,9 +145,9 @@
   margin-bottom: 16px;
 }
 
-/* =========================
+/*
    INFO / ADDRESS
-========================= */
+*/
 
 .info-list {
   display: flex;
@@ -190,9 +189,9 @@
   color: #4b5563;
 }
 
-/* =========================
+/* 
    ORDER SUMMARY
-========================= */
+ */
 
 .summary-row {
   display: flex;
@@ -219,9 +218,9 @@
   font-size: 18px;
 }
 
-/* =========================
+/* 
    PAYMENT CARD
-========================= */
+ */
 
 .payment-card {
   border: 1px solid #e5e7eb;
@@ -229,8 +228,6 @@
   flex-direction: column;
   gap: 10px;
 }
-
-/* keep button at bottom nicely */
 .cod-section {
   margin-top: auto;
   padding-top: 18px;
@@ -270,9 +267,9 @@
   background: #000;
 }
 
-/* =========================
+/*
    ITEMS SECTION
-========================= */
+*/
 
 .items-section {
   margin-top: 15px;
@@ -371,9 +368,9 @@
   cursor: pointer;
 }
 
-/* =========================
+/* 
    STATUS BADGES
-========================= */
+ */
 
 .status {
   display: inline-flex;
@@ -414,7 +411,6 @@
   color: #991b1b;
 }
 
-/* partial states */
 
 /* mixed progress */
 .status.partially-shipped {
@@ -471,9 +467,9 @@
 .cod-paid-btn:disabled:hover {
   background: #d1d5db;
 }
-/* =========================
+/* 
    DISABLED STATE
-========================= */
+ */
 
 .status-select:disabled,
 .update-status-btn:disabled {
@@ -481,9 +477,9 @@
   cursor: not-allowed;
 }
 
-/* =========================
+/* 
    RESPONSIVE FIX
-========================= */
+ */
 
 @media (max-width: 1200px) {
   .details-grid {

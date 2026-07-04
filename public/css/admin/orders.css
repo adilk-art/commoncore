@@ -1,7 +1,5 @@
 @import url("./inventory.css");
 
-/* ORDER PAGE OVERRIDES */
-
 .stats-grid{
   grid-template-columns: repeat(4,1fr);
 }

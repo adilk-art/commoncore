@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <%- include("./partials/head", {
+    title: "Returns"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/rt.css"
+  >
+
+</head>
+<body>
+
+<%- include("./partials/header", {
+  title: "Returns"
+}) %>
+
+<%- include("./partials/logout-modal") %>
+
+<div class="layout">
+
+  <%- include("./partials/sidebar", {
+    active: "returns"
+  }) %>
+
+  <div class="main">
+
+    <div class="content">
+
+      <div class="page-top">
+
+        <div>
+
+          <p class="breadcrumb">
+            Admin Dashboard > Returns
+          </p>
+
+          <h2 class="page-title">
+            Return Management
+          </h2>
+
+        </div>
+
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Total Returns</p>
+
+            <i class="fa-solid fa-rotate-left"></i>
+
+          </div>
+
+          <h3><%= totalReturns %></h3>
+
+        </div>
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Requested</p>
+
+            <i class="fa-solid fa-clock"></i>
+
+          </div>
+
+          <h3><%= requestedReturns %></h3>
+
+        </div>
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Approved</p>
+
+            <i class="fa-solid fa-circle-check"></i>
+
+          </div>
+
+          <h3><%= approvedReturns %></h3>
+
+        </div>
+
+        <div class="stat-card">
+
+          <div class="stat-top">
+
+            <p>Refunded</p>
+
+            <i class="fa-solid fa-wallet"></i>
+
+          </div>
+
+          <h3><%= refundedReturns %></h3>
+
+        </div>
+
+      </div>
+
+      <div class="table-container">
+
+        <div class="table-header">
+
+          <h3>
+            Returns
+          </h3>
+
+          <div class="table-actions">
+
+            <form
+              method="GET"
+              action="/admin/returns"
+              class="search-box"
+            >
+
+              <input
+                type="hidden"
+                name="page"
+                value="1"
+              >
+
+              <input
+                type="text"
+                name="search"
+                value="<%= search || '' %>"
+                placeholder="Return ID / Order ID / customer"
+              >
+
+              <select name="status">
+
+                <option value="">
+                  All Status
+                </option>
+
+                <option value="Requested" <%= status === "Requested" ? "selected" : "" %>>
+                  Requested
+                </option>
+
+                <option value="Approved" <%= status === "Approved" ? "selected" : "" %>>
+                  Approved
+                </option>
+
+                <option value="Rejected" <%= status === "Rejected" ? "selected" : "" %>>
+                  Rejected
+                </option>
+
+                <option value="Picked Up" <%= status === "Picked Up" ? "selected" : "" %>>
+                  Picked Up
+                </option>
+
+                <option value="Received" <%= status === "Received" ? "selected" : "" %>>
+                  Received
+                </option>
+
+                <option value="Refunded" <%= status === "Refunded" ? "selected" : "" %>>
+                  Refunded
+                </option>
+
+                <option value="Cancelled" <%= status === "Cancelled" ? "selected" : "" %>>
+                  Cancelled
+                </option>
+
+              </select>
+
+              <select name="sort">
+
+                <option value="latest" <%= sort === "latest" ? "selected" : "" %>>
+                  Latest
+                </option>
+
+                <option value="oldest" <%= sort === "oldest" ? "selected" : "" %>>
+                  Oldest
+                </option>
+
+              </select>
+
+              <button
+                type="submit"
+                class="search-btn"
+              >
+                <i class="fa fa-search"></i>
+              </button>
+
+              <% if(search || status || sort !== "latest"){ %>
+
+                <a
+                  href="/admin/returns"
+                  class="clear-btn"
+                >
+                  Clear Filters
+                </a>
+
+              <% } %>
+
+            </form>
+
+          </div>
+
+        </div>
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Return ID</th>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product</th>
+              <th>Requested On</th>
+              <th>Refund</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+          <% if(returns.length > 0){ %>
+
+            <% returns.forEach(returnItem => { %>
+
+              <tr>
+
+                <td>
+                  <%= returnItem.returnNumber %>
+                </td>
+
+                <td>
+                  <%= returnItem.orderNumber || "-" %>
+                </td>
+
+                <td>
+                  <%= returnItem.customerName || "Unknown" %>
+                </td>
+
+                <td>
+                  <div class="product-cell">
+                    <span class="product-name">
+                      <%= returnItem.productName %>
+                    </span>
+
+                    <span class="product-variant">
+                      <%= returnItem.color %> / <%= returnItem.size %>
+                    </span>
+                  </div>
+                </td>
+
+                <td>
+                  <%= new Date(returnItem.requestedAt).toLocaleDateString("en-IN") %>
+                </td>
+
+                <td>
+                  ₹<%= Number(returnItem.refundAmount || 0).toLocaleString("en-IN") %>
+                </td>
+
+                <td>
+
+                  <span class="status <%= returnItem.status.toLowerCase().replaceAll(' ','-') %>">
+                    <%= returnItem.status %>
+                  </span>
+
+                </td>
+
+                <td>
+
+                  <a
+                    href="/admin/returns/<%= returnItem._id %>"
+                    class="view-btn"
+                  >
+                    View Details
+                  </a>
+
+                </td>
+
+              </tr>
+
+            <% }) %>
+
+          <% } else { %>
+
+            <tr>
+
+              <td colspan="8" class="empty-row">
+
+                <div class="empty-state">
+
+                  <i class="fa-solid fa-rotate-left"></i>
+
+                  <h3>
+                    No Returns Found
+                  </h3>
+
+                  <p>
+                    Return requests will appear here once customers submit them
+                  </p>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          <% } %>
+
+          </tbody>
+
+        </table>
+
+        <% if (totalPages > 1) { %>
+
+        <div class="pagination">
+
+          <p class="results-text">
+
+            Showing <%= skip + 1 %>
+            to <%= Math.min(currentPage * limit, returnCount) %>
+            of <%= returnCount %> results
+
+          </p>
+
+          <% if(currentPage > 1){ %>
+
+            <a
+              href="/admin/returns?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>"
+              class="nav-btn"
+            >
+              Prev
+            </a>
+
+          <% } else { %>
+
+            <span class="nav-btn disabled">
+              Prev
+            </span>
+
+          <% } %>
+
+          <% for(let i = 1; i <= totalPages; i++){ %>
+
+            <a
+              href="/admin/returns?page=<%= i %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>"
+              class="page-btn <%= currentPage === i ? 'active' : '' %>"
+            >
+              <%= i %>
+            </a>
+
+          <% } %>
+
+          <% if(currentPage < totalPages){ %>
+
+            <a
+              href="/admin/returns?page=<%= currentPage + 1 %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>"
+              class="nav-btn"
+            >
+              Next
+            </a>
+
+          <% } else { %>
+
+            <span class="nav-btn disabled">
+              Next
+            </span>
+
+          <% } %>
+
+        </div>
+
+        <% } %>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<%- include("./partials/scripts") %>
+
+</body>
+</html>

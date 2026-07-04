@@ -92,7 +92,7 @@
   padding: 15px;
   border-radius: 12px;
   align-self: start;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* HEADER */
@@ -205,7 +205,6 @@
   border-color: #5a6474;
 }
 
-
 .sort-btn i {
   font-size: 13px;
 }
@@ -227,7 +226,6 @@ td {
   text-align: center;
 }
 
-
 th {
   font-size: 13px;
   color: #666;
@@ -248,8 +246,6 @@ td:first-child {
 th:last-child {
   text-align: left;
   padding-left: 46px;
-  
-
 }
 
 td .action {
@@ -319,7 +315,7 @@ tbody tr:hover {
   display: flex;
   gap: 8px;
 }
-.actions a{
+.actions a {
   text-decoration: none;
 }
 
@@ -391,7 +387,6 @@ tbody tr:hover {
   color: #fff;
   font-weight: 500;
 }
-
 
 .nav-btn {
   padding: 6px 10px;
@@ -527,7 +522,7 @@ tbody tr:hover {
   transform: translateX(-50%) translateY(0);
 }
 button[type="submit"]:disabled {
-  opacity: .7;
+  opacity: 0.7;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -535,10 +530,10 @@ button[type="submit"]:disabled {
 .btn-loader {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255,255,255,.35);
+  border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: spin .7s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {

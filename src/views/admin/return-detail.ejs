@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <%- include("./partials/head", {
+    title: "Return Details"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/return-detail.css"
+  >
+
+</head>
+<body>
+
+<%- include("./partials/header", {
+  title: "Return Details"
+}) %>
+
+<%- include("./partials/logout-modal") %>
+
+<div class="layout">
+
+  <%- include("./partials/sidebar", {
+    active: "returns"
+  }) %>
+
+  <div class="main">
+    <div class="content">
+
+      <div class="page-top">
+        <div>
+          <p class="breadcrumb">
+            Admin Dashboard > Returns > <%= returnRequest.returnNumber %>
+          </p>
+
+          <h2 class="page-title">
+            Return Details
+          </h2>
+        </div>
+
+        <a
+          href="/admin/returns"
+          class="back-btn"
+        >
+          Back to Returns
+        </a>
+      </div>
+
+      <section class="return-header-strip">
+
+        <div class="return-header-left">
+          <span class="status-pill <%= returnRequest.status.toLowerCase().replaceAll(' ','-') %>">
+            <%= returnRequest.status %>
+          </span>
+
+          <div class="return-header-meta">
+            <h3><%= returnRequest.returnNumber %></h3>
+            <p>Order <%= order?.orderNumber || "-" %> &middot; Requested on
+              <%= new Date(returnRequest.requestedAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+              }) %>
+            </p>
+          </div>
+        </div>
+
+        <div class="return-header-right">
+          <span>Refund Amount</span>
+          <strong>₹<%= Number(returnRequest.refundAmount || 0).toLocaleString("en-IN") %></strong>
+        </div>
+
+      </section>
+
+      <div class="return-detail-grid">
+
+        <div class="return-left">
+
+          <section class="card card-md">
+            <h3 class="section-title">Returned Product</h3>
+
+            <div class="return-product">
+              <img
+                src="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/default-product.jpg' %>"
+                alt="<%= item.productName %>"
+              >
+
+              <div class="return-product-info">
+                <h4><%= item.productName %></h4>
+                <p><%= item.color %> / <%= item.size %></p>
+                <p>Qty: <%= item.quantity %></p>
+                <strong>₹<%= Number((item.unitPrice || 0) * (item.quantity || 1)).toLocaleString("en-IN") %></strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="card card-md">
+            <h3 class="section-title">Return Reason</h3>
+
+            <div class="detail-list">
+              <div class="detail-row vertical">
+                <span>Reason</span>
+                <strong><%= returnRequest.reason %></strong>
+              </div>
+
+              <div class="detail-row vertical">
+                <span>Comments</span>
+                <p><%= returnRequest.comments || "No additional comments provided." %></p>
+              </div>
+            </div>
+          </section>
+
+          <div class="return-two-col">
+
+            <section class="card card-md">
+              <h3 class="section-title">Customer</h3>
+
+              <div class="detail-list">
+                <div class="detail-row">
+                  <span>Name</span>
+                  <strong><%= user?.name || "Unknown" %></strong>
+                </div>
+
+                <div class="detail-row">
+                  <span>Email</span>
+                  <strong><%= user?.email || "-" %></strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="card card-md">
+              <h3 class="section-title">Pickup Address</h3>
+
+              <div class="pickup-address-box">
+                <h4><%= pickupAddress.fullName %></h4>
+                <p><%= pickupAddress.line1 %></p>
+
+                <% if (pickupAddress.line2) { %>
+                  <p><%= pickupAddress.line2 %></p>
+                <% } %>
+
+                <p><%= pickupAddress.city %>, <%= pickupAddress.state %></p>
+                <p><%= pickupAddress.pincode %></p>
+                <p>+91 <%= pickupAddress.phone %></p>
+              </div>
+            </section>
+
+          </div>
+
+        </div>
+
+        <div class="return-right">
+
+          <section class="card card-md action-panel <%= returnRequest.status.toLowerCase().replaceAll(' ','-') %>">
+
+            <h3 class="section-title">Return Actions</h3>
+
+            <div class="status-action-box">
+
+              <% if (returnRequest.status === "Requested") { %>
+
+                <div class="action-step">
+                  <span class="action-step-label">Move to</span>
+
+                  <div class="select-wrap">
+                    <select id="returnStatusSelect">
+                      <option value="Approved">Approved</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  id="updateReturnStatusBtn"
+                  class="return-primary-btn full"
+                  data-return-id="<%= returnRequest._id %>"
+                >
+                  Approve Return
+                </button>
+
+                <button
+                  id="rejectReturnBtn"
+                  class="return-danger-btn full outline"
+                  data-return-id="<%= returnRequest._id %>"
+                >
+                  Reject Return
+                </button>
+
+              <% } else if (returnRequest.status === "Approved") { %>
+
+                <div class="action-step">
+                  <span class="action-step-label">Move to</span>
+
+                  <div class="select-wrap">
+                    <select id="returnStatusSelect">
+                      <option value="Picked Up">Picked Up</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  id="updateReturnStatusBtn"
+                  class="return-primary-btn full"
+                  data-return-id="<%= returnRequest._id %>"
+                >
+                  Mark as Picked Up
+                </button>
+
+              <% } else if (returnRequest.status === "Picked Up") { %>
+
+                <div class="action-step">
+                  <span class="action-step-label">Move to</span>
+
+                  <div class="select-wrap">
+                    <select id="returnStatusSelect">
+                      <option value="Received">Received</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  id="updateReturnStatusBtn"
+                  class="return-primary-btn full"
+                  data-return-id="<%= returnRequest._id %>"
+                >
+                  Mark as Received
+                </button>
+
+              <% } else if (returnRequest.status === "Received") { %>
+
+                <p class="action-hint">Item received and verified. You can now process the refund.</p>
+
+                <button
+                  id="processRefundBtn"
+                  class="return-primary-btn full"
+                  data-return-id="<%= returnRequest._id %>"
+                >
+                  Process Refund
+                </button>
+
+              <% } else if (["Refunded","Rejected","Cancelled"].includes(returnRequest.status)) { %>
+
+                <p class="action-hint muted">
+                  This return has been completed. No further actions are available.
+                </p>
+
+              <% } %>
+
+            </div>
+
+          </section>
+
+          <section class="card card-md">
+            <h3 class="section-title">Timeline</h3>
+
+            <div class="timeline-list">
+
+              <div class="timeline-item completed">
+                <div class="timeline-dot-wrap">
+                  <span class="timeline-dot"></span>
+                  <span class="timeline-line"></span>
+                </div>
+                <div class="timeline-content">
+                  <p class="timeline-title">Requested</p>
+                  <p class="timeline-date">
+                    <%= new Date(returnRequest.requestedAt).toLocaleDateString("en-IN", {
+                      day: "numeric", month: "short", year: "numeric"
+                    }) %>
+                  </p>
+                </div>
+              </div>
+
+              <div class="timeline-item <%= returnRequest.status !== 'Requested' ? 'completed' : '' %>">
+                <div class="timeline-dot-wrap">
+                  <span class="timeline-dot"></span>
+                  <span class="timeline-line"></span>
+                </div>
+                <div class="timeline-content">
+                  <p class="timeline-title">Current Status</p>
+                  <p class="timeline-date"><%= returnRequest.status %></p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div
+  id="rejectReturnModal"
+  class="reject-modal hidden"
+>
+
+  <div class="reject-modal-content">
+
+    <div class="reject-modal-head">
+
+      <h3>Reject Return</h3>
+
+      <button
+        type="button"
+        id="closeRejectModal"
+        class="reject-close-btn"
+      >
+        &times;
+      </button>
+
+    </div>
+
+    <textarea
+      id="rejectReason"
+      placeholder="Enter rejection reason..."
+    ></textarea>
+
+    <div class="reject-modal-actions">
+
+      <button
+        type="button"
+        id="cancelRejectBtn"
+        class="return-secondary-btn"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="confirmRejectBtn"
+        class="return-danger-btn"
+        data-return-id="<%= returnRequest._id %>"
+      >
+        Reject Return
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="/js/admin/returnDetail.js"></script>
+<%- include("./partials/scripts") %>
+
+</body>
+</html>

@@ -71,7 +71,8 @@ const {
   currentValue,
   gstAmount,
   fullyCancelled,
-  partiallyCancelled
+  partiallyCancelled,
+  canCancelAnyItem
 } = await getOrderDetailService(req.params.orderId, req.session.userId);
 
 res.render("user/order-detail", {
@@ -81,7 +82,8 @@ res.render("user/order-detail", {
   currentValue,
   gstAmount,
   fullyCancelled,
-  partiallyCancelled
+  partiallyCancelled,
+  canCancelAnyItem
 });
 
   } catch (error) {

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <title>
+    Return Item — Commoncore
+  </title>
+
+  <%- include("../partials/user-head") %>
+
+  <link
+    rel="stylesheet"
+    href="/css/user/return-request.css"
+  >
+
+</head>
+
+<body>
+
+<%- include("../partials/user-header") %>
+
+<main class="return-page">
+
+<div class="return-top">
+
+  <a
+    href="/user/order/<%= order._id %>"
+    class="return-back"
+  >
+    ← Back to Order Details
+  </a>
+
+  <h1 class="page-title">
+    Return Item
+  </h1>
+
+</div>
+
+<section class="card card-md return-product-card">
+
+  <h2 class="text-section-title">
+    Product
+  </h2>
+
+  <div class="return-product">
+
+    <img
+      src="<%= item.variantId.images?.[0]?.url %>"
+      alt="<%= item.productName %>"
+    >
+
+    <div class="return-product-info">
+
+      <h3>
+        <%= item.productName %>
+      </h3>
+
+      <p>
+        <%= item.color %> /
+        <%= item.size %>
+      </p>
+
+      <strong>
+        ₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %>
+      </strong>
+
+      <small>
+
+        Delivered on
+
+        <%= new Date(item.statusUpdatedAt).toLocaleDateString("en-IN",{
+          day:"numeric",
+          month:"long",
+          year:"numeric"
+        }) %>
+
+      </small>
+
+      <small>
+
+        Return available until
+
+        <%= returnLastDate.toLocaleDateString("en-IN",{
+          day:"numeric",
+          month:"long",
+          year:"numeric"
+        }) %>
+
+      </small>
+
+    </div>
+
+  </div>
+
+</section>
+
+<section class="card card-md">
+
+  <h2 class="text-section-title">
+    Reason for Return
+  </h2>
+
+  <select
+    id="returnReason"
+    class="select-field"
+  >
+
+    <option value="">
+      Select Reason
+    </option>
+
+    <option>
+      Size too small
+    </option>
+
+    <option>
+      Size too large
+    </option>
+
+    <option>
+      Quality not as expected
+    </option>
+
+    <option>
+      Received wrong item
+    </option>
+
+    <option>
+      Product damaged
+    </option>
+
+    <option>
+      Changed my mind
+    </option>
+
+    <option>
+      Other
+    </option>
+
+  </select>
+
+  <span
+    class="error-msg"
+    id="reasonError"
+  ></span>
+
+</section>
+
+<section class="card card-md">
+
+  <h2 class="text-section-title">
+    Additional Comments
+  </h2>
+
+  <textarea
+    id="returnComments"
+    class="input-field return-comments"
+    placeholder="Additional details (Optional)"
+  ></textarea>
+
+</section>
+<section class="card card-md">
+
+  <div class="pickup-section-head">
+
+    <h2 class="text-section-title">
+      Pickup Address
+    </h2>
+
+    <button
+      type="button"
+      class="pickup-change-btn"
+      id="changePickupBtn"
+    >
+      Change Pickup Address
+    </button>
+
+  </div>
+
+  <div
+    class="checkout-address-grid collapsed"
+    id="pickupSelector"
+  >
+
+    <label class="checkout-address active" id="defaultPickupCard">
+
+      <input
+        type="radio"
+        name="pickupAddress"
+        value="delivery"
+        checked
+        class="hidden pickup-address-radio"
+      >
+
+      <div class="checkout-address-top">
+
+        <span class="address-badge" id="pickupBadge">
+          Delivery Address
+        </span>
+
+      </div>
+
+      <h3 class="address-name" id="pickupName">
+        <%= pickupAddress.fullName %>
+      </h3>
+
+      <p class="address-text" id="pickupLine1">
+        <%= pickupAddress.line1 %>
+      </p>
+
+      <% if (pickupAddress.line2) { %>
+
+      <p class="address-text" id="pickupLine2">
+        <%= pickupAddress.line2 %>
+      </p>
+
+      <% } %>
+
+      <p class="address-text"  id="pickupCityState">
+        <%= pickupAddress.city %>,
+        <%= pickupAddress.state %>
+      </p>
+
+      <p class="address-text" id="pickupPincode">
+        <%= pickupAddress.pincode %>
+      </p>
+
+      <p class="address-phone" id="pickupPhone">
+        +91 <%= pickupAddress.phone %>
+      </p>
+
+    </label>
+
+    <% addresses.forEach(address => { %>
+
+    <label class="checkout-address">
+
+      <input
+        type="radio"
+        name="pickupAddress"
+        value="<%= address._id %>"
+        class="hidden pickup-address-radio"
+      >
+
+      <div class="checkout-address-top">
+
+        <% if(address.isDefault){ %>
+
+        <span class="address-badge">
+          Default
+        </span>
+
+        <% } %>
+
+      </div>
+
+      <h3 class="address-name">
+        <%= address.fullName %>
+      </h3>
+
+      <p class="address-text">
+        <%= address.line1 %>
+      </p>
+
+      <% if(address.line2){ %>
+
+      <p class="address-text">
+        <%= address.line2 %>
+      </p>
+
+      <% } %>
+
+      <p class="address-text">
+        <%= address.city %>,
+        <%= address.state %>
+      </p>
+
+      <p class="address-text">
+        <%= address.pincode %>
+      </p>
+
+      <p class="address-phone">
+        +91 <%= address.phone %>
+      </p>
+
+    </label>
+
+    <% }) %>
+
+    <button
+      type="button"
+      class="add-address-card"
+      id="openPickupAddressModal"
+    >
+      <span>
+        + Add New Pickup Address
+      </span>
+    </button>
+
+  </div>
+
+</section>
+<section class="card card-md">
+
+  <h2 class="text-section-title">
+    Refund Information
+  </h2>
+
+  <div class="refund-info">
+
+    <div class="refund-icon">
+      ✓
+    </div>
+
+    <p>
+
+      Refunds for approved returns will be
+      credited to your
+      <strong>Commoncore Wallet</strong>
+      after the returned item passes quality
+      inspection.
+
+    </p>
+
+  </div>
+
+</section>
+<section class="card card-md">
+
+  <h2 class="text-section-title">
+    Return Policy
+  </h2>
+
+  <ul class="return-policy">
+
+    <li>
+      ○ Returns are accepted within 14 days of delivery.
+    </li>
+
+    <li>
+      ○ Items must be unused, unwashed and returned with original tags.
+    </li>
+
+    <li>
+      ○ Refunds are processed after inspection.
+    </li>
+
+  </ul>
+
+</section>
+<div class="return-actions">
+
+  <button
+    class="primary-btn"
+    id="requestReturnBtn"
+    data-order-id="<%= order._id %>"
+    data-item-id="<%= item._id %>"
+  >
+    Request Return
+  </button>
+
+</div>
+
+</main>
+<div
+  class="checkout-address-modal"
+  id="pickupAddressModal"
+>
+
+  <div class="checkout-address-modal-content">
+
+    <h3>
+      Add Pickup Address
+    </h3>
+
+    <form id="pickupAddressForm">
+
+      <input
+        type="text"
+        name="fullName"
+        placeholder="Full Name"
+      >
+
+      <span
+        class="error-msg"
+        id="pickupFullNameError"
+      ></span>
+
+      <input
+        type="text"
+        name="phone"
+        placeholder="Phone Number"
+      >
+
+      <span
+        class="error-msg"
+        id="pickupPhoneError"
+      ></span>
+
+      <input
+        type="text"
+        name="line1"
+        placeholder="House / Street / Area"
+      >
+
+      <span
+        class="error-msg"
+        id="pickupLine1Error"
+      ></span>
+
+      <input
+        type="text"
+        name="line2"
+        placeholder="Landmark (Optional)"
+      >
+
+      <input
+        type="text"
+        name="city"
+        placeholder="City"
+      >
+
+      <span
+        class="error-msg"
+        id="pickupCityError"
+      ></span>
+
+      <input
+        type="text"
+        name="state"
+        placeholder="State"
+      >
+
+      <span
+        class="error-msg"
+        id="pickupStateError"
+      ></span>
+
+      <input
+        type="text"
+        name="pincode"
+        placeholder="Pincode"
+      >
+
+      <span
+        class="error-msg"
+        id="pickupPincodeError"
+      ></span>
+
+      <div class="checkout-address-form-actions">
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Use This Address
+        </button>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="closePickupAddressModal"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+<input
+  type="hidden"
+  id="pickupAddressType"
+  value="delivery"
+>
+
+<input
+  type="hidden"
+  id="pickupAddressId"
+>
+
+<input
+  type="hidden"
+  id="pickupAddressData"
+>
+
+<div
+  id="confirmReturnModal"
+  class="cancel-modal hidden"
+>
+  <div class="cancel-modal-content">
+    <div class="modal-header">
+      <h2>Confirm Return Request</h2>
+
+      <button
+        type="button"
+        id="closeConfirmReturnModal"
+        class="modal-close"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="cancel-product">
+      <img
+        src="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/default-product.jpg' %>"
+        alt="<%= item.productName %>"
+      >
+
+      <div>
+        <h3><%= item.productName %></h3>
+        <p><%= item.color %> / <%= item.size %></p>
+        <strong>₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %></strong>
+      </div>
+    </div>
+
+    <p class="cancel-return-note">
+      Are you sure you want to submit this return request?
+    </p>
+
+    <div class="cancel-modal-actions">
+      <button
+        type="button"
+        id="keepReturnRequestBtn"
+        class="secondary-btn"
+      >
+        Not Now
+      </button>
+
+      <button
+        type="button"
+        id="confirmReturnRequestBtn"
+        class="primary-btn"
+      >
+        Confirm Return Request
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div
+  id="returnSuccessModal"
+  class="cancel-modal hidden"
+>
+  <div class="cancel-modal-content return-success-modal-content">
+    <div class="modal-header">
+      <h2>Return Request Submitted</h2>
+    </div>
+
+    <p class="cancel-return-note">
+      Your return request has been submitted successfully.
+    </p>
+
+    <div class="cancel-modal-actions return-success-actions">
+      <a
+        href="#"
+        id="viewReturnDetailsBtn"
+        class="primary-btn"
+      >
+        View Return Details
+      </a>
+
+      <a
+        href="/user/orders"
+        class="secondary-btn"
+      >
+        Back to Orders
+      </a>
+    </div>
+  </div>
+</div>
+
+<%- include("../partials/user-scripts") %>
+
+<script src="/js/user/returnRequest.js"></script>
+
+</body>
+</html>

@@ -46,13 +46,6 @@
     </div>
 
    <div class="order-header-right">
-
-  <% const statusClass = order.orderStatus.toLowerCase().replaceAll(' ', '-'); %>
-<span class="order-status-badge <%= statusClass %>">
-
- <%= order.orderStatus %>
-</span>
-
   <a
     href="/user/order/<%= order._id %>/invoice"
     class="invoice-btn"
@@ -64,133 +57,7 @@
 
   </section>
 
-  <!-- TRACKING -->
-<%
-const statuses = order.items.map(i => i.status);
 
-const isDelivered = statuses.every(s => s === "Delivered");
-const hasDelivered = statuses.includes("Delivered");
-
-const isShipped = statuses.every(s => s === "Shipped");
-const hasShipped = statuses.includes("Shipped");
-
-const isProcessing = statuses.includes("Processing");
-const isPlaced = statuses.includes("Placed");
-%>
-
-<% if(fullyCancelled){ %>
-
-<section class="cancelled-card card card-md">
-
-  <div class="cancelled-icon">
-    ✕
-  </div>
-
-  <div>
-    <h2>Order Cancelled</h2>
-    <p>All items in this order were cancelled.</p>
-  </div>
-
-</section>
-
-<% } else { %>
-
-  <% if(partiallyCancelled){ %>
-
-  <section class="partial-cancel-card card card-md">
-
-    <div class="partial-icon">!</div>
-
-    <div>
-
-      <p>Some items in this order have been cancelled.</p>
-    </div>
-
-  </section>
-
-  <% } %>
-
-  <!-- TRACKING -->
-
-  <section class="tracking-card card card-md">
-
-    <!-- PLACED -->
-    <div class="track-step completed">
-      <div class="track-dot"></div>
-      <span>Placed</span>
-    </div>
-
-    <div class="track-line <%= isProcessing || hasShipped || hasDelivered ? 'active' : '' %>"></div>
-
-    <!-- PROCESSED -->
-    <div class="track-step <%= isProcessing || hasShipped || hasDelivered ? 'completed' : '' %>">
-      <div class="track-dot"></div>
-      <span>Processed</span>
-    </div>
-
-    <div class="track-line <%= hasShipped || hasDelivered ? 'active' : '' %>"></div>
-
-    <!-- SHIPPED -->
-    <div class="track-step <%= hasShipped || hasDelivered ? 'completed' : '' %>">
-      <div class="track-dot"></div>
-      <span>Shipped</span>
-    </div>
-
-    <div class="track-line <%= hasDelivered ? 'active' : '' %>"></div>
-
-    <!-- DELIVERED -->
-    <div class="track-step <%= hasDelivered ? 'completed' : '' %>">
-      <div class="track-dot"></div>
-      <span>Delivered</span>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="tracking-footer">
-<%
-const activeItems = order.items.filter(item => item.status !== "Cancelled");
-
-const hasPendingActiveItems = activeItems.some(item =>
-  item.status === "Placed" ||
-  item.status === "Processing" ||
-  item.status === "Shipped"
-);
-
-const allActiveItemsDelivered =
-  activeItems.length > 0 &&
-  activeItems.every(item => item.status === "Delivered");
-%>
-
-<% if(allActiveItemsDelivered){ %>
-
-  <span>Delivered On</span>
-
-  <strong>
-    <%= new Date(order.updatedAt).toLocaleDateString("en-IN",{
-      day:"numeric",
-      month:"long",
-      year:"numeric"
-    }) %>
-  </strong>
-
-<% } else if(hasPendingActiveItems){ %>
-
-  <span>Expected Delivery</span>
-
-  <strong>
-    <%= new Date(order.estimatedDeliveryDate).toLocaleDateString("en-IN",{
-      day:"numeric",
-      month:"long",
-      year:"numeric"
-    }) %>
-  </strong>
-
-<% } %>
-
-</div>
-
-  </section>
-
-<% } %>
 
   <!-- INFO GRID -->
 
@@ -272,18 +139,6 @@ const allActiveItemsDelivered =
         </strong>
       </div>
 
-      <div class="info-row">
-        <span>Status</span>
-
-        <p>
-          <%= fullyCancelled
-            ? "Cancelled"
-            : partiallyCancelled
-              ? "Partially Cancelled"
-              : order.orderStatus
-          %>
-        </p>
-      </div>
 
     </div>
 
@@ -291,7 +146,6 @@ const allActiveItemsDelivered =
 
 </section>
 
-  <!-- ORDER SUMMARY -->
 
 <section class="card card-md summary-card">
 
@@ -301,122 +155,90 @@ const allActiveItemsDelivered =
 
   <% order.items.forEach(item => { %>
 
-  <div class="summary-item">
+ <div class="summary-item">
 
-    <img
-      src="<%= item.variantId.images?.[0]?.url %>"
-      alt="<%= item.productName %>"
-    >
+  <img
+    src="<%= item.variantId.images?.[0]?.url %>"
+    alt="<%= item.productName %>"
+  >
 
-   <div class="summary-item-content">
+  <div class="summary-item-content">
 
-  <h4 class="item-title">
+    <div class="item-top-row">
+      <h4 class="item-title">
+        <%= item.productName %>
+        <span class="item-status-text item-status-<%= item.status.toLowerCase().replaceAll(' ', '-') %>">
+          <%= item.status %>
+        </span>
+      </h4>
+    </div>
 
-    <span><%= item.productName %></span>
+    <p class="item-variant">
+      <%= item.color %> /
+      <%= item.size %>
+      · Qty <%= item.quantity %>
+    </p>
 
-    <span
-      class="item-status <%= item.status.toLowerCase().replaceAll(' ', '-') %>"
-    >
-      <%= item.status %>
-    </span>
+    <% if (item.statusMetaText) { %>
+      <p class="item-meta-text">
+        <%= item.statusMetaText %>
+      </p>
+    <% } %>
 
-  </h4>
-
-  <p class="item-variant">
-    <%= item.color %> /
-    <%= item.size %>
-    · Qty <%= item.quantity %>
-  </p>
-
-  <% if (item.statusUpdatedAt) { %>
-
-    <small class="item-status-date">
-
-      <% if(item.status === "Delivered"){ %>
-        Delivered on
-      <% } else if(item.status === "Shipped"){ %>
-        Shipped on
-      <% } else if(item.status === "Cancelled"){ %>
-        Cancelled on
-      <% } else if(item.status === "Processing"){ %>
-        Processing since
-      <% } else { %>
-        Updated on
-      <% } %>
-
-      <%= new Date(item.statusUpdatedAt).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }) %>
-
-    </small>
-
-  <% } %>
-
-</div>
-
-   <div class="summary-item-right">
-
-  <div class="item-price-breakdown">
-
-    <span class="unit-price">
-      ₹<%= item.unitPrice.toLocaleString("en-IN") %>
-      ×
-      <%= item.quantity %>
-    </span>
-
-    <strong
-      class="<%= item.status === 'Cancelled'
-        ? 'price-cancelled'
-        : '' %>"
-    >
-      ₹<%= (
-        item.unitPrice * item.quantity
-      ).toLocaleString("en-IN") %>
-    </strong>
+    <% if (item.canReturn) { %>
+      <p class="item-return-text">
+        Return available · <%= item.returnDaysLeft %> day<%= item.returnDaysLeft !== 1 ? "s" : "" %> left
+      </p>
+    <% } %>
 
   </div>
 
-<% if (item.canCancel) { %>
+  <div class="summary-item-right">
 
-<button
-  class="secondary-btn cancel-item-btn"
-  data-item-id="<%= item._id %>"
-  data-order-id="<%= order._id %>"
-  data-name="<%= item.productName %>"
-  data-image="<%= item.variantId.images?.[0]?.url %>"
-  data-size="<%= item.size %>"
-  data-color="<%= item.color %>"
-  data-price="<%= item.unitPrice * item.quantity %>"
->
-  Cancel Item
-</button>
+    <div class="item-price-breakdown">
+      <span class="unit-price">
+        ₹<%= item.unitPrice.toLocaleString("en-IN") %> × <%= item.quantity %>
+      </span>
 
-<% } else if (item.canReturn) { %>
+      <strong class="<%= item.status === 'Cancelled' ? 'price-cancelled' : '' %>">
+        ₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %>
+      </strong>
+    </div>
 
-<button
-  class="secondary-btn return-item-btn"
-  data-item-id="<%= item._id %>"
-  data-order-id="<%= order._id %>"
-  data-name="<%= item.productName %>"
-  data-image="<%= item.variantId.images?.[0]?.url %>"
-  data-size="<%= item.size %>"
-  data-color="<%= item.color %>"
-  data-price="<%= item.unitPrice * item.quantity %>"
->
-  Return Item
-</button>
+    <% if (item.canCancel) { %>
+      <button
+        class="secondary-btn cancel-item-btn"
+        data-item-id="<%= item._id %>"
+        data-order-id="<%= order._id %>"
+        data-name="<%= item.productName %>"
+        data-image="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/default-product.jpg' %>"
+        data-size="<%= item.size %>"
+        data-color="<%= item.color %>"
+        data-price="<%= item.unitPrice * item.quantity %>"
+      >
+        Cancel Item
+      </button>
 
-<small class="return-window">
-  <%= item.returnDaysLeft %> day<%= item.returnDaysLeft !== 1 ? "s" : "" %> left
-</small>
+    <% } else if (item.canReturn) { %>
+      <a
+        href="/user/returns/request/<%= order._id %>/<%= item._id %>"
+        class="secondary-btn return-item-btn"
+      >
+        Return Item
+      </a>
 
-<% } %>
-
-</div>
+    <% } else if (item.showReturnStatusBtn) { %>
+      <a
+        href="/user/returns/<%= order._id %>/<%= item._id %>"
+        class="secondary-btn return-status-btn"
+      >
+        View Return Status
+      </a>
+    <% } %>
 
   </div>
+
+</div>
 
   <% }) %>
 
@@ -547,10 +369,7 @@ const allActiveItemsDelivered =
 
 <div class="order-actions">
 
-  <% if(
-    order.orderStatus === "Placed" ||
-    order.orderStatus === "Processing"
-  ){ %>
+<% if (order.items.some(item => item.canCancel)) { %>
 
   <button
     class="secondary-btn cancel-order-btn"
@@ -559,7 +378,7 @@ const allActiveItemsDelivered =
     Cancel Order
   </button>
 
-  <% } %>
+<% } %>
 
   <a
     href="/user/shop"

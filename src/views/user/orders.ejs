@@ -196,11 +196,27 @@
 
           <div>
 
-            <span
-              class="status-badge status-<%= order.orderStatus.toLowerCase().replace(/\s+/g, '-') %>"
-            >
-              <%= order.orderStatus %>
+          <div class="order-status-cell">
+
+            <span class="column-title">
+              STATUS
             </span>
+
+            <% if (!order.itemsStatusMixed) { %>
+              <div class="status-text status-<%= order.itemsSingleStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                <%= order.itemsSingleStatus %>
+              </div>
+            <% } else { %>
+              <div class="status-summary-list">
+                <% order.itemsStatusSummaryLines.forEach(line => { %>
+                  <div class="status-summary-line">
+                    <%= line %>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+
+          </div>
 
           </div>
 

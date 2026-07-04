@@ -1,4 +1,5 @@
 import Order from "../../models/order.model.js";
+import Return from "../../models/return.model.js";
 import { getCartService } from "./cart.service.js";
 import { getUserAddressById } from "../../repositories/address.repository.js";
 import {
@@ -6,7 +7,7 @@ import {
   findUserOrderById,
   findOrderById,
   saveOrder,
-  findOrdersByUser 
+  findOrdersByUser,
 } from "../../repositories/order.repository.js";
 import {
   reduceVariantStock,
@@ -16,45 +17,61 @@ import { clearCart } from "../../repositories/cart.repository.js";
 import { generateInvoicePdf } from "../../utils/invoicePdf.js";
 import { validateBuyNowService } from "./checkout.service.js";
 import { calculateOrderStatus } from "../../utils/orderStatus.js";
+import { getOrderItemsStatusSummary } from "../../utils/orderItemStatus.js";
 
-
-export const getUserOrdersService = async ({
-  userId,
-  search,
-  page,
-}) => {
-
+export const getUserOrdersService = async ({ userId, search, page }) => {
   const limit = 5;
 
-  const {
-    orders,
-    totalOrders,
-  } = await findOrdersByUser({
+  const { orders, totalOrders } = await findOrdersByUser({
     userId,
     search,
     page,
     limit,
   });
 
-  const totalPages = Math.ceil(
-    totalOrders / limit
-  );
+  const preparedOrders = orders.map((order) => {
+    const statusCounts = {};
+
+    order.items.forEach((item) => {
+      statusCounts[item.status] =
+        (statusCounts[item.status] || 0) + item.quantity;
+    });
+
+    const entries = Object.entries(statusCounts);
+
+    const itemsStatusMixed = entries.length > 1;
+
+    const itemsSingleStatus = entries.length === 1 ? entries[0][0] : null;
+
+    const itemsStatusSummaryLines = entries.map(
+      ([status, qty]) => `${qty} ${status}`,
+    );
+
+    return {
+      ...order.toObject(),
+      itemsStatusMixed,
+      itemsSingleStatus,
+      itemsStatusSummaryLines,
+    };
+  });
+
+  const totalPages = Math.ceil(totalOrders / limit);
 
   return {
-    orders,
+    orders: preparedOrders,
     totalPages,
     currentPage: page,
     search,
   };
 };
 
-
 const generateOrderNumber = () => {
   return "ORD-" + Date.now();
 };
 
 export const placeOrderService = async (userId, payload) => {
-  const { shippingAddress, paymentMethod, isBuyNow, variantId, quantity } =payload;
+  const { shippingAddress, paymentMethod, isBuyNow, variantId, quantity } =
+    payload;
 
   if (!shippingAddress) {
     const error = new Error("Please select address");
@@ -81,20 +98,20 @@ export const placeOrderService = async (userId, payload) => {
     const { variant, qty } = await validateBuyNowService(variantId, quantity);
     const product = variant.productId;
 
-   items = [
-  {
-    productId: product._id,
-    variantId: variant._id,
-    productName: product.name,
-    productImage: variant.images?.[0]?.url || "",
-    size: variant.size,
-    color: variant.color.name,
-    quantity: qty,
-    unitPrice: variant.price,
-    gstRate: product.gstRate,
-    status: "Placed",
-  },
-];
+    items = [
+      {
+        productId: product._id,
+        variantId: variant._id,
+        productName: product.name,
+        productImage: variant.images?.[0]?.url || "",
+        size: variant.size,
+        color: variant.color.name,
+        quantity: qty,
+        unitPrice: variant.price,
+        gstRate: product.gstRate,
+        status: "Placed",
+      },
+    ];
     subtotal = variant.price * qty;
   } else {
     const cart = await getCartService(userId);
@@ -113,17 +130,17 @@ export const placeOrderService = async (userId, payload) => {
     }
 
     items = cart.items.map((item) => ({
-  productId: item.product._id,
-  variantId: item.variant._id,
-  productName: item.product.name,
-  productImage: item.variant.images?.[0]?.url || "",
-  size: item.variant.size,
-  color: item.variant.color.name,
-  quantity: item.quantity,
-  unitPrice: item.variant.price,
-  gstRate: item.product.gstRate,
-  status: "Placed",
-}));
+      productId: item.product._id,
+      variantId: item.variant._id,
+      productName: item.product.name,
+      productImage: item.variant.images?.[0]?.url || "",
+      size: item.variant.size,
+      color: item.variant.color.name,
+      quantity: item.quantity,
+      unitPrice: item.variant.price,
+      gstRate: item.product.gstRate,
+      status: "Placed",
+    }));
     subtotal = cart.subtotal;
   }
 
@@ -131,9 +148,7 @@ export const placeOrderService = async (userId, payload) => {
   const total = subtotal + shippingFee;
   const estimatedDeliveryDate = new Date();
 
-  estimatedDeliveryDate.setDate(
-  estimatedDeliveryDate.getDate() + 5
-);
+  estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
   const order = await createOrderRepo({
     orderNumber: generateOrderNumber(),
     userId,
@@ -167,7 +182,6 @@ export const placeOrderService = async (userId, payload) => {
   return order;
 };
 
-
 export const getOrderSuccessService = async (orderId, userId) => {
   const order = await findUserOrderById(orderId, userId);
 
@@ -178,18 +192,13 @@ export const getOrderSuccessService = async (orderId, userId) => {
   }
 
   const gstAmount = order.items.reduce((total, item) => {
+    const itemSubtotal = item.unitPrice * item.quantity;
 
-    const itemSubtotal =
-      item.unitPrice * item.quantity;
+    const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
 
-    const taxableValue =
-      itemSubtotal / (1 + item.gstRate / 100);
-
-    const itemGst =
-      itemSubtotal - taxableValue;
+    const itemGst = itemSubtotal - taxableValue;
 
     return total + itemGst;
-
   }, 0);
 
   return {
@@ -198,44 +207,135 @@ export const getOrderSuccessService = async (orderId, userId) => {
   };
 };
 
-
 export const getOrderDetailService = async (orderId, userId) => {
   const order = await findUserOrderById(orderId, userId);
-  order.orderStatus=calculateOrderStatus(order.items);
-  
+
+  const returnRequests = await Return.find({
+    orderId: order._id,
+    userId,
+  }).lean();
+
+  const returnMap = new Map(
+    returnRequests.map((ret) => [String(ret.itemId), ret]),
+  );
+
+  order.orderStatus = calculateOrderStatus(order.items);
+
   if (!order) {
     const error = new Error("Order not found");
     error.status = 404;
     throw error;
   }
-  const RETURN_WINDOW_DAYS = 14;
+const RETURN_WINDOW_DAYS = 14;
 
-  order.items.forEach((item) => {
-    item.canCancel =
-      item.status === "Placed" ||
-      item.status === "Processing";
+order.items.forEach((item) => {
+  item.canCancel =
+    item.status === "Placed" ||
+    item.status === "Processing";
 
-    item.canReturn = false;
-    item.returnDaysLeft = 0;
+  item.canReturn = false;
+  item.returnDaysLeft = 0;
+  item.showReturnStatusBtn = false;
+  item.statusMetaText = "";
 
-    if (
-      item.status === "Delivered" &&
-      item.statusUpdatedAt
-    ) {
-      const diffDays = Math.floor(
-        (Date.now() - new Date(item.statusUpdatedAt).getTime()) /
-        (1000 * 60 * 60 * 24)
-      );
+  const itemReturn = returnMap.get(String(item._id));
 
-      item.returnDaysLeft = Math.max(
-        0,
-        RETURN_WINDOW_DAYS - diffDays
-      );
+  const deliveredAt = item.statusUpdatedAt
+    ? new Date(item.statusUpdatedAt)
+    : null;
 
-      item.canReturn = diffDays < RETURN_WINDOW_DAYS;
+  let diffDays = null;
+
+  if (item.status === "Delivered" && deliveredAt) {
+    diffDays = Math.floor(
+      (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    item.returnDaysLeft = Math.max(0, RETURN_WINDOW_DAYS - diffDays);
+  }
+
+  if (itemReturn) {
+    if (itemReturn.status === "Cancelled") {
+      if (
+        item.status === "Delivered" &&
+        diffDays !== null &&
+        diffDays < RETURN_WINDOW_DAYS
+      ) {
+        item.canReturn = true;
+      }
+
+      return;
     }
-  });
 
+    item.showReturnStatusBtn = true;
+
+    if (itemReturn.status === "Requested") {
+      item.statusMetaText =
+        `Return requested on ${new Date(
+          itemReturn.requestedAt,
+        ).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`;
+    } else if (itemReturn.status === "Approved") {
+      item.statusMetaText =
+        `Return approved on ${new Date(
+          itemReturn.approvedAt || itemReturn.updatedAt,
+        ).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`;
+    } else if (itemReturn.status === "Picked Up") {
+      item.statusMetaText =
+        `Item picked up on ${new Date(
+          itemReturn.pickedUpAt || itemReturn.updatedAt,
+        ).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`;
+    } else if (itemReturn.status === "Received") {
+      item.statusMetaText =
+        `Returned item received on ${new Date(
+          itemReturn.receivedAt || itemReturn.updatedAt,
+        ).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`;
+    } else if (itemReturn.status === "Refunded") {
+      item.statusMetaText =
+        `Refund processed on ${new Date(
+          itemReturn.refundedAt || itemReturn.updatedAt,
+        ).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`;
+    } else if (itemReturn.status === "Rejected") {
+      item.statusMetaText =
+        `Return rejected on ${new Date(
+          itemReturn.updatedAt,
+        ).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`;
+    }
+
+    return;
+  }
+
+  if (
+    item.status === "Delivered" &&
+    diffDays !== null &&
+    diffDays < RETURN_WINDOW_DAYS
+  ) {
+    item.canReturn = true;
+  }
+});
 
   const cancelledAmount = order.items
     .filter((item) => item.status === "Cancelled")
@@ -246,21 +346,16 @@ export const getOrderDetailService = async (orderId, userId) => {
     .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
   const gstAmount = order.items
-  .filter((item) => item.status !== "Cancelled")
-  .reduce((total, item) => {
+    .filter((item) => item.status !== "Cancelled")
+    .reduce((total, item) => {
+      const itemSubtotal = item.unitPrice * item.quantity;
 
-    const itemSubtotal =
-      item.unitPrice * item.quantity;
+      const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
 
-    const taxableValue =
-      itemSubtotal / (1 + item.gstRate / 100);
+      const itemGst = itemSubtotal - taxableValue;
 
-    const itemGst =
-      itemSubtotal - taxableValue;
-
-    return total + itemGst;
-
-  }, 0);
+      return total + itemGst;
+    }, 0);
 
   const shippingFee =
     activeSubtotal >= 999 ? 0 : activeSubtotal > 0 ? order.shippingFee : 0;
@@ -268,21 +363,24 @@ export const getOrderDetailService = async (orderId, userId) => {
   const currentValue = activeSubtotal + shippingFee;
 
   const fullyCancelled =
-  order.items.length > 0 &&
-  order.items.every(item => item.status === "Cancelled");
+    order.items.length > 0 &&
+    order.items.every((item) => item.status === "Cancelled");
 
-  const partiallyCancelled =
-  cancelledAmount > 0 && !fullyCancelled;
+  const partiallyCancelled = cancelledAmount > 0 && !fullyCancelled;
+  const canCancelAnyItem = order.items.some(
+    (item) => item.status === "Placed" || item.status === "Processing",
+  );
 
- return {
-  order,
-  cancelledAmount,
-  activeSubtotal,
-  currentValue,
-  gstAmount: Number(gstAmount.toFixed(2)),
-  fullyCancelled,
-  partiallyCancelled,
-};
+  return {
+    order,
+    cancelledAmount,
+    activeSubtotal,
+    currentValue,
+    gstAmount: Number(gstAmount.toFixed(2)),
+    fullyCancelled,
+    partiallyCancelled,
+    canCancelAnyItem,
+  };
 };
 
 export const cancelOrderService = async ({ userId, orderId }) => {
@@ -395,19 +493,14 @@ export const downloadInvoiceService = async ({ userId, orderId, res }) => {
   const currentTotal =
     activeSubtotal + (activeItems.length > 0 ? order.shippingFee : 0);
   const gstAmount = activeItems.reduce((total, item) => {
+    const itemSubtotal = item.unitPrice * item.quantity;
 
-  const itemSubtotal =
-    item.unitPrice * item.quantity;
+    const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
 
-  const taxableValue =
-    itemSubtotal / (1 + item.gstRate / 100);
+    const itemGst = itemSubtotal - taxableValue;
 
-  const itemGst =
-    itemSubtotal - taxableValue;
-
-  return total + itemGst;
-
-}, 0);
+    return total + itemGst;
+  }, 0);
 
   generateInvoicePdf({
     order,

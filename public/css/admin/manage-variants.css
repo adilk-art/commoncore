@@ -340,8 +340,6 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 4px;
-
-  /* 🔴 IMPORTANT */
   min-width: 0;
 }
 
@@ -424,14 +422,13 @@ tbody tr:hover {
 
   padding-bottom: 5px;
 
-  /* 🔴 CRITICAL FIX */
   min-width: 0;
 }
 
 
 .preview-item {
   flex: 0 0 auto;
-  width: 70px;      /* IMPORTANT FIX */
+  width: 70px;    
   height: 85px;
 
   position: relative;
@@ -630,8 +627,8 @@ tbody tr:hover {
   width: 240px;
   max-width: 100%;
 
-  flex-shrink: 1;   /* 🔥 IMPORTANT */
-  min-width: 0;     /* 🔥 IMPORTANT */
+  flex-shrink: 1;  
+  min-width: 0;    
   margin-bottom: 10px;
   
 

@@ -19,7 +19,7 @@ body {
   background: #fff;
   padding: 40px 30px;
   text-align: center;
-  border-radius: 20px; /* same soft radius as hero */
+  border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
 }
 
@@ -78,7 +78,7 @@ body {
 }
 
 .secondary {
-  background: #e9eef5;  /* same as tag background */
+  background: #e9eef5; 
   color: #333;
 }
 
