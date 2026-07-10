@@ -33,11 +33,11 @@
     <div>
 
       <h1 class="order-number">
-        Return Details
+        Return Details- <%=returnRequest.returnNumber%>
       </h1>
 
       <p class="order-date">
-        Order:
+        Order Number:
         <%= order.orderNumber %>
       </p>
 
@@ -134,14 +134,7 @@
             </p>
           </div>
         <% } %>
-
-        <div class="info-row">
-          <span>Pickup Type</span>
-          <p>
-            <%= returnRequest.pickupType %>
-          </p>
-        </div>
-
+ 
         <div class="info-row">
           <span>Refund Amount</span>
           <strong>

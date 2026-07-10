@@ -515,13 +515,12 @@
         <h3><%= item.productName %></h3>
         <p><%= item.color %> / <%= item.size %></p>
         <strong>₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %></strong>
+        <p id="retRequestReason" ></p>
       </div>
     </div>
-
     <p class="cancel-return-note">
       Are you sure you want to submit this return request?
-    </p>
-
+    </p>    
     <div class="cancel-modal-actions">
       <button
         type="button"
@@ -552,8 +551,8 @@
       <h2>Return Request Submitted</h2>
     </div>
 
-    <p class="cancel-return-note">
-      Your return request has been submitted successfully.
+    <p class="cancel-return-note" id="cancelReturnNote">
+      
     </p>
 
     <div class="cancel-modal-actions return-success-actions">

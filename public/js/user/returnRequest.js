@@ -23,7 +23,8 @@ const confirmReturnRequestBtn = document.getElementById(
 
 const returnSuccessModal = document.getElementById("returnSuccessModal");
 const viewReturnDetailsBtn = document.getElementById("viewReturnDetailsBtn");
-
+const cancelReturnNote=document.getElementById("cancelReturnNote");
+const retRequestReason=document.getElementById("retRequestReason");
 let temporaryPickupAddress = null;
 let pendingReturnPayload = null;
 
@@ -213,6 +214,9 @@ requestReturnBtn?.addEventListener("click", () => {
   if (!payload) return;
 
   pendingReturnPayload = payload;
+  const retReason=pendingReturnPayload.reason;
+  retRequestReason.textContent=`Reason:${retReason}`;
+
   confirmReturnModal.classList.remove("hidden");
 });
 
@@ -232,12 +236,14 @@ confirmReturnRequestBtn?.addEventListener("click", async () => {
 
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
-    await axios.post("/user/returns/request", pendingReturnPayload);
+    const res=await axios.post("/user/returns/request", pendingReturnPayload);
 
     closeReturnConfirmModal();
 
     const orderId = pendingReturnPayload.orderId;
     const itemId = pendingReturnPayload.itemId;
+    const returnNumber=res.data.returnRequest.returnNumber;
+    cancelReturnNote.textContent=`Your return has been submitted with Return ID "${returnNumber}"`
 
     viewReturnDetailsBtn.href = `/user/returns/${orderId}/${itemId}`;
 

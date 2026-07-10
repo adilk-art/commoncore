@@ -241,6 +241,28 @@
         </div>
 
         <% order.items.forEach(item => { %>
+                      <%
+              const lockedStatuses = [
+                "Delivered",
+                "Cancelled",
+                "Return Requested",
+                "Return Accepted",
+                "Return Rejected",
+                "Returned",
+                "Refunded"
+              ];
+
+              const returnStatuses = [
+                "Return Requested",
+                "Return Accepted",
+                "Return Rejected",
+                "Returned",
+                "Refunded"
+              ];
+
+              const isLockedStatus = lockedStatuses.includes(item.status);
+              const isReturnRelated = returnStatuses.includes(item.status);
+            %>
 
           <div class="item-card">
 
@@ -272,7 +294,7 @@
 >
 
               <span
-                class="status item-status-badge <%= item.status.toLowerCase() %>"
+                class="status item-status-badge <%= item.status.toLowerCase().replace(/\s+/g, '-') %>"
               >
                 <%= item.status %>
               </span>
@@ -281,15 +303,25 @@
 
                 <small class="status-date item-status-date">
 
-                  <% if(item.status === "Delivered"){ %>
-                    Delivered on
-                  <% } else if(item.status === "Shipped"){ %>
-                    Shipped on
-                  <% } else if(item.status === "Cancelled"){ %>
-                    Cancelled on
-                  <% } else { %>
-                    Updated on
-                  <% } %>
+                <% if(item.status === "Delivered"){ %>
+                  Delivered on
+                <% } else if(item.status === "Shipped"){ %>
+                  Shipped on
+                <% } else if(item.status === "Cancelled"){ %>
+                  Cancelled on
+                <% } else if(item.status === "Return Requested"){ %>
+                  Return requested on
+                <% } else if(item.status === "Return Accepted"){ %>
+                  Return accepted on
+                <% } else if(item.status === "Return Rejected"){ %>
+                  Return rejected on
+                <% } else if(item.status === "Returned"){ %>
+                  Returned on
+                <% } else if(item.status === "Refunded"){ %>
+                  Refunded on
+                <% } else { %>
+                  Updated on
+                <% } %>
 
                   <%= new Date(item.statusUpdatedAt).toLocaleString("en-IN",{
                     day:"2-digit",
@@ -302,33 +334,17 @@
                 </small>
 
               <% } %>
+              <% if (isReturnRelated) { %>
+                <span class="return-flow-note">
+                  This item is in return flow. Manage it from Return Management.
+                </span>
+              <% } %>
 
             </div>
 
             <div class="item-actions">
 
-            <%
-              const lockedStatuses = [
-                "Delivered",
-                "Cancelled",
-                "Return Requested",
-                "Return Accepted",
-                "Return Rejected",
-                "Returned",
-                "Refunded"
-              ];
 
-              const returnStatuses = [
-                "Return Requested",
-                "Return Accepted",
-                "Return Rejected",
-                "Returned",
-                "Refunded"
-              ];
-
-              const isLockedStatus = lockedStatuses.includes(item.status);
-              const isReturnRelated = returnStatuses.includes(item.status);
-            %>
 
             <form
               class="status-form"
@@ -385,11 +401,7 @@
 
 </form>
 
-<% if (isReturnRelated) { %>
-  <span class="return-manage-note">
-    This item is in return flow. Manage it from Return Management.
-  </span>
-<% } %>
+
 
 </div>
 </div>

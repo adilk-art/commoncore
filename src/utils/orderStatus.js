@@ -26,17 +26,17 @@ export const calculateOrderStatus = (items) => {
     return "Cancelled";
   }
 
-  if (statuses.includes("Delivered")) {
-    return "Partially Delivered";
-  }
+  // if (statuses.includes("Delivered")) {
+  //   return "Partially Delivered";
+  // }
 
-  if (statuses.includes("Shipped")) {
-    return "Partially Shipped";
-  }
+  // if (statuses.includes("Shipped")) {
+  //   return "Partially Shipped";
+  // }
 
-  if (statuses.includes("Cancelled")) {
-    return "Partially Cancelled";
-  }
+  // if (statuses.includes("Cancelled")) {
+  //   return "Partially Cancelled";
+  // }
 
   return "Processing";
 };

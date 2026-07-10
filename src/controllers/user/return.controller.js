@@ -32,7 +32,6 @@ export const requestReturn = async (req, res, next) => {
       req.body,
       req.session.userId,
     );
-
     res.json({
       success: true,
       message: "Return request submitted successfully.",
