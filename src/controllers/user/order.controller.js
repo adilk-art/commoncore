@@ -5,35 +5,28 @@ import {
   getOrderDetailService,
   cancelOrderItemService,
   cancelOrderService,
-  downloadInvoiceService, 
+  downloadInvoiceService,
+  createRazorpayOrderService,
+  verifyPaymentService,
 } from "../../services/user/order.service.js";
 
 export const loadOrdersPage = async (req, res, next) => {
   try {
+    const page = Number(req.query.page) || 1;
 
-    const page =
-      Number(req.query.page) || 1;
+    const search = req.query.search || "";
 
-    const search =
-      req.query.search || "";
+    const data = await getUserOrdersService({
+      userId: req.session.userId,
+      page,
+      search,
+    });
 
-    const data =
-      await getUserOrdersService({
-        userId: req.session.userId,
-        page,
-        search,
-      });
-
-    res.render(
-      "user/orders",
-      data
-    );
-
+    res.render("user/orders", data);
   } catch (error) {
     next(error);
   }
 };
-
 
 export const placeOrder = async (req, res, next) => {
   try {
@@ -49,14 +42,12 @@ export const placeOrder = async (req, res, next) => {
 
 export const loadOrderSuccessPage = async (req, res, next) => {
   try {
-
     const data = await getOrderSuccessService(
       req.params.orderId,
       req.session.userId,
     );
 
     res.render("user/order-success.ejs", data);
-
   } catch (error) {
     next(error);
   }
@@ -64,34 +55,31 @@ export const loadOrderSuccessPage = async (req, res, next) => {
 
 export const loadOrderDetail = async (req, res, next) => {
   try {
-const {
-  order,
-  cancelledAmount,
-  activeSubtotal,
-  currentValue,
-  gstAmount,
-  fullyCancelled,
-  partiallyCancelled,
-  canCancelAnyItem
-} = await getOrderDetailService(req.params.orderId, req.session.userId);
+    const {
+      order,
+      cancelledAmount,
+      activeSubtotal,
+      currentValue,
+      gstAmount,
+      fullyCancelled,
+      partiallyCancelled,
+      canCancelAnyItem,
+    } = await getOrderDetailService(req.params.orderId, req.session.userId);
 
-res.render("user/order-detail", {
-  order,
-  cancelledAmount,
-  activeSubtotal,
-  currentValue,
-  gstAmount,
-  fullyCancelled,
-  partiallyCancelled,
-  canCancelAnyItem
-});
-
+    res.render("user/order-detail", {
+      order,
+      cancelledAmount,
+      activeSubtotal,
+      currentValue,
+      gstAmount,
+      fullyCancelled,
+      partiallyCancelled,
+      canCancelAnyItem,
+    });
   } catch (error) {
     next(error);
   }
 };
-
-
 
 export const cancelOrder = async (req, res, next) => {
   try {
@@ -139,5 +127,26 @@ export const downloadInvoice = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const createRazorpayOrder = async (req, res, next) => {
+  try {
+    const data = await createRazorpayOrderService(req.session.userId, req.body);
+
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const verifyPayment = async (req, res, next) => {
+  try {
+    const data = await verifyPaymentService(req.session.userId, req.body);
+
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    next(err);
   }
 };

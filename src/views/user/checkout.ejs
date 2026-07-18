@@ -182,53 +182,38 @@
 
         <div class="payment-options">
 
-          <!-- <label class="payment-option active">
+        <label class="payment-option active">
 
-            <input
-              type="radio"
-              name="payment"
-              value="Razorpay"
-              checked
-              class="hidden payment-radio"
-            >
+          <input
+            type="radio"
+            name="payment"
+            value="Razorpay"
+            checked
+            class="hidden payment-radio"
+          >
 
-            <div>
+          <div>
+            <h3 class="payment-title">Pay Now (Razorpay)</h3>
+            <p class="text-muted">UPI, Cards</p>
+          </div>
 
-              <h3 class="payment-title">
-                Razorpay
-              </h3>
+        </label>
 
-              <p class="text-muted">
-                UPI, Cards, Wallets
-              </p>
+          <label class="payment-option">
 
-            </div>
+          <input
+            type="radio"
+            name="payment"
+            value="CashOnDelivery"
+            class="hidden payment-radio"
+          >
 
-          </label> -->
+          <div>
+            <h3 class="payment-title">Cash on Delivery</h3>
+            <p class="text-muted">Pay after delivery</p>
+          </div>
 
-          <label class="payment-option active">
-
-            <input
-              type="radio"
-              name="payment"
-              value="CashOnDelivery"
-              checked
-              class="hidden payment-radio"
-            >
-
-            <div>
-
-              <h3 class="payment-title">
-                Cash on Delivery
-              </h3>
-
-              <p class="text-muted">
-                Pay after delivery
-              </p>
-
-            </div>
-
-          </label>
+        </label>
 
         </div>
 
@@ -469,6 +454,7 @@
 <%- include('../partials/user-scripts') %>
 
 <script src="/js/user/checkout.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 </body>
 </html>

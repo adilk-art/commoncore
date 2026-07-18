@@ -76,19 +76,81 @@ placeOrderBtn?.addEventListener("click", async (event) => {
       <span>Placing Order...</span>
     `;
 
-    const response = await axios.post("/user/order/place", payload);
-    const data = response.data;
+    if (payload.paymentMethod === "CashOnDelivery") {
+      const { data } = await axios.post("/user/order/place", payload);
 
-    if (!data.success) return userToast(data.message);
-    
-    setTimeout(() => {
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
       window.location.href = `/user/order/success/${data.order._id}`;
-    }, 2000);
+      return;
+    }
 
+    const { data } = await axios.post(
+      "/user/order/create-razorpay-order",
+      payload,
+    );
+
+    if (!data.success) {
+      userToast(data.message);
+    }
+
+    const options = {
+      key: data.key,
+      amount: data.order.amount,
+      currency: data.order.currency,
+      name: "Commoncore",
+      description: "Order Payment",
+      order_id: data.order.id,
+      handler: async function (response) {
+        try {
+          const { data } = await axios.post("/user/order/verify-payment", {
+            ...response,
+            ...payload,
+          });
+
+          if (data.success) {
+            window.location.href = `/user/order/success/${data.orderId}`;
+          } else {
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerHTML = originalButtonText;
+            userToast("Payment verification failed");
+          }
+        } catch (err) {
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.innerHTML = originalButtonText;
+
+          userToast(
+            err.response?.data?.message || "Payment verification failed",
+          );
+        }
+      },
+
+      theme: {
+        color: "#000000",
+      },
+    };
+
+    const razorpay = new Razorpay(options);
+
+    razorpay.on("payment.failed", function (response) {
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.innerHTML = originalButtonText;
+
+      userToast(response.error.description || "Payment failed");
+    });
+
+    razorpay.open();
   } catch (error) {
-    const message = error.response?.data?.message || "Failed to place order";
-    const code = error.response?.data?.code;
+    placeOrderBtn.disabled = false;
     placeOrderBtn.innerHTML = originalButtonText;
+
+    const message =
+      error.response?.data?.message || error.message || "Failed to place order";
+
+    const code = error.response?.data?.code;
+
     userToast(message);
 
     if (code === "INVALID_CART") {
@@ -96,10 +158,6 @@ placeOrderBtn?.addEventListener("click", async (event) => {
         window.location.href = "/user/checkout";
       }, 500);
     }
-  } finally {
-    if (!location.href.includes("/order/success")) {
-  placeOrderBtn.disabled = false;
-}
   }
 });
 

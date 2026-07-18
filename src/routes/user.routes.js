@@ -71,12 +71,15 @@ router.post("/checkout/buy-now",checkoutController.initiateBuyNow);
 router.get("/checkout/buy-now", isAuthenticated, checkoutController.getBuyNowCheckoutPage);
 
 router.get("/orders",isAuthenticated,orderController.loadOrdersPage);
-router.post("/order/place",isAuthenticated,orderController.placeOrder)
+router.post("/order/place",isAuthenticated,orderController.placeOrder);
 router.get("/order/success/:orderId",isAuthenticated,orderController.loadOrderSuccessPage)
 router.get("/order/:orderId",isAuthenticated,orderController.loadOrderDetail);
 router.patch("/order/:orderId/cancel",isAuthenticated,orderController.cancelOrder);
 router.patch("/order/:orderId/items/:itemId/cancel",isAuthenticated,orderController.cancelOrderItem);
 router.get("/order/:orderId/invoice",isAuthenticated,orderController.downloadInvoice);
+
+router.post("/order/create-razorpay-order",isAuthenticated,orderController.createRazorpayOrder)
+router.post("/order/verify-payment",isAuthenticated,orderController.verifyPayment);
 
 router.get("/returns/request/:orderId/:itemId",isAuthenticated,returnController.loadReturnRequestPage);
 router.post("/returns/request",isAuthenticated,returnController.requestReturn);

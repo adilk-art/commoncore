@@ -21,6 +21,9 @@ import {
   getOrderItemsStatusSummary,
   REFUNDED_STATUSES,
 } from "../../utils/orderItemStatus.js";
+import razorpay from "../../config/razorpay.js";
+import crypto from "crypto";
+import { log } from "console";
 
 export const getUserOrdersService = async ({ userId, search, page }) => {
   const limit = 5;
@@ -473,7 +476,7 @@ export const downloadInvoiceService = async ({ userId, orderId, res }) => {
   const cancelledItems = order.items.filter(
     (item) => item.status === "Cancelled",
   );
-  
+
   const returnedItems = order.items.filter((item) =>
     ["Returned", "Refunded"].includes(item.status),
   );
@@ -516,4 +519,94 @@ export const downloadInvoiceService = async ({ userId, orderId, res }) => {
     gstAmount: Number(gstAmount.toFixed(2)),
     res,
   });
+};
+
+export const createRazorpayOrderService = async (userId, payload) => {
+  const { isBuyNow, variantId, quantity } = payload;
+
+  let subtotal;
+
+  if (isBuyNow) {
+    const { variant, qty } = await validateBuyNowService(variantId, quantity);
+
+    subtotal = variant.price * qty;
+  } else {
+    const cart = await getCartService(userId);
+
+    if (!cart || cart.items.length === 0) {
+      const error = new Error("Cart is empty");
+      error.status = 400;
+      error.code = "EMPTY_CART";
+      throw error;
+    }
+
+    if (cart.invalid) {
+      const error = new Error("Some items in your cart are unavailable");
+      error.status = 400;
+      error.code = "INVALID_CART";
+      throw error;
+    }
+
+    subtotal = cart.subtotal;
+  }
+
+  const shippingFee = subtotal >= 999 ? 0 : 99;
+  const total = subtotal + shippingFee;
+
+  const order = await razorpay.orders.create({
+    amount: total * 100,
+    currency: "INR",
+    receipt: `receipt_${Date.now()}`,
+  });
+
+  return {
+    success: true,
+    key: process.env.RAZORPAY_KEY,
+    order,
+  };
+};
+
+export const verifyPaymentService = async (userId, payload) => {
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    shippingAddress,
+    paymentMethod,
+    isBuyNow,
+    variantId,
+    quantity,
+  } = payload;
+
+  const generatedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
+  console.log(`generated=${generatedSignature}`);
+  console.log(`existing=${razorpay_signature}`);
+  if (generatedSignature !== razorpay_signature) {
+    const error = new Error("Payment verification failed");
+    error.status = 400;
+    throw error;
+  }
+
+  const order = await placeOrderService(userId, {
+    shippingAddress,
+    paymentMethod,
+    isBuyNow,
+    variantId,
+    quantity,
+  });
+
+  order.paymentStatus = "Paid";
+  order.razorpayOrderId = razorpay_order_id;
+  order.razorpayPaymentId = razorpay_payment_id;
+  order.razorpaySignature = razorpay_signature;
+
+  await saveOrder(order);
+
+  return {
+    success: true,
+    orderId: order._id,
+  };
 };

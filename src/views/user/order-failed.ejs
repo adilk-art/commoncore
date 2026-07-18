@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <title>Payment Failed — Commoncore</title>
+
+  <%- include('../partials/user-head') %>
+
+  <link
+    rel="stylesheet"
+    href="/css/user/payment-failed.css"
+  >
+
+</head>
+
+<body>
+
+<%- include('../partials/user-header') %>
+
+<main class="success-page">
+
+  <section class="success-hero card card-lg">
+
+    <div class="failed-icon">
+      ✕
+    </div>
+
+    <h1 class="success-title">
+      Payment Failed
+    </h1>
+
+    <p class="success-text">
+      We couldn't complete your payment. No worries, your order hasn't been placed. Please try the payment again or return to checkout.
+    </p>
+
+    <div class="success-meta">
+
+      <div class="success-meta-item">
+        <span>Payment Status</span>
+        <strong>Failed</strong>
+      </div>
+
+      <div class="success-meta-item">
+        <span>Date</span>
+        <strong>
+          <%= new Date().toLocaleDateString("en-IN") %>
+        </strong>
+      </div>
+
+    </div>
+
+  </section>
+
+  <div class="success-top-grid">
+
+    <section class="success-card card card-md">
+
+      <div class="success-card-head">
+        <h3 class="text-card-title">
+          What happened?
+        </h3>
+      </div>
+
+      <div class="success-address">
+
+        <p>
+          • Payment was cancelled or unsuccessful.
+        </p>
+
+        <p>
+          • Your card/account has not been charged if the transaction failed.
+        </p>
+
+        <p>
+          • If money was deducted, it is usually refunded automatically by your bank.
+        </p>
+
+      </div>
+
+    </section>
+
+    <section class="success-card card card-md">
+
+      <div class="success-card-head">
+        <h3 class="text-card-title">
+          Next Steps
+        </h3>
+      </div>
+
+      <div class="delivery-info">
+
+        <div class="delivery-row">
+          <span>Retry Payment</span>
+          <strong>Available</strong>
+        </div>
+
+        <div class="delivery-row">
+          <span>Checkout</span>
+          <strong>Return Anytime</strong>
+        </div>
+
+        <div class="delivery-row">
+          <span>Need Help?</span>
+          <strong>Contact Support</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="success-actions">
+
+    <a
+      href="/user/checkout"
+      class="primary-btn"
+    >
+      Retry Payment
+    </a>
+
+    <a
+      href="/user/checkout"
+      class="secondary-btn"
+    >
+      Back to Checkout
+    </a>
+
+  </div>
+
+</main>
+
+<%- include('../partials/user-scripts') %>
+
+</body>
+</html>
