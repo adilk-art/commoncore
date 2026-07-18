@@ -17,7 +17,10 @@ import { clearCart } from "../../repositories/cart.repository.js";
 import { generateInvoicePdf } from "../../utils/invoicePdf.js";
 import { validateBuyNowService } from "./checkout.service.js";
 import { calculateOrderStatus } from "../../utils/orderStatus.js";
-import { getOrderItemsStatusSummary } from "../../utils/orderItemStatus.js";
+import {
+  getOrderItemsStatusSummary,
+  REFUNDED_STATUSES,
+} from "../../utils/orderItemStatus.js";
 
 export const getUserOrdersService = async ({ userId, search, page }) => {
   const limit = 5;
@@ -226,116 +229,108 @@ export const getOrderDetailService = async (orderId, userId) => {
     error.status = 404;
     throw error;
   }
-const RETURN_WINDOW_DAYS = 14;
+  const RETURN_WINDOW_DAYS = 14;
 
-order.items.forEach((item) => {
-  item.canCancel =
-    item.status === "Placed" ||
-    item.status === "Processing";
+  order.items.forEach((item) => {
+    item.canCancel = item.status === "Placed" || item.status === "Processing";
 
-  item.canReturn = false;
-  item.returnDaysLeft = 0;
-  item.showReturnStatusBtn = false;
-  item.statusMetaText = "";
+    item.canReturn = false;
+    item.returnDaysLeft = 0;
+    item.showReturnStatusBtn = false;
+    item.statusMetaText = "";
 
-  const itemReturn = returnMap.get(String(item._id));
+    const itemReturn = returnMap.get(String(item._id));
 
-  const deliveredAt = item.statusUpdatedAt
-    ? new Date(item.statusUpdatedAt)
-    : null;
+    const deliveredAt = item.statusUpdatedAt
+      ? new Date(item.statusUpdatedAt)
+      : null;
 
-  let diffDays = null;
+    let diffDays = null;
 
-  if (item.status === "Delivered" && deliveredAt) {
-    diffDays = Math.floor(
-      (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    if (item.status === "Delivered" && deliveredAt) {
+      diffDays = Math.floor(
+        (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
 
-    item.returnDaysLeft = Math.max(0, RETURN_WINDOW_DAYS - diffDays);
-  }
-
-  if (itemReturn) {
-    if (itemReturn.status === "Cancelled") {
-      if (
-        item.status === "Delivered" &&
-        diffDays !== null &&
-        diffDays < RETURN_WINDOW_DAYS
-      ) {
-        item.canReturn = true;
-      }
-
-      return;
+      item.returnDaysLeft = Math.max(0, RETURN_WINDOW_DAYS - diffDays);
     }
 
-    item.showReturnStatusBtn = true;
+    if (itemReturn) {
+      if (itemReturn.status === "Cancelled") {
+        if (
+          item.status === "Delivered" &&
+          diffDays !== null &&
+          diffDays < RETURN_WINDOW_DAYS
+        ) {
+          item.canReturn = true;
+        }
 
-    if (itemReturn.status === "Requested") {
-      item.statusMetaText =
-        `Return requested on ${new Date(
+        return;
+      }
+
+      item.showReturnStatusBtn = true;
+
+      if (itemReturn.status === "Requested") {
+        item.statusMetaText = `Return requested on ${new Date(
           itemReturn.requestedAt,
         ).toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}`;
-    } else if (itemReturn.status === "Approved") {
-      item.statusMetaText =
-        `Return approved on ${new Date(
+      } else if (itemReturn.status === "Approved") {
+        item.statusMetaText = `Return approved on ${new Date(
           itemReturn.approvedAt || itemReturn.updatedAt,
         ).toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}`;
-    } else if (itemReturn.status === "Picked Up") {
-      item.statusMetaText =
-        `Item picked up on ${new Date(
+      } else if (itemReturn.status === "Picked Up") {
+        item.statusMetaText = `Item picked up on ${new Date(
           itemReturn.pickedUpAt || itemReturn.updatedAt,
         ).toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}`;
-    } else if (itemReturn.status === "Received") {
-      item.statusMetaText =
-        `Returned item received on ${new Date(
+      } else if (itemReturn.status === "Received") {
+        item.statusMetaText = `Returned item received on ${new Date(
           itemReturn.receivedAt || itemReturn.updatedAt,
         ).toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}`;
-    } else if (itemReturn.status === "Refunded") {
-      item.statusMetaText =
-        `Refund processed on ${new Date(
+      } else if (itemReturn.status === "Refunded") {
+        item.statusMetaText = `Refund processed on ${new Date(
           itemReturn.refundedAt || itemReturn.updatedAt,
         ).toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}`;
-    } else if (itemReturn.status === "Rejected") {
-      item.statusMetaText =
-        `Return rejected on ${new Date(
+      } else if (itemReturn.status === "Rejected") {
+        item.statusMetaText = `Return rejected on ${new Date(
           itemReturn.updatedAt,
         ).toLocaleDateString("en-IN", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}`;
+      }
+
+      return;
     }
 
-    return;
-  }
-
-  if (
-    item.status === "Delivered" &&
-    diffDays !== null &&
-    diffDays < RETURN_WINDOW_DAYS
-  ) {
-    item.canReturn = true;
-  }
-});
+    if (
+      item.status === "Delivered" &&
+      diffDays !== null &&
+      diffDays < RETURN_WINDOW_DAYS
+    ) {
+      item.canReturn = true;
+    }
+  });
 
   const cancelledAmount = order.items
     .filter((item) => item.status === "Cancelled")
@@ -478,9 +473,21 @@ export const downloadInvoiceService = async ({ userId, orderId, res }) => {
   const cancelledItems = order.items.filter(
     (item) => item.status === "Cancelled",
   );
+  
+  const returnedItems = order.items.filter((item) =>
+    ["Returned", "Refunded"].includes(item.status),
+  );
 
-  const activeItems = order.items.filter((item) => item.status !== "Cancelled");
+  const activeItems = order.items.filter(
+    (item) => !REFUNDED_STATUSES.has(item.status),
+  );
+
   const cancelledAmount = cancelledItems.reduce(
+    (sum, item) => sum + item.unitPrice * item.quantity,
+    0,
+  );
+
+  const returnedAmount = returnedItems.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
     0,
   );
@@ -492,21 +499,18 @@ export const downloadInvoiceService = async ({ userId, orderId, res }) => {
 
   const currentTotal =
     activeSubtotal + (activeItems.length > 0 ? order.shippingFee : 0);
+
   const gstAmount = activeItems.reduce((total, item) => {
     const itemSubtotal = item.unitPrice * item.quantity;
-
     const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
-
-    const itemGst = itemSubtotal - taxableValue;
-
-    return total + itemGst;
+    return total + (itemSubtotal - taxableValue);
   }, 0);
 
   generateInvoicePdf({
     order,
-    activeItems,
-    cancelledItems,
+    items: order.items,
     cancelledAmount,
+    returnedAmount,
     activeSubtotal,
     currentTotal,
     gstAmount: Number(gstAmount.toFixed(2)),

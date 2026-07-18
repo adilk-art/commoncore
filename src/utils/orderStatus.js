@@ -42,12 +42,18 @@ export const calculateOrderStatus = (items) => {
 };
 
 export const canMarkCodPaid = (items = []) => {
-  const activeItems = items.filter(
-    item => item.status !== "Cancelled"
-  );
+  const DELIVERED_OR_LATER = new Set([
+    "Delivered",
+    "Return Requested",
+    "Return Accepted",
+    "Returned",
+    "Refunded",
+  ]);
+
+  const activeItems = items.filter((item) => item.status !== "Cancelled");
 
   return (
     activeItems.length > 0 &&
-    activeItems.every(item => item.status === "Delivered")
+    activeItems.every((item) => DELIVERED_OR_LATER.has(item.status))
   );
 };

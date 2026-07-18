@@ -1,3 +1,5 @@
+
+export const REFUNDED_STATUSES = new Set(["Cancelled", "Returned", "Refunded"]);
 export const getOrderItemsStatusSummary = (items = []) => {
   if (!items.length) {
     return {
