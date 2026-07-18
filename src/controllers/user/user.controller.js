@@ -28,6 +28,25 @@ import {
 import {getFeaturedProductsService} from "../../services/user/home.service.js"
 import generateOtp from "../../utils/generateOtp.js";
 
+const googleCallback = (req, res, next) => {
+  if (!req.user.isBlocked) {
+    req.session.userId = req.user._id;
+    return res.redirect("/");
+  }
+
+  req.logout(err => {
+    if (err) {
+      return next(err);
+    }
+
+    return res.render("user/login", {
+      error: "Your account has been Blocked by admin",
+      successMessage: null,
+      formData: null
+    });
+  });
+};
+
 const loadHomePage = async (req, res, next) => {
   try {
   
@@ -342,6 +361,7 @@ const loadSetPassword = async (req, res, next) => {
 };
 
 export default {
+  googleCallback,
   loadSignupPage,
   loadLoginPage,
   prepareSignup,

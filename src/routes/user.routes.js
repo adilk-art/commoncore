@@ -22,6 +22,10 @@ router.post("/signup/initiate", isNotAuthenticated,userController.initialSignup)
 router.post("/login",isNotAuthenticated,userController.login);
 router.get("/logout",isAuthenticated,userController.logout)
 
+
+router.get("/auth/google",passport.authenticate("google", {scope: ["profile", "email"]}));
+router.get("/auth/google/callback",passport.authenticate("google", {failureRedirect: "/user/login"}),userController.googleCallback);
+
 router.post("/verify-otp",userController.verifyOtp)
 router.post("/resend-otp",userController.resendOtp)
 
@@ -79,28 +83,6 @@ router.post("/returns/request",isAuthenticated,returnController.requestReturn);
 router.get("/returns/:orderId/:itemId",isAuthenticated,returnController.loadReturnDetailPage);
 router.patch("/returns/:returnId/cancel",isAuthenticated,returnController.cancelReturnRequest);
 
-
-router.get('/auth/google',
-    passport.authenticate('google',{scope:['profile','email']})
-)
-router.get('/auth/google/callback',
-    passport.authenticate('google',{failureRedirect:"/user/login"}),
-    (req,res)=>{
-        if(!req.user.isBlocked){
-            req.session.userId=req.user._id;
-            res.redirect('/');
-        }else{
-            req.logout(function (err) {
-                if (err) {
-                    return next(err);
-                }
-                });
-           return res.render("user/login",{error:"Your account has been Blocked by admin",successMessage:null,formData:null})
-           
-        }
-        
-    }
-);
 
 export default router;
 
