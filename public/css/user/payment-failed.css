@@ -1,0 +1,179 @@
+.success-page{
+  max-width:1100px;
+  margin:0 auto;
+  padding:40px 24px 70px;
+}
+
+/* HERO */
+
+.success-hero{
+  text-align:center;
+  margin-bottom:28px;
+  border-radius:30px;
+}
+
+.failed-icon{
+  width:82px;
+  height:82px;
+
+  margin:0 auto 22px;
+
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#fef2f2;
+  border:1px solid #fecaca;
+
+  color:#dc2626;
+
+  font-size:34px;
+  font-weight:700;
+}
+
+.success-title{
+  font-size:30px;
+  font-weight:600;
+  color:#111;
+  margin-bottom:10px;
+}
+
+.success-text{
+  max-width:560px;
+  margin:0 auto;
+
+  font-size:14px;
+  color:#666;
+  line-height:1.7;
+}
+
+.success-meta{
+  margin-top:28px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+
+.success-meta-item{
+  min-width:190px;
+
+  border:1px solid var(--border);
+  border-radius:18px;
+
+  background:#fafafa;
+
+  padding:16px 18px;
+}
+
+.success-meta-item span{
+  display:block;
+
+  font-size:12px;
+  color:#777;
+
+  margin-bottom:6px;
+}
+
+.success-meta-item strong{
+  font-size:14px;
+  font-weight:600;
+  color:#111;
+}
+
+/* TOP GRID */
+
+.success-top-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  margin-bottom:24px;
+}
+
+/* CARD */
+
+.success-card{
+  border-radius:24px;
+}
+
+.success-card-head{
+  margin-bottom:18px;
+}
+
+/* WHAT HAPPENED LIST */
+
+.success-address p{
+  font-size:13px;
+  color:#666;
+  line-height:1.6;
+  margin-bottom:8px;
+}
+
+/* NEXT STEPS */
+
+.delivery-info{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.delivery-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+
+.delivery-row:last-child{
+  border-bottom:none;
+  padding-bottom:0;
+}
+
+.delivery-row span{
+  font-size:14px;
+  color:#6b7280;
+}
+
+.delivery-row strong{
+  font-size:14px;
+  font-weight:600;
+  color:#111;
+}
+
+/* ACTIONS */
+
+.success-actions{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+
+  margin-top:30px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+  .success-page{
+    padding:24px 18px 60px;
+  }
+
+  .success-top-grid{
+    grid-template-columns:1fr;
+  }
+
+  .success-actions{
+    flex-direction:column;
+  }
+
+  .success-actions a,
+  .success-actions button{
+    width:100%;
+  }
+
+}

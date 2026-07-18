@@ -31,7 +31,6 @@ const variantSchema = new Schema(
       required: true,
       min: 0,
     },
-
     price: {
       type: Number,
       required: true,

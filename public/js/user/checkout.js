@@ -83,7 +83,10 @@ placeOrderBtn?.addEventListener("click", async (event) => {
         throw new Error(data.message);
       }
 
-      window.location.href = `/user/order/success/${data.order._id}`;
+      setTimeout(() => {
+        window.location.href = `/user/order/success/${data.order._id}`;
+      }, 1200);
+
       return;
     }
 
@@ -93,7 +96,7 @@ placeOrderBtn?.addEventListener("click", async (event) => {
     );
 
     if (!data.success) {
-      userToast(data.message);
+      throw new Error(data.message);
     }
 
     const options = {
@@ -103,12 +106,13 @@ placeOrderBtn?.addEventListener("click", async (event) => {
       name: "Commoncore",
       description: "Order Payment",
       order_id: data.order.id,
+
       handler: async function (response) {
         try {
-          const { data } = await axios.post("/user/order/verify-payment", {
-            ...response,
-            ...payload,
-          });
+          const { data } = await axios.post(
+            "/user/order/verify-payment",
+            response,
+          );
 
           if (data.success) {
             window.location.href = `/user/order/success/${data.orderId}`;
@@ -127,6 +131,13 @@ placeOrderBtn?.addEventListener("click", async (event) => {
         }
       },
 
+      modal: {
+        ondismiss: function () {
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.innerHTML = originalButtonText;
+        },
+      },
+
       theme: {
         color: "#000000",
       },
@@ -134,11 +145,13 @@ placeOrderBtn?.addEventListener("click", async (event) => {
 
     const razorpay = new Razorpay(options);
 
-    razorpay.on("payment.failed", function (response) {
+    razorpay.on("payment.failed", function () {
       placeOrderBtn.disabled = false;
       placeOrderBtn.innerHTML = originalButtonText;
 
-      userToast(response.error.description || "Payment failed");
+      setTimeout(() => {
+        window.location.href = "/user/order/payment-failed";
+      }, 0);
     });
 
     razorpay.open();

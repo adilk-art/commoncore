@@ -113,12 +113,13 @@
 
   <div class="success-actions">
 
-    <a
-      href="/user/checkout"
-      class="primary-btn"
-    >
-      Retry Payment
-    </a>
+   <button
+  type="button"
+  class="primary-btn"
+  id="retryPaymentBtn"
+>
+  Retry Payment
+</button>
 
     <a
       href="/user/checkout"
@@ -132,6 +133,7 @@
 </main>
 
 <%- include('../partials/user-scripts') %>
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/js/user/paymentFailed.js"></script>
 </body>
 </html>

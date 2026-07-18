@@ -566,37 +566,24 @@ export const createRazorpayOrderService = async (userId, payload) => {
   };
 };
 
-export const verifyPaymentService = async (userId, payload) => {
-  const {
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-    shippingAddress,
-    paymentMethod,
-    isBuyNow,
-    variantId,
-    quantity,
-  } = payload;
+export const verifyPaymentService = async (userId, paymentData,pendingPayment) => {
+const {
+  razorpay_order_id,
+  razorpay_payment_id,
+  razorpay_signature,
+} = paymentData;
 
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_SECRET)
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest("hex");
-  console.log(`generated=${generatedSignature}`);
-  console.log(`existing=${razorpay_signature}`);
   if (generatedSignature !== razorpay_signature) {
     const error = new Error("Payment verification failed");
     error.status = 400;
     throw error;
   }
 
-  const order = await placeOrderService(userId, {
-    shippingAddress,
-    paymentMethod,
-    isBuyNow,
-    variantId,
-    quantity,
-  });
+const order = await placeOrderService(userId, pendingPayment);
 
   order.paymentStatus = "Paid";
   order.razorpayOrderId = razorpay_order_id;
@@ -609,4 +596,22 @@ export const verifyPaymentService = async (userId, payload) => {
     success: true,
     orderId: order._id,
   };
+};
+
+export const retryPaymentService = async (userId, pendingPayment) => {
+  if (!pendingPayment) {
+    const error = new Error("No pending payment found");
+    error.status = 400;
+    throw error;
+  }
+
+  const age = Date.now() - pendingPayment.createdAt;
+
+  if (age > 15 * 60 * 1000) {
+    const error = new Error("Payment session expired");
+    error.status = 400;
+    throw error;
+  }
+
+  return await createRazorpayOrderService(userId, pendingPayment);
 };

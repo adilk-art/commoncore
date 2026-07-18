@@ -56,7 +56,10 @@ const orderSchema = new Schema(
       enum: ["Pending", "Paid", "Failed", "Refunded"],
       default: "Pending",
     },
-    
+    paymentExpiresAt: {
+      type: Date
+    },
+
     razorpayPaymentId:{
       type:String,
     },

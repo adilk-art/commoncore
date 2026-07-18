@@ -8,6 +8,7 @@ import {
   downloadInvoiceService,
   createRazorpayOrderService,
   verifyPaymentService,
+  retryPaymentService
 } from "../../services/user/order.service.js";
 
 export const loadOrdersPage = async (req, res, next) => {
@@ -132,7 +133,47 @@ export const downloadInvoice = async (req, res, next) => {
 
 export const createRazorpayOrder = async (req, res, next) => {
   try {
-    const data = await createRazorpayOrderService(req.session.userId, req.body);
+    req.session.pendingPayment = {
+      shippingAddress: req.body.shippingAddress,
+      paymentMethod: req.body.paymentMethod,
+      isBuyNow: req.body.isBuyNow || false,
+      variantId: req.body.variantId || null,
+      quantity: req.body.quantity || null,
+      createdAt: Date.now(),
+    };
+
+    const data = await createRazorpayOrderService(
+      req.session.userId,
+      req.body
+    );
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const verifyPayment = async (req, res, next) => {
+  try {
+    const data = await verifyPaymentService(
+      req.session.userId,
+      req.body,
+      req.session.pendingPayment
+    );
+    delete req.session.pendingPayment;
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const retryPayment = async (req, res, next) => {
+  try {
+    const data = await retryPaymentService(
+      req.session.userId,
+      req.session.pendingPayment
+    );
 
     res.json(data);
   } catch (err) {
@@ -140,13 +181,14 @@ export const createRazorpayOrder = async (req, res, next) => {
   }
 };
 
-export const verifyPayment = async (req, res, next) => {
+export const getPaymentFailedPage = async (req, res, next) => {
   try {
-    const data = await verifyPaymentService(req.session.userId, req.body);
+    if (!req.session.pendingPayment) {
+      return res.redirect("/user/checkout");
+    }
 
-    res.json(data);
+    res.render("user/payment-failed");
   } catch (err) {
-    console.error(err);
     next(err);
   }
 };
