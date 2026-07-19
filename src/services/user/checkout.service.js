@@ -1,9 +1,11 @@
 import { findActiveVariant } from "../../repositories/checkout.repository.js";
 import { getAddressesService } from "./address.service.js";
 import { getCartService } from "./cart.service.js";
+import { findWalletByUserId } from "../../repositories/wallet.repository.js";
 
 export const getCheckoutPageService = async (userId) => {
   const cart = await getCartService(userId);
+  const wallet = await findWalletByUserId(userId);
 
   if (!cart || cart.items.length === 0) {
     throw new Error("Your cart is empty.");
@@ -28,8 +30,11 @@ export const getCheckoutPageService = async (userId) => {
 
   const shipping = cart.subtotal >= 999 ? 0 : 99;
   const total = cart.subtotal + shipping;
+  const canUseWallet = wallet.balance >= total;
 
   return {
+    canUseWallet,
+    wallet,
     cart,
     addresses,
     gstAmount: Number(gstAmount.toFixed(2)),
@@ -56,6 +61,8 @@ export const validateBuyNowService = async (variantId, quantity) => {
 };
 
 export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
+
+  const wallet=await findWalletByUserId(userId)
   const { variant, qty } = await validateBuyNowService(variantId, quantity);
 
   const product = variant.productId;
@@ -72,7 +79,7 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
   const subtotal = item.subtotal;
   const shipping = subtotal >= 999 ? 0 : 99;
   const total = subtotal + shipping;
-
+  const canUseWallet = wallet.balance >= total;
   const addresses = await getAddressesService(userId);
 
   const gstAmount = [item].reduce((total, item) => {
@@ -82,8 +89,9 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
   return total + (item.subtotal - taxableValue);
 }, 0);
 
-
   return {
+    canUseWallet,
+    wallet,
     cart: {
       items: [item],
       subtotal,

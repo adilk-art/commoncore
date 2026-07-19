@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <title>Wallet Top-up Failed — Commoncore</title>
+
+  <%- include("../partials/user-head") %>
+
+  <link
+    rel="stylesheet"
+    href="/css/user/payment-failed.css"
+  >
+
+</head>
+
+<body>
+
+<%- include("../partials/user-header") %>
+
+<main class="success-page">
+
+  <section class="success-hero card card-lg">
+
+    <div class="failed-icon">
+      ✕
+    </div>
+
+    <h1 class="success-title">
+      Wallet Top-up Failed
+    </h1>
+
+    <p class="success-text">
+      We couldn't add money to your wallet. Your wallet balance remains unchanged.
+      You can retry the payment or return to your wallet.
+    </p>
+
+    <div class="success-meta">
+
+      <div class="success-meta-item">
+
+        <span>
+          Top-up Status
+        </span>
+
+        <strong>
+          Failed
+        </strong>
+
+      </div>
+
+      <div class="success-meta-item">
+
+        <span>
+          Date
+        </span>
+
+        <strong>
+          <%= new Date().toLocaleDateString("en-IN") %>
+        </strong>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <div class="success-top-grid">
+
+    <section class="success-card card card-md">
+
+      <div class="success-card-head">
+
+        <h3 class="text-card-title">
+          What happened?
+        </h3>
+
+      </div>
+
+      <div class="success-address">
+
+        <p>
+          • Your wallet was not credited.
+        </p>
+
+        <p>
+          • The payment was cancelled or could not be completed.
+        </p>
+
+        <p>
+          • If money was deducted, it is usually refunded automatically by your bank.
+        </p>
+
+      </div>
+
+    </section>
+
+    <section class="success-card card card-md">
+
+      <div class="success-card-head">
+
+        <h3 class="text-card-title">
+          Next Steps
+        </h3>
+
+      </div>
+
+      <div class="delivery-info">
+
+        <div class="delivery-row">
+
+          <span>
+            Retry Payment
+          </span>
+
+          <strong>
+            Available
+          </strong>
+
+        </div>
+
+        <div class="delivery-row">
+
+          <span>
+            Wallet
+          </span>
+
+          <strong>
+            Return Anytime
+          </strong>
+
+        </div>
+
+        <div class="delivery-row">
+
+          <span>
+            Need Help?
+          </span>
+
+          <strong>
+            Contact Support
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="success-actions">
+
+    <button
+      type="button"
+      id="retryWalletPaymentBtn"
+      class="primary-btn"
+    >
+      Retry Payment
+    </button>
+
+    <a
+      href="/user/wallet"
+      class="secondary-btn"
+    >
+      Back to Wallet
+    </a>
+
+  </div>
+
+</main>
+
+<%- include("../partials/user-scripts") %>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/js/user/walletPaymentFailed.js"></script>
+
+</body>
+
+</html>

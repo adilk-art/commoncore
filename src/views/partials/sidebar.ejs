@@ -1,6 +1,5 @@
 <div class="sidebar">
   <ul>
-
     <li class="<%= active === 'profile' ? 'active' : '' %>">
       <a href="/user/profile">
         <i class="fa-solid fa-user"></i>
@@ -22,8 +21,8 @@
       </a>
     </li>
 
-    <li>
-      <a href="">
+    <li class="<%= active === 'wallet' ? 'active' : '' %>">
+      <a href="/user/wallet">
         <i class="fa-solid fa-wallet"></i>
         Wallet
       </a>
@@ -49,6 +48,5 @@
         Logout
       </a>
     </li>
-
   </ul>
 </div>

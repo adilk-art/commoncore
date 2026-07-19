@@ -478,7 +478,21 @@
   justify-content:center;
   gap:10px;
 }
+.payment-option.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
+.payment-option.disabled:hover {
+  border-color: var(--border);
+}
+
+.wallet-warning {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #dc2626;
+}
 @keyframes spin{
   to{
     transform:rotate(360deg);

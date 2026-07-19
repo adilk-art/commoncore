@@ -24,6 +24,9 @@ import {
 import razorpay from "../../config/razorpay.js";
 import crypto from "crypto";
 import { log } from "console";
+import { verifyRazorpaySignature } from "../../utils/razorpayVerification.js";
+import { debitWalletService, creditWalletService } from "./wallet.service.js";
+import { findWalletByUserId } from "../../repositories/wallet.repository.js";
 
 export const getUserOrdersService = async ({ userId, search, page }) => {
   const limit = 5;
@@ -152,6 +155,22 @@ export const placeOrderService = async (userId, payload) => {
 
   const shippingFee = subtotal >= 999 ? 0 : 99;
   const total = subtotal + shippingFee;
+  if (paymentMethod === "Wallet") {
+    const wallet = await findWalletByUserId(userId);
+
+    if (!wallet) {
+      const error = new Error("Wallet not found");
+      error.status = 400;
+      throw error;
+    }
+
+    if (wallet.balance < total) {
+      const error = new Error("Insufficient wallet balance");
+      error.status = 400;
+      error.code = "INSUFFICIENT_WALLET_BALANCE";
+      throw error;
+    }
+  }
   const estimatedDeliveryDate = new Date();
 
   estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
@@ -173,12 +192,20 @@ export const placeOrderService = async (userId, payload) => {
     shippingFee,
     subtotal,
     total,
-    paymentStatus: "Pending",
+    paymentStatus: paymentMethod === "Wallet" ? "Paid" : "Pending",
     orderStatus: "Placed",
   });
 
   for (const item of items) {
     await reduceVariantStock(item.variantId, item.quantity);
+  }
+  if (paymentMethod === "Wallet") {
+    await debitWalletService(userId, {
+      amount: total,
+      category: "OrderPayment",
+      description: `Payment for Order ${order.orderNumber}`,
+      reference: order.orderNumber,
+    });
   }
 
   if (!isBuyNow) {
@@ -398,22 +425,41 @@ export const cancelOrderService = async ({ userId, orderId }) => {
 
   if (order.orderStatus !== "Placed" && order.orderStatus !== "Processing") {
     const error = new Error("Order cannot be cancelled");
-
     error.status = 400;
-
     throw error;
   }
+
+  let refundAmount = 0;
 
   for (const item of order.items) {
     if (item.status === "Placed" || item.status === "Processing") {
       item.status = "Cancelled";
 
       await increaseVariantStock(item.variantId, item.quantity);
+
+      refundAmount += item.unitPrice * item.quantity;
     }
   }
 
+  if (
+    order.paymentStatus === "Paid" &&
+    (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet")
+  ) {
+    await creditWalletService(userId, {
+      amount: refundAmount,
+
+      category: "OrderRefund",
+
+      description: `Refund for cancelled order ${order.orderNumber}`,
+
+      reference: order.orderNumber,
+    });
+  }
+
   order.orderStatus = "Cancelled";
+
   await saveOrder(order);
+
   return {
     orderStatus: order.orderStatus,
   };
@@ -451,6 +497,23 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
   item.status = "Cancelled";
 
   await increaseVariantStock(item.variantId, item.quantity);
+
+  if (
+    order.paymentStatus === "Paid" &&
+    (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet")
+  ) {
+    const refundAmount = item.unitPrice * item.quantity;
+
+    await creditWalletService(userId, {
+      amount: refundAmount,
+
+      category: "OrderRefund",
+
+      description: `Refund for cancelled item from ${order.orderNumber}`,
+
+      reference: order.orderNumber,
+    });
+  }
 
   order.orderStatus = calculateOrderStatus(order.items);
 
@@ -562,24 +625,14 @@ export const createRazorpayOrderService = async (userId, payload) => {
   };
 };
 
-export const verifyPaymentService = async (userId, paymentData,pendingPayment) => {
-const {
-  razorpay_order_id,
-  razorpay_payment_id,
-  razorpay_signature,
-} = paymentData;
-
-  const generatedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_SECRET)
-    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-    .digest("hex");
-  if (generatedSignature !== razorpay_signature) {
-    const error = new Error("Payment verification failed");
-    error.status = 400;
-    throw error;
-  }
-
-const order = await placeOrderService(userId, pendingPayment);
+export const verifyPaymentService = async (
+  userId,
+  paymentData,
+  pendingPayment,
+) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+    verifyRazorpaySignature(paymentData);
+  const order = await placeOrderService(userId, pendingPayment);
 
   order.paymentStatus = "Paid";
   order.razorpayOrderId = razorpay_order_id;

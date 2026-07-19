@@ -13,8 +13,6 @@ export const loadCheckout = async (req, res, next) => {
   }
 };
 
-
-
 export const initiateBuyNow = async (req, res) => {
   try {
 
@@ -34,11 +32,9 @@ export const initiateBuyNow = async (req, res) => {
 
 
     const { qty } = await validateBuyNowService(variantId, quantity);
-
     req.session.buyNow = { variantId, quantity: qty };
-
-
     res.json({ success: true, redirect: "/user/checkout/buy-now" });
+
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
@@ -46,10 +42,8 @@ export const initiateBuyNow = async (req, res) => {
 
 export const getBuyNowCheckoutPage = async (req, res) => {
   try {
-
     const { variantId, quantity } = req.session.buyNow || {};
     if (!variantId) return res.redirect("/user/shop");
-
     const data = await getBuyNowCheckoutService(
       req.session.userId,
       variantId,

@@ -25,17 +25,20 @@ const paymentCards = document.querySelectorAll(".payment-option");
 
 paymentCards.forEach((card) => {
   card.addEventListener("click", () => {
+
+    const radio = card.querySelector(".payment-radio");
+
+    if (!radio || radio.disabled) {
+      return;
+    }
+
     paymentCards.forEach((el) => {
       el.classList.remove("active");
     });
 
     card.classList.add("active");
+    radio.checked = true;
 
-    const radio = card.querySelector(".payment-radio");
-
-    if (radio) {
-      radio.checked = true;
-    }
   });
 });
 
@@ -86,6 +89,18 @@ placeOrderBtn?.addEventListener("click", async (event) => {
       setTimeout(() => {
         window.location.href = `/user/order/success/${data.order._id}`;
       }, 1200);
+
+      return;
+    }
+
+    if (payload.paymentMethod === "Wallet") {
+      const { data } = await axios.post("/user/order/place", payload);
+
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      window.location.href = `/user/order/success/${data.order._id}`;
 
       return;
     }

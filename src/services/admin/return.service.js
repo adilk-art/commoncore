@@ -12,6 +12,8 @@ import {
   saveOrder,
 } from "../../repositories/order.repository.js";
 
+import { creditWalletService } from "../user/wallet.service.js";
+
 export const getReturnsPageService = async ({
   limit,
   skip,
@@ -223,10 +225,19 @@ export const processReturnRefundService = async (returnId) => {
     throw error;
   }
 
+  const refundAmount = returnRequest.refundAmount;
+
+  await creditWalletService(returnRequest.userId, {
+    amount: refundAmount,
+    category: "ReturnRefund",
+    description: `Refund for returned ${item.productName}`,
+    reference: returnRequest.returnNumber,
+  });
+
   returnRequest.status = "Refunded";
   returnRequest.refundedAt = new Date();
 
-  item.status = "Refunded";
+  item.status = "Returned";
   item.statusUpdatedAt = new Date();
 
   await returnRequest.save();

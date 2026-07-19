@@ -199,6 +199,39 @@
 
         </label>
 
+<label class="payment-option <%= !canUseWallet ? 'disabled' : '' %>">
+
+  <input
+    type="radio"
+    name="payment"
+    value="Wallet"
+    class="hidden payment-radio"
+    <%= !canUseWallet ? "disabled" : "" %>
+  >
+
+  <div class="payment-info">
+
+    <h3 class="payment-title">
+      Wallet
+    </h3>
+
+    <p class="text-muted">
+      Balance:
+      <strong>₹<%= wallet.balance.toFixed(2) %></strong>
+    </p>
+
+    <% if (!canUseWallet) { %>
+
+      <p class="wallet-warning">
+        Insufficient wallet balance
+      </p>
+
+    <% } %>
+
+  </div>
+
+</label>
+
           <label class="payment-option">
 
           <input

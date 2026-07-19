@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <title>My Wallet</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  >
+
+  <link rel="stylesheet" href="/css/user/standard.css">
+  <link rel="stylesheet" href="/css/user/profile.css">
+  <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/global.css">
+  <link rel="stylesheet" href="/css/user/toast.css">
+  <link rel="stylesheet" href="/css/user/user-header.css">
+  <link rel="stylesheet" href="/css/user/wallet.css">
+
+</head>
+
+<body>
+
+<%- include("../partials/user-header") %>
+<%- include("../partials/user-logout-modal") %>
+
+<div class="account-container">
+
+  <%- include("../partials/sidebar", { active: "wallet" }) %>
+
+  <div class="main-content">
+
+    <div class="page-header">
+
+      <h2 class="page-title">
+        MY WALLET
+      </h2>
+
+      <button
+        class="edit-btn"
+        id="addMoneyBtn"
+      >
+        <i class="fa-solid fa-plus"></i>
+        Add Money
+      </button>
+
+    </div>
+
+
+    <div class="wallet-balance-card">
+
+      <div class="wallet-top">
+
+        <div>
+
+          <p class="wallet-label">
+            Available Balance
+          </p>
+
+          <h1 class="wallet-balance">
+            ₹<%= wallet.balance.toFixed(2) %>
+          </h1>
+
+          <p class="wallet-subtitle">
+            Use your wallet balance for instant payments and refunds.
+          </p>
+
+        </div>
+
+        <div class="wallet-icon">
+
+          <i class="fa-solid fa-wallet"></i>
+
+        </div>
+
+      </div>
+
+      <div class="wallet-stats">
+
+        <div class="stat-box">
+
+          <span>Money Added</span>
+
+          <%= stats.moneyAdded.toFixed(2) %>
+
+        </div>
+
+        <div class="stat-box">
+
+          <span>Spent</span>
+
+          <%= stats.moneySpent.toFixed(2) %>
+
+        </div>
+
+        <div class="stat-box">
+
+          <span>Refunds</span>
+
+          <%= stats.refunds.toFixed(2) %>
+
+        </div>
+
+        <div class="stat-box">
+
+          <span>Transactions</span>
+
+          <%= stats.transactionCount %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+   <div class="transaction-card">
+
+  <div class="section-header">
+
+    <h3>
+      Recent Transactions
+    </h3>
+
+  </div>
+
+  <div class="transaction-list">
+
+    <% if (transactions.length) { %>
+
+      <% transactions.forEach(transaction => { %>
+
+        <div class="transaction-item">
+
+          <div class="transaction-left">
+
+            <div class="transaction-icon <%= transaction.type === 'Credit' ? 'credit' : 'debit' %>">
+
+              <i class="fa-solid <%= transaction.type === 'Credit' ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+
+            </div>
+
+            <div>
+
+              <h4>
+
+                <%= {
+
+                    AddMoney: "Added Money",
+
+                    OrderPayment: "Order Payment",
+
+                    OrderRefund: "Order Refund",
+
+                    ReturnRefund: "Return Refund",
+
+                    AdminCredit: "Admin Credit",
+
+                    AdminDebit: "Admin Debit"
+
+                }[transaction.category] || transaction.category %>
+
+                </h4>
+
+              <p>
+
+              <%= transaction.description %>
+
+              <% if (transaction.reference) { %>
+
+                <br>
+
+                <small>
+
+                  <%= transaction.category === "AddMoney"
+                    ? "Razorpay ID"
+                    : "Reference" %>:
+                  <%= transaction.reference %>
+
+                </small>
+
+              <% } %>
+
+              <br>
+
+              <small>
+
+                <%= new Date(transaction.createdAt).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric"
+                }) %>
+
+              </small>
+
+            </p>
+
+            </div>
+
+          </div>
+
+          <div class="transaction-right">
+
+            <span class="<%= transaction.type === 'Credit' ? 'credit-text' : 'debit-text' %>">
+
+              <%= transaction.type === "Credit" ? "+" : "-" %>₹<%= transaction.amount.toFixed(2) %>
+
+            </span>
+
+            <small>
+              <%= transaction.status %>
+            </small>
+
+          </div>
+
+        </div>
+
+      <% }) %>
+
+    <% } else { %>
+
+      <div class="empty-transactions">
+
+        <i class="fa-solid fa-wallet"></i>
+
+        <h3>
+          No Transactions Yet
+        </h3>
+
+        <p>
+          Your wallet transactions will appear here.
+        </p>
+
+      </div>
+
+    <% } %>
+
+  </div>
+
+  <% if (pagination.totalPages > 1) { %>
+
+    <div class="pagination">
+
+      <% if (pagination.hasPrev) { %>
+
+        <a
+          href="/user/wallet?page=<%= pagination.currentPage - 1 %>"
+          class="page-btn"
+        >
+          <i class="fa-solid fa-angle-left"></i>
+        </a>
+
+      <% } %>
+
+      <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+
+        <a
+          href="/user/wallet?page=<%= i %>"
+          class="page-btn <%= pagination.currentPage === i ? 'active' : '' %>"
+        >
+          <%= i %>
+        </a>
+
+      <% } %>
+
+      <% if (pagination.hasNext) { %>
+
+        <a
+          href="/user/wallet?page=<%= pagination.currentPage + 1 %>"
+          class="page-btn"
+        >
+          <i class="fa-solid fa-angle-right"></i>
+        </a>
+
+      <% } %>
+
+    </div>
+
+  <% } %>
+
+</div>
+
+  </div>
+
+</div>
+
+<div
+  class="modal-overlay hidden"
+  id="walletModal"
+>
+
+  <div class="wallet-modal">
+
+    <h3>
+      Add Money
+    </h3>
+
+    <p>
+      Add funds securely using Razorpay.
+    </p>
+
+    <label class="wallet-label">
+      Quick Amount
+    </label>
+
+    <div class="amount-options">
+
+      <button
+        type="button"
+        class="amount-chip"
+        data-amount="500"
+      >
+        ₹500
+      </button>
+
+      <button
+        type="button"
+        class="amount-chip"
+        data-amount="1000"
+      >
+        ₹1000
+      </button>
+
+      <button
+        type="button"
+        class="amount-chip"
+        data-amount="2000"
+      >
+        ₹2000
+      </button>
+
+      <button
+        type="button"
+        class="amount-chip"
+        data-amount="5000"
+      >
+        ₹5000
+      </button>
+
+    </div>
+
+    <label class="wallet-label">
+      Amount
+    </label>
+
+    <input
+      type="number"
+      id="walletAmount"
+      class="input-field"
+      placeholder="Enter amount"
+      min="100"
+    >
+
+    <span
+      class="error"
+      id="walletAmountError"
+    ></span>
+
+    <small class="wallet-note">
+      Minimum amount ₹100
+    </small>
+
+    <div class="modal-actions">
+
+      <button
+        class="secondary-btn"
+        id="cancelWalletBtn"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="primary-btn"
+        id="continueWalletBtn"
+      >
+        Continue
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div id="walletSuccessModal" class="modal-overlay hidden">
+
+  <div class="result-modal">
+
+    <div class="result-icon success">
+
+      <i class="fa-solid fa-circle-check"></i>
+
+    </div>
+
+    <h2>
+      Payment Successful
+    </h2>
+
+    <p class="result-description">
+      Your wallet has been credited successfully.
+    </p>
+
+    <div class="result-details">
+
+      <div class="result-row">
+
+        <span>Amount Added</span>
+
+        <strong id="successAmount">
+          ₹0.00
+        </strong>
+
+      </div>
+
+      <div class="result-row">
+
+        <span>Wallet Balance</span>
+
+        <strong id="successBalance">
+          ₹0.00
+        </strong>
+
+      </div>
+
+      <div class="result-row">
+
+        <span>Transaction ID</span>
+
+        <strong id="successTransaction">
+          —
+        </strong>
+
+      </div>
+
+    </div>
+
+    <button
+      id="walletSuccessBtn"
+      class="primary-btn result-btn"
+    >
+      Continue to Wallet
+    </button>
+
+  </div>
+
+</div>
+<% if (paymentSuccess) { %>
+<script>
+window.walletPaymentSuccess = <%- JSON.stringify(paymentSuccess) %>;
+</script>
+<% } %>
+<script src="/js/user/wallet.js"></script>
+<script src="/js/user/logout.js"></script>
+<script src="/js/utils/toast.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+</body>
+
+</html>
