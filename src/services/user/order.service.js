@@ -448,16 +448,12 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
     throw error;
   }
 
-  // 1. Update item
   item.status = "Cancelled";
 
-  // 2. Restore stock
   await increaseVariantStock(item.variantId, item.quantity);
 
-  // 3. IMPORTANT: recalculate FULL order status
   order.orderStatus = calculateOrderStatus(order.items);
 
-  // 4. Save
   await saveOrder(order);
 
   return {
