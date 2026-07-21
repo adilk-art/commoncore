@@ -1,17 +1,10 @@
 <aside class="sidebar">
-
-  <div class="title-text">
-    CONTROL PANEL
-  </div>
+  <div class="title-text">CONTROL PANEL</div>
 
   <nav>
-
     <!-- OVERVIEW -->
     <div class="nav-section">
-
-      <p class="nav-heading">
-        OVERVIEW
-      </p>
+      <p class="nav-heading">OVERVIEW</p>
 
       <a
         href="/admin/dashboard"
@@ -20,16 +13,11 @@
         <i class="fa fa-chart-line"></i>
         Dashboard
       </a>
-
     </div>
-
 
     <!-- CATALOG -->
     <div class="nav-section">
-
-      <p class="nav-heading">
-        CATALOG
-      </p>
+      <p class="nav-heading">CATALOG</p>
 
       <a
         href="/admin/categories"
@@ -54,16 +42,11 @@
         <i class="fa fa-warehouse"></i>
         Inventory
       </a>
-
     </div>
-
 
     <!-- SALES -->
     <div class="nav-section">
-
-      <p class="nav-heading">
-        SALES
-      </p>
+      <p class="nav-heading">SALES</p>
 
       <a
         href="/admin/orders"
@@ -81,86 +64,54 @@
         Returns
       </a>
 
-      <a
-        href=""
-        class="<%= active === 'coupons' ? 'active' : '' %>"
-      >
+      <a href="" class="<%= active === 'coupons' ? 'active' : '' %>">
         <i class="fa fa-ticket"></i>
         Coupons
       </a>
 
       <a
-        href=""
+        href="/admin/offers"
         class="<%= active === 'offers' ? 'active' : '' %>"
       >
         <i class="fa fa-tags"></i>
         Offers
       </a>
-
     </div>
-
 
     <!-- CUSTOMERS -->
     <div class="nav-section">
+      <p class="nav-heading">CUSTOMERS</p>
 
-      <p class="nav-heading">
-        CUSTOMERS
-      </p>
-
-      <a
-        href="/admin/users"
-        class="<%= active === 'users' ? 'active' : '' %>"
-      >
+      <a href="/admin/users" class="<%= active === 'users' ? 'active' : '' %>">
         <i class="fa fa-users"></i>
         Users
       </a>
 
-      <a
-        href=""
-        class="<%= active === 'wallets' ? 'active' : '' %>"
-      >
+      <a href="" class="<%= active === 'wallets' ? 'active' : '' %>">
         <i class="fa fa-wallet"></i>
         Wallets
       </a>
-
     </div>
-
 
     <!-- REPORTS -->
     <div class="nav-section">
+      <p class="nav-heading">REPORTS</p>
 
-      <p class="nav-heading">
-        REPORTS
-      </p>
-
-      <a
-        href=""
-        class="<%= active === 'reports' ? 'active' : '' %>"
-      >
+      <a href="" class="<%= active === 'reports' ? 'active' : '' %>">
         <i class="fa fa-chart-column"></i>
         Sales Reports
       </a>
-
     </div>
-
 
     <!-- SYSTEM -->
     <div class="nav-section">
+      <p class="nav-heading">SYSTEM</p>
 
-      <p class="nav-heading">
-        SYSTEM
-      </p>
-
-      <a
-        href=""
-        class="<%= active === 'settings' ? 'active' : '' %>"
-      >
+      <a href="" class="<%= active === 'settings' ? 'active' : '' %>">
         <i class="fa fa-gear"></i>
         Settings
       </a>
-
     </div>
-
   </nav>
 
   <div class="logout">
@@ -169,5 +120,4 @@
       Logout
     </a>
   </div>
-
 </aside>

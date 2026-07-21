@@ -5,6 +5,7 @@ import * as productController from "../controllers/admin/product.controller.js"
 import * as inventoryController from "../controllers/admin/inventory.controller.js"
 import * as orderController from "../controllers/admin/order.controller.js"
 import * as returnController from "../controllers/admin/return.controller.js"
+import * as offerController from "../controllers/admin/offer.controller.js"
 import { isAdminAuth,isAdminNotAuth } from "../middlewares/adminAuth.middleware.js";
 import userController from "../controllers/user/user.controller.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
@@ -54,6 +55,10 @@ router.get("/returns/:returnId", isAdminAuth,returnController.getReturnDetailPag
 router.patch("/returns/:returnId/status", returnController.updateReturnStatus);
 router.patch("/returns/:returnId/reject", returnController.rejectReturn);
 router.patch("/returns/:returnId/refund", returnController.processReturnRefund);
+
+router.get("/offers", isAdminAuth,offerController.loadOfferPage);
+
+
 export default router;
 
 

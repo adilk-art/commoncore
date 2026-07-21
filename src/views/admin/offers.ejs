@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Offers"
+  }) %>
+
+  <link rel="stylesheet" href="/css/admin/offers.css">
+
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <%- include("./partials/header", {
+    title: "Offers"
+  }) %>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <%- include("./partials/sidebar", {
+      active: "offers"
+    }) %>
+
+    <%- include("./partials/logout-modal") %>
+    <%- include("../partials/confirm-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <!-- PAGE HEADER -->
+
+        <div class="page-top">
+
+          <div>
+
+            <p class="breadcrumb">
+              Admin Dashboard > Offers
+            </p>
+
+            <h2 class="page-title">
+              Offer Management
+            </h2>
+
+          </div>
+
+          <a href="/admin/offers/add" class="add-offer-btn">
+
+            <i class="fa-solid fa-plus"></i>
+
+            Create Offer
+
+          </a>
+
+        </div>
+
+        <!-- STATS -->
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Total Offers</p>
+
+              <i class="fa-solid fa-tags"></i>
+
+            </div>
+
+            <h3><%= totalOffers %></h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Active Offers</p>
+
+              <i class="fa-solid fa-circle-check"></i>
+
+            </div>
+
+            <h3><%= activeOffers %></h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Upcoming</p>
+
+              <i class="fa-solid fa-clock"></i>
+
+            </div>
+
+            <h3><%= upcomingOffers %></h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Expired</p>
+
+              <i class="fa-solid fa-hourglass-end"></i>
+
+            </div>
+
+            <h3><%= expiredOffers %></h3>
+
+          </div>
+
+        </div>
+
+        <!-- TABLE -->
+
+        <div class="table-container">
+
+          <div class="table-header">
+
+            <h3>Offers</h3>
+
+            <div class="toolbar">
+
+              <!-- SEARCH -->
+
+              <form action="/admin/offers" method="GET" class="search-box">
+
+                <input type="hidden" name="status" value="<%= status || 'all' %>">
+                <input type="hidden" name="scope" value="<%= scope || 'all' %>">
+                <input type="hidden" name="discount" value="<%= discount || 'all' %>">
+                <input type="hidden" name="sort" value="<%= sort || 'latest' %>">
+
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= search || '' %>"
+                  placeholder="Search offers..."
+                >
+
+                <button type="submit">
+
+                  <i class="fa-solid fa-search"></i>
+
+                </button>
+
+                <% if(search){ %>
+
+                  <a href="/admin/offers" class="clear-btn">
+
+                    Clear
+
+                  </a>
+
+                <% } %>
+
+              </form>
+
+              <!-- FILTERS -->
+
+              <form action="/admin/offers" method="GET" class="filter-form">
+
+                <input type="hidden" name="search" value="<%= search || '' %>">
+                <input type="hidden" name="page" value="<%= currentPage %>">
+
+                <select name="status" onchange="this.form.submit()">
+
+                  <option value="all" <%= status==="all" ? "selected":"" %>>
+                    All Status
+                  </option>
+
+                  <option value="active" <%= status==="active" ? "selected":"" %>>
+                    Active
+                  </option>
+
+                  <option value="upcoming" <%= status==="upcoming" ? "selected":"" %>>
+                    Upcoming
+                  </option>
+
+                  <option value="expired" <%= status==="expired" ? "selected":"" %>>
+                    Expired
+                  </option>
+
+                  <option value="disabled" <%= status==="disabled" ? "selected":"" %>>
+                    Disabled
+                  </option>
+
+                </select>
+
+                <select name="scope" onchange="this.form.submit()">
+
+                  <option value="all" <%= scope==="all" ? "selected":"" %>>
+                    All Scope
+                  </option>
+
+                  <option value="product" <%= scope==="product" ? "selected":"" %>>
+                    Product
+                  </option>
+
+                  <option value="category" <%= scope==="category" ? "selected":"" %>>
+                    Category
+                  </option>
+
+                </select>
+
+                <select name="discount" onchange="this.form.submit()">
+
+                  <option value="all" <%= discount==="all" ? "selected":"" %>>
+                    All Discounts
+                  </option>
+
+                  <option value="percentage" <%= discount==="percentage" ? "selected":"" %>>
+                    Percentage
+                  </option>
+
+                  <option value="flat" <%= discount==="flat" ? "selected":"" %>>
+                    Flat
+                  </option>
+
+                </select>
+
+                <select name="sort" onchange="this.form.submit()">
+
+                  <option value="latest" <%= sort==="latest" ? "selected":"" %>>
+                    Latest
+                  </option>
+
+                  <option value="oldest" <%= sort==="oldest" ? "selected":"" %>>
+                    Oldest
+                  </option>
+
+                  <option value="endingSoon" <%= sort==="endingSoon" ? "selected":"" %>>
+                    Ending Soon
+                  </option>
+
+                </select>
+
+              </form>
+
+            </div>
+
+          </div>
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>Offer</th>
+
+                <th>Scope</th>
+
+                <th>Target</th>
+
+                <th>Discount</th>
+
+                <th>Validity</th>
+
+                <th>Status</th>
+
+                <th>Actions</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+            <% if(offers.length){ %>
+
+              <% offers.forEach(offer=>{ %>
+
+                <tr>
+
+                  <td>
+
+                    <div class="offer-title">
+
+                      <h4><%= offer.title %></h4>
+
+                    </div>
+
+                  </td>
+
+                  <td>
+
+                    <span class="scope-badge <%= offer.offerScope.toLowerCase() %>">
+                        <%= offer.offerScope %>
+                    </span>
+                  </td>
+
+                  <td>
+
+                    <%= offer.targetName %>
+
+                  </td>
+
+                  <td>
+
+                    <% if(offer.discountType==="PERCENTAGE"){ %>
+
+                      <strong><%= offer.discountValue %>% OFF</strong>
+
+                    <% } else { %>
+
+                      <strong>₹<%= offer.discountValue %> OFF</strong>
+
+                    <% } %>
+
+                  </td>
+
+                  <td>
+
+                    <div class="date-block">
+
+                      <span><%= offer.startDateFormatted %></span>
+
+                      <small>to</small>
+                      <span><%= offer.endDateFormatted %></span>
+
+                    </div>
+
+                  </td>
+
+                  <td>
+
+                    <span class="status <%= offer.status.toLowerCase() %>">
+
+                      <%= offer.status %>
+
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    <div class="actions">
+
+                      <a
+                        href="/admin/offers/edit/<%= offer._id %>"
+                        class="icon-action"
+                        data-tooltip="Edit Offer">
+
+                        <i class="fa-solid fa-pen"></i>
+
+                      </a>
+
+                      <button
+                        class="icon-action toggle-status-btn"
+                        data-id="<%= offer._id %>"
+                        data-tooltip="Enable / Disable">
+
+                        <i class="fa-solid <%= offer.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+
+                      </button>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              <% }) %>
+
+            <% } else { %>
+
+              <tr>
+
+                <td colspan="7" class="empty-row">
+
+                  <div class="empty-state">
+
+                    <i class="fa-solid fa-tags"></i>
+
+                    <h3>No Offers Found</h3>
+
+                    <p>
+
+                      Promotional offers you create will appear here.
+
+                    </p>
+
+                    <a href="/admin/offers/add" class="add-offer-btn">
+
+                      <i class="fa-solid fa-plus"></i>
+
+                      Create First Offer
+
+                    </a>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            <% } %>
+
+            </tbody>
+
+          </table>
+
+          <% if(totalPages>1){ %>
+
+          <div class="pagination">
+
+            <p class="results-text">
+
+              Showing
+              <%= skip+1 %>
+              to
+              <%= Math.min(currentPage*limit,offerCount) %>
+              of
+              <%= offerCount %>
+              results
+
+            </p>
+
+            <% if(currentPage>1){ %>
+
+              <a
+                class="nav-btn"
+               href="/admin/offers?page=<%= currentPage-1 %>&search=<%=search%>&status=<%=status%>&scope=<%=scope%>&discount=<%=discount%>&sort=<%=sort%>">
+
+                Prev
+
+              </a>
+
+            <% } else { %>
+
+              <span class="nav-btn disabled">
+
+                Prev
+
+              </span>
+
+            <% } %>
+
+            <% for(let i=1;i<=totalPages;i++){ %>
+
+              <a
+                class="page-btn <%= currentPage===i ? 'active':'' %>"
+                href="/admin/offers?page=<%=i%>&search=<%=search%>&status=<%=status%>&scope=<%=scope%>&discount=<%=discount%>&sort=<%=sort%>">
+
+                <%= i %>
+
+              </a>
+
+            <% } %>
+
+            <% if(currentPage<totalPages){ %>
+
+              <a
+                class="nav-btn"
+                href="/admin/offers?page=<%=currentPage+1%>&search=<%=search%>&status=<%=status%>&scope=<%=scope%>&discount=<%=discount%>&sort=<%=sort%>">
+
+                Next
+
+              </a>
+
+            <% } else { %>
+
+              <span class="nav-btn disabled">
+
+                Next
+
+              </span>
+
+            <% } %>
+
+          </div>
+
+          <% } %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="/js/admin/offers.js"></script>
+
+</body>
+
+</html>
