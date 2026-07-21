@@ -2,6 +2,7 @@ import Offer from "../../models/offer.model.js";
 
 export const getAllOffers = async (filter, sort, skip, limit) => {
   return await Offer.find(filter)
+    .populate("appliesTo", "name")
     .sort(sort)
     .skip(skip)
     .limit(limit)
@@ -39,3 +40,20 @@ export const getExpiredOffersCount = async () => {
   });
 };
 
+export const findOfferByTitleScopeAndTarget = async (
+  title,
+  offerScope,
+  appliesTo,
+) => {
+  return await Offer.findOne({
+    title: {
+      $regex: new RegExp(`^${title}$`, "i"),
+    },
+    offerScope,
+    appliesTo,
+  });
+};
+
+export const createOffer = async (offerData) => {
+  return await Offer.create(offerData);
+};

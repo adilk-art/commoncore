@@ -1,5 +1,17 @@
 import Product from "../../models/product.model.js";
 
+export const getAllActiveProductsName = async () => {
+  return await Product.find(
+    { isActive: true },
+    {
+      name: 1,
+    },
+  ).sort({ name: 1 });
+};
+export const findProductById = async (id) => {
+  return await Product.findById(id);
+};
+
 export const getAllProducts = async (limit, skip, filter, sortOrder) => {
   return await Product.aggregate([
     { $match: filter },

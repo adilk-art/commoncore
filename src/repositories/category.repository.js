@@ -9,13 +9,18 @@ export const findCategoryByName = async (name) => {
     name: { $regex: `^${name}$`, $options: "i" },
   });
 };
-
+export const findCategoryById = async (id) => {
+  return await Category.findById(id);
+};
 export const getAllCategories = async () => {
   return await Category.find().sort({ createdAt: -1 });
 };
 
 export const getAllActiveCategories = async () => {
   return await Category.find({ isActive: true }).sort({ createdAt: -1 });
+};
+export const getAllActiveCategoriesName = async () => {
+  return await Category.find({ isActive: true },{name:1}).sort({ name: 1 });
 };
 
 export const getPaginatedCategories = async (

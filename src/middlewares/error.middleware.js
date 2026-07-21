@@ -4,9 +4,9 @@ export const notFound = (req, res) => {
 
 export const errorHandler = (err, req, res, next) => {
   const statusCode =
+    err.status ||
     err.statusCode ||
-    res.statusCode ||
-    500;
+    (res.statusCode >= 400 ? res.statusCode : 500);
 
   const isApiRequest =
     req.xhr ||
@@ -27,8 +27,8 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  return res.status(500).send(`
-    <h1>500 - Internal Server Error</h1>
+  return res.status(statusCode).send(`
+    <h1>${statusCode} - Error</h1>
     <p>${err.message || "Something went wrong"}</p>
   `);
 };

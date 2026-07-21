@@ -12,6 +12,7 @@ const washCareInput = document.getElementById("washCare");
 const submitBtn = form?.querySelector('button[type="submit"]');
 
 const showError = (id, msg) => {
+  console.log(id,msg)
   const el = document.getElementById(id);
 
   if (el) {

@@ -127,6 +127,14 @@
           <div class="table-header">
 
             <h3>Offers</h3>
+            <%
+            const hasFilters =
+            search ||
+            status !== "all" ||
+            scope !== "all" ||
+            discount !== "all" ||
+            sort !== "latest";
+            %>
 
             <div class="toolbar">
 
@@ -152,13 +160,12 @@
 
                 </button>
 
-                <% if(search){ %>
+                <% if (hasFilters) { %>
 
-                  <a href="/admin/offers" class="clear-btn">
-
+                <a href="/admin/offers" class="clear-btn">
+                    <i class="fa-solid fa-xmark"></i>
                     Clear
-
-                  </a>
+                </a>
 
                 <% } %>
 
@@ -300,7 +307,7 @@
 
                   <td>
 
-                    <%= offer.targetName %>
+                    <%= offer.appliesTo.name %>
 
                   </td>
 
@@ -322,10 +329,10 @@
 
                     <div class="date-block">
 
-                      <span><%= offer.startDateFormatted %></span>
+                      <span><%= offer.startDate %></span>
 
                       <small>to</small>
-                      <span><%= offer.endDateFormatted %></span>
+                      <span><%= offer.endDate %></span>
 
                     </div>
 
@@ -333,7 +340,7 @@
 
                   <td>
 
-                    <span class="status <%= offer.status.toLowerCase() %>">
+                    <span class="status ">
 
                       <%= offer.status %>
 

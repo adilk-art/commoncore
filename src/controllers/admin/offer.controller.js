@@ -1,6 +1,8 @@
 import {
   getAllOffersService,
   getOfferStatsService,
+  getAllActiveProductsAndCategoriesService,
+  addOfferService,
 } from "../../services/admin/offer.service.js";
 
 export const loadOfferPage = async (req, res, next) => {
@@ -32,6 +34,34 @@ export const loadOfferPage = async (req, res, next) => {
       sort,
 
       ...stats,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const loadAddOfferPage = async (req, res, next) => {
+  try {
+    const { products, categories } =
+      await getAllActiveProductsAndCategoriesService();
+
+    res.render("admin/add-offer", {
+      products,
+      categories,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const addOffer = async (req, res, next) => {
+  try {
+    await addOfferService(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Offer created successfully",
     });
   } catch (err) {
     next(err);

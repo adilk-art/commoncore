@@ -57,6 +57,8 @@ router.patch("/returns/:returnId/reject", returnController.rejectReturn);
 router.patch("/returns/:returnId/refund", returnController.processReturnRefund);
 
 router.get("/offers", isAdminAuth,offerController.loadOfferPage);
+router.get("/offers/add", isAdminAuth,offerController.loadAddOfferPage);
+router.post("/offers/add", isAdminAuth,offerController.addOffer);
 
 
 export default router;

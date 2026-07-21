@@ -5,7 +5,19 @@ import {
   getActiveOffersCount,
   getUpcomingOffersCount,
   getExpiredOffersCount,
+  findOfferByTitleScopeAndTarget,
+  createOffer,
 } from "../../repositories/admin/offer.repository.js";
+import {
+  getAllActiveProductsName,
+  findProductById,
+} from "../../repositories/admin/product.repository.js";
+import {
+  getAllActiveCategoriesName,
+  findCategoryById,
+} from "../../repositories/category.repository.js";
+import { offerSchema } from "../../validators/offer.validation.js";
+import mongoose from "mongoose";
 
 export const getAllOffersService = async (
   page,
@@ -17,65 +29,100 @@ export const getAllOffersService = async (
 ) => {
   const limit = 6;
   const skip = (page - 1) * limit;
+
   const filter = {};
 
   if (search) {
-    filter.Title = {
-      $regex: search,
+    filter.title = {
+      $regex: search.trim(),
       $options: "i",
     };
   }
 
-  if (scope !== "all") {
-    filter.OfferScope = scope.toUpperCase();
+  if (scope && scope !== "all") {
+    filter.offerScope = scope.toUpperCase();
   }
 
-  if (discount !== "all") {
-    filter.DiscountType = discount.toUpperCase();
+  if (discount && discount !== "all") {
+    filter.discountType = discount.toUpperCase();
   }
 
   const now = new Date();
 
   switch (status) {
     case "active":
-      filter.IsActive = true;
-      filter.StartDate = { $lte: now };
-      filter.EndDate = { $gte: now };
+      filter.isActive = true;
+      filter.startDate = { $lte: now };
+      filter.endDate = { $gte: now };
       break;
 
     case "upcoming":
-      filter.StartDate = { $gt: now };
+      filter.isActive = true;
+      filter.startDate = { $gt: now };
       break;
 
     case "expired":
-      filter.EndDate = { $lt: now };
+      filter.endDate = { $lt: now };
       break;
 
     case "disabled":
-      filter.IsActive = false;
+      filter.isActive = false;
       break;
   }
 
-  let sortOption = { CreatedAt: -1 };
+  let sortOption = { createdAt: -1 };
 
   switch (sort) {
     case "oldest":
-      sortOption = { CreatedAt: 1 };
+      sortOption = { createdAt: 1 };
       break;
 
     case "endingSoon":
-      sortOption = { EndDate: 1 };
+      sortOption = { endDate: 1 };
       break;
 
     default:
-      sortOption = { CreatedAt: -1 };
+      sortOption = { createdAt: -1 };
   }
 
   const offers = await getAllOffers(filter, sortOption, skip, limit);
+
+  const formattedOffers = offers.map((offer) => {
+    let offerStatus = "Disabled";
+
+    if (offer.isActive) {
+      if (now < offer.startDate) {
+        offerStatus = "Scheduled";
+      } else if (now > offer.endDate) {
+        offerStatus = "Expired";
+      } else {
+        offerStatus = "Active";
+      }
+    }
+
+    return {
+      ...offer,
+
+      startDate: offer.startDate.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+
+      endDate: offer.endDate.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+
+      status: offerStatus,
+    };
+  });
+
   const offerCount = await countOffers(filter);
 
   return {
-    offers,
+    offers: formattedOffers,
     offerCount,
     totalPages: Math.ceil(offerCount / limit),
     skip,
@@ -90,4 +137,80 @@ export const getOfferStatsService = async () => {
     upcomingOffers: await getUpcomingOffersCount(),
     expiredOffers: await getExpiredOffersCount(),
   };
+};
+
+export const getAllActiveProductsAndCategoriesService = async () => {
+  const [products, categories] = await Promise.all([
+    getAllActiveProductsName(),
+    getAllActiveCategoriesName(),
+  ]);
+
+  return {
+    products,
+    categories,
+  };
+};
+
+export const addOfferService = async (data) => {
+  const validatedData = offerSchema.safeParse(data);
+
+  const {
+    title,
+    offerScope,
+    appliesTo,
+    appliesToModel,
+    discountType,
+    discountValue,
+    maxDiscountAmount,
+    minOrderAmount,
+    startDate,
+    endDate,
+    isActive,
+  } = validatedData.data;
+
+  if (offerScope === "PRODUCT") {
+    const product = await findProductById(appliesTo);
+
+    if (!product) {
+      const err = new Error("Selected product not found");
+      err.status = 404;
+      throw err;
+    }
+  } else {
+    const category = await findCategoryById(appliesTo);
+    if (!category) {
+      const err = new Error("Selected category not found");
+      err.status = 404;
+      throw err;
+    }
+  }
+  const existingOffer = await findOfferByTitleScopeAndTarget(
+    title,
+    offerScope,
+    appliesTo,
+  );
+
+  if (existingOffer) {
+    const err = new Error(
+      "An offer already exists for the selected target with this title",
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  const offer = await createOffer({
+    title,
+    offerScope,
+    appliesTo,
+    appliesToModel,
+    discountType,
+    discountValue,
+    maxDiscountAmount,
+    minOrderAmount,
+    startDate,
+    endDate,
+    isActive,
+  });
+
+  return offer;
 };

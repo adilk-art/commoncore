@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Add Offer"
+  }) %>
+
+  <link rel="stylesheet" href="/css/admin/add-offer.css">
+
+</head>
+
+<body>
+
+  <%- include("./partials/header", {
+    title: "Add Offer"
+  }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", {
+      active: "offers"
+    }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+
+          <div>
+
+            <p class="breadcrumb">
+              Offer Management > Add New Offer
+            </p>
+
+            <h2 class="page-title">
+              Add New Offer
+            </h2>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="offer-layout">
+
+    <div class="offer-form-section">
+
+               <div class="form-card">
+
+          <form id="form" class="offer-form">
+
+            <!-- Row 1 -->
+
+            <div class="form-row">
+
+              <div class="form-group">
+
+                <label>Offer Title</label>
+
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  placeholder="Enter offer title">
+
+                <small id="titleError" class="error"></small>
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Offer Scope</label>
+
+                <select id="offerScope" name="offerScope">
+
+                  <option value="">Select Scope</option>
+                  <option value="PRODUCT">Product</option>
+                  <option value="CATEGORY">Category</option>
+
+                </select>
+
+                <small id="offerScopeError" class="error"></small>
+
+              </div>
+
+            </div>
+
+            <!-- Applies To -->
+
+            <div class="form-group" id="productGroup" style="display:none;">
+
+              <label>Product</label>
+
+              <select id="productId" name="productId">
+
+                <option value="">Select Product</option>
+
+                <% products.forEach(product=>{ %>
+
+                  <option value="<%= product._id %>">
+                    <%= product.name %>
+                  </option>
+
+                <% }) %>
+
+              </select>
+
+              <small id="productError" class="error"></small>
+
+            </div>
+
+            <div class="form-group" id="categoryGroup" style="display:none;">
+
+              <label>Category</label>
+
+              <select id="categoryId" name="categoryId">
+
+                <option value="">Select Category</option>
+
+                <% categories.forEach(category=>{ %>
+
+                  <option value="<%= category._id %>">
+                    <%= category.name %>
+                  </option>
+
+                <% }) %>
+
+              </select>
+
+              <small id="categoryError" class="error"></small>
+
+            </div>
+
+            <!-- Row -->
+
+            <div class="form-row">
+
+              <div class="form-group">
+
+                <label>Discount Type</label>
+
+                <select id="discountType" name="discountType">
+
+                  <option value="">Select Type</option>
+                  <option value="PERCENTAGE">Percentage</option>
+                  <option value="FLAT">Flat</option>
+
+                </select>
+
+                <small id="discountTypeError" class="error"></small>
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Discount Value</label>
+
+                <input
+                  type="number"
+                  id="discountValue"
+                  name="discountValue"
+                  placeholder="Enter discount">
+
+                <small id="discountValueError" class="error"></small>
+
+              </div>
+
+            </div>
+
+            <!-- Row -->
+
+            <div class="form-row">
+
+              <div class="form-group" id="maxDiscountGroup">
+
+                <label>Maximum Discount</label>
+
+                <input
+                  type="number"
+                  id="maxDiscountAmount"
+                  name="maxDiscountAmount"
+                  placeholder="Optional">
+
+                <small id="maxDiscountError" class="error"></small>
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Minimum Order Amount</label>
+
+                <input
+                  type="number"
+                  id="minOrderAmount"
+                  name="minOrderAmount"
+                  placeholder="Optional">
+
+                <small id="minOrderError" class="error"></small>
+
+              </div>
+
+            </div>
+
+            <!-- Dates -->
+
+            <div class="form-row">
+
+              <div class="form-group">
+
+                <label>Start Date</label>
+
+                <input
+                  type="date"
+                  id="startDate"
+                  name="startDate">
+
+                <small id="startDateError" class="error"></small>
+
+              </div>
+
+              <div class="form-group">
+
+                <label>End Date</label>
+
+                <input
+                  type="date"
+                  id="endDate"
+                  name="endDate">
+
+                <small id="endDateError" class="error"></small>
+
+              </div>
+
+            </div>
+
+            <!-- Status -->
+
+            <div class="form-group">
+
+              <label>Status</label>
+
+              <select id="isActive" name="isActive">
+
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+
+              </select>
+
+            </div>
+
+            <small
+              id="validationError"
+              class="validation-error">
+            </small>
+
+            <div class="form-actions">
+
+              <a
+                href="/admin/offers"
+                class="cancel-btn">
+                Cancel
+              </a>
+
+              <button
+                type="submit"
+                class="save-btn">
+
+                Save Offer
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+    </div>
+
+
+      <aside class="offer-preview">
+
+    <div class="preview-card">
+
+        <div class="preview-header">
+
+            <h3>Offer Summary</h3>
+
+            <p>Live preview of this offer</p>
+
+        </div>
+
+        <div class="preview-body">
+
+            <div class="preview-row">
+                <span>Scope</span>
+                <strong id="previewScope">Category</strong>
+            </div>
+
+            <div class="preview-row">
+                <span>Target</span>
+                <strong id="previewTarget">Not Selected</strong>
+            </div>
+
+            <div class="preview-row">
+                <span>Discount Type</span>
+                <strong id="previewType">Percentage</strong>
+            </div>
+
+            <div class="preview-value">
+
+                <small>Offer Value</small>
+
+                <h2 id="previewValue">
+                    0%
+                </h2>
+
+            </div>
+
+            <div class="preview-row">
+                <span>Minimum Order</span>
+                <strong id="previewMinOrder">₹0</strong>
+            </div>
+
+            <div class="preview-row">
+                <span>Maximum Discount</span>
+                <strong id="previewMaxDiscount">₹0</strong>
+            </div>
+
+            <div class="preview-validity">
+
+                <small>VALIDITY</small>
+
+                <p id="previewDates">
+                    Not selected
+                </p>
+
+            </div>
+
+            <div class="preview-status">
+
+                <span class="status active" id="previewStatus">
+                    Active
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+        
+
+</div>
+
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="/js/admin/addOffer.js"></script>
+
+</body>
+</html>

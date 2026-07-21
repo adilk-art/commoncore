@@ -61,10 +61,10 @@ export const addProduct = async (req, res, next) => {
       message: "Product added succesfully",
     });
   } catch (err) {
-
     next(err);
   }
 };
+
 export const loadEditProductPage = async (req, res, next) => {
   try {
     const product = await getProductByIdService(req.params.id);
