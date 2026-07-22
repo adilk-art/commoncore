@@ -72,3 +72,11 @@ export const updateOffer = async (offerId, data) => {
     },
   );
 };
+
+export const updateOfferStatus = async (id, isActive) => {
+  return await Offer.findByIdAndUpdate(
+    id,
+    { isActive },
+    { returnDocument: "after" }
+  );
+};

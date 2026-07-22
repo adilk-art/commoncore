@@ -370,7 +370,8 @@
                       <button
                         class="icon-action toggle-status-btn"
                         data-id="<%= offer._id %>"
-                        data-tooltip="Enable / Disable">
+                        data-active="<%= offer.isActive %>"
+                        data-tooltip="<%= offer.isActive ? 'Deactivate Offer' : 'Activate Offer' %>">
 
                         <i class="fa-solid <%= offer.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
 

@@ -61,7 +61,7 @@ router.get("/offers/add", isAdminAuth,offerController.loadAddOfferPage);
 router.post("/offers/add", isAdminAuth,offerController.addOffer);
 router.get("/offers/:id/edit", isAdminAuth,offerController.loadEditOfferPage);
 router.patch("/offers/:id/edit",isAdminAuth,offerController.editOffer);
-
+router.patch("/offers/status/:id", isAdminAuth, offerController.changeOfferStatus);
 
 export default router;
 

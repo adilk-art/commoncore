@@ -9,6 +9,7 @@ import {
   createOffer,
   findOfferById,
   updateOffer,
+  updateOfferStatus
 } from "../../repositories/admin/offer.repository.js";
 import {
   getAllActiveProductsName,
@@ -305,4 +306,20 @@ export const editOfferService = async (offerId, payload) => {
     endDate,
     isActive,
   });
+};
+
+export const changeOfferStatusService = async (id) => {
+  const offer = await findOfferById(id);
+
+  if (!offer) {
+    const err = new Error("Offer not found");
+    err.status = 404;
+    throw err;
+  }
+
+  await updateOfferStatus(id, !offer.isActive);
+
+  return offer.isActive
+    ? "Offer deactivated successfully"
+    : "Offer activated successfully";
 };

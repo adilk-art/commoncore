@@ -5,6 +5,7 @@ import {
   loadEditOfferPageService,
   addOfferService,
   editOfferService,
+  changeOfferStatusService
 } from "../../services/admin/offer.service.js";
 
 export const loadOfferPage = async (req, res, next) => {
@@ -99,6 +100,21 @@ export const editOffer = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
+    next(err);
+  }
+};
+
+
+export const changeOfferStatus = async (req, res, next) => {
+  try {
+    const message = await changeOfferStatusService(req.params.id);
+
+    res.json({
+      success: true,
+      message,
+    });
+  } catch (err) {
+    console.error(err)
     next(err);
   }
 };
