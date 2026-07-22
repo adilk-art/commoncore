@@ -9,15 +9,22 @@ export const offerSchema = z
       .max(100, "Offer title cannot exceed 100 characters"),
 
     offerScope: z.enum(["PRODUCT", "CATEGORY"], {
-      errorMap: () => ({ message: "Please select an offer scope" }),
+      errorMap: () => ({
+        message: "Please select an offer scope",
+      }),
     }),
 
-    appliesTo: z.string().trim().min(1, "Please select a product or category"),
+    appliesTo: z
+      .string()
+      .trim()
+      .min(1, "Please select a product or category"),
 
     appliesToModel: z.enum(["Product", "Category"]),
 
     discountType: z.enum(["PERCENTAGE", "FLAT"], {
-      errorMap: () => ({ message: "Please select a discount type" }),
+      errorMap: () => ({
+        message: "Please select a discount type",
+      }),
     }),
 
     discountValue: z.coerce
@@ -25,11 +32,21 @@ export const offerSchema = z
       .positive("Discount value must be greater than 0"),
 
     maxDiscountAmount: z
-      .union([z.coerce.number().positive(), z.null(), z.literal("")])
+      .union([
+        z.coerce.number().positive(),
+        z.literal(""),
+        z.null(),
+      ])
+      .transform((value) => (value === "" ? null : value))
       .optional(),
 
     minOrderAmount: z
-      .union([z.coerce.number().min(0), z.null(), z.literal("")])
+      .union([
+        z.coerce.number().min(0),
+        z.literal(""),
+        z.null(),
+      ])
+      .transform((value) => (value === "" ? null : value))
       .optional(),
 
     startDate: z.coerce.date(),
@@ -38,11 +55,14 @@ export const offerSchema = z
 
     isActive: z.union([
       z.boolean(),
-      z.enum(["true", "false"]).transform((v) => v === "true"),
+      z.enum(["true", "false"]).transform((value) => value === "true"),
     ]),
   })
   .superRefine((data, ctx) => {
-    if (data.discountType === "PERCENTAGE" && data.discountValue > 100) {
+    if (
+      data.discountType === "PERCENTAGE" &&
+      data.discountValue > 100
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["discountValue"],
@@ -52,12 +72,36 @@ export const offerSchema = z
 
     if (
       data.discountType === "PERCENTAGE" &&
-      (!data.maxDiscountAmount || Number(data.maxDiscountAmount) <= 0)
+      data.maxDiscountAmount == null
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["maxDiscountAmount"],
         message: "Maximum discount amount is required",
+      });
+    }
+
+    if (
+      data.maxDiscountAmount != null &&
+      data.minOrderAmount != null &&
+      data.minOrderAmount <= data.maxDiscountAmount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["minOrderAmount"],
+        message: "Minimum order amount must be greater than maximum discount",
+      });
+    }
+
+    if (
+      data.discountType === "FLAT" &&
+      data.minOrderAmount != null &&
+      data.discountValue >= data.minOrderAmount
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["discountValue"],
+        message: "Flat discount must be less than the minimum order amount",
       });
     }
 

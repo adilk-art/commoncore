@@ -4,17 +4,17 @@
 <head>
 
   <%- include("./partials/head", {
-    title: "Add Offer"
+    title: isEdit ? "Edit Offer" : "Add Offer"
   }) %>
 
-  <link rel="stylesheet" href="/css/admin/add-offer.css">
+  <link rel="stylesheet" href="/css/admin/offer-form.css">
 
 </head>
 
 <body>
 
   <%- include("./partials/header", {
-    title: "Add Offer"
+    title: isEdit ? "Edit Offer" : "Add Offer"
   }) %>
 
   <div class="layout">
@@ -33,13 +33,14 @@
 
           <div>
 
-            <p class="breadcrumb">
-              Offer Management > Add New Offer
-            </p>
+          <p class="breadcrumb">
+              Offer Management >
+              <%= isEdit ? "Edit Offer" : "Add New Offer" %>
+          </p>
 
-            <h2 class="page-title">
-              Add New Offer
-            </h2>
+          <h2 class="page-title">
+              <%= isEdit ? "Edit Offer" : "Add New Offer" %>
+          </h2>
 
           </div>
 
@@ -49,13 +50,15 @@
 
         <div class="offer-layout">
 
-    <div class="offer-form-section">
+        <div class="offer-form-section">
 
-               <div class="form-card">
+        <div class="form-card">
 
-          <form id="form" class="offer-form">
-
-            <!-- Row 1 -->
+          <form
+            id="form"
+            class="offer-form"
+            data-mode="<%= isEdit ? 'edit' : 'add' %>"
+            data-action="<%= isEdit ? '/admin/offers/' + offer._id + '/edit' : '/admin/offers/add' %>">
 
             <div class="form-row">
 
@@ -67,6 +70,7 @@
                   type="text"
                   id="title"
                   name="title"
+                  value="<%= offer?.title || '' %>"
                   placeholder="Enter offer title">
 
                 <small id="titleError" class="error"></small>
@@ -80,8 +84,17 @@
                 <select id="offerScope" name="offerScope">
 
                   <option value="">Select Scope</option>
-                  <option value="PRODUCT">Product</option>
-                  <option value="CATEGORY">Category</option>
+                  <option
+                      value="PRODUCT"
+                      <%= offer?.offerScope==="PRODUCT" ? "selected" : "" %>>
+                      Product
+                  </option>
+
+                  <option
+                      value="CATEGORY"
+                      <%= offer?.offerScope==="CATEGORY" ? "selected" : "" %>>
+                      Category
+                  </option>
 
                 </select>
 
@@ -103,9 +116,14 @@
 
                 <% products.forEach(product=>{ %>
 
-                  <option value="<%= product._id %>">
+                <option
+                    value="<%= product._id %>"
+                    <%= offer?.offerScope==="PRODUCT" &&
+                        offer?.appliesTo?.toString()===product._id.toString()
+                        ? "selected"
+                        : "" %>>
                     <%= product.name %>
-                  </option>
+                </option>
 
                 <% }) %>
 
@@ -125,9 +143,14 @@
 
                 <% categories.forEach(category=>{ %>
 
-                  <option value="<%= category._id %>">
+                <option
+                    value="<%= category._id %>"
+                    <%= offer?.offerScope==="CATEGORY" &&
+                        offer?.appliesTo?.toString()===category._id.toString()
+                        ? "selected"
+                        : "" %>>
                     <%= category.name %>
-                  </option>
+                </option>
 
                 <% }) %>
 
@@ -148,8 +171,17 @@
                 <select id="discountType" name="discountType">
 
                   <option value="">Select Type</option>
-                  <option value="PERCENTAGE">Percentage</option>
-                  <option value="FLAT">Flat</option>
+                  <option
+                      value="PERCENTAGE"
+                      <%= offer?.discountType==="PERCENTAGE" ? "selected" : "" %>>
+                      Percentage
+                  </option>
+
+                  <option
+                      value="FLAT"
+                      <%= offer?.discountType==="FLAT" ? "selected" : "" %>>
+                      Flat
+                  </option>
 
                 </select>
 
@@ -165,7 +197,9 @@
                   type="number"
                   id="discountValue"
                   name="discountValue"
+                  value="<%= offer?.discountValue || '' %>"
                   placeholder="Enter discount">
+                  
 
                 <small id="discountValueError" class="error"></small>
 
@@ -185,6 +219,7 @@
                   type="number"
                   id="maxDiscountAmount"
                   name="maxDiscountAmount"
+                  value="<%= offer?.maxDiscountAmount || '' %>"
                   placeholder="Optional">
 
                 <small id="maxDiscountError" class="error"></small>
@@ -199,6 +234,7 @@
                   type="number"
                   id="minOrderAmount"
                   name="minOrderAmount"
+                  value="<%= offer?.minOrderAmount || '' %>"
                   placeholder="Optional">
 
                 <small id="minOrderError" class="error"></small>
@@ -218,7 +254,9 @@
                 <input
                   type="date"
                   id="startDate"
+                  value="<%= offer?.startDate ? offer.startDate.toISOString().split('T')[0] : '' %>"
                   name="startDate">
+
 
                 <small id="startDateError" class="error"></small>
 
@@ -231,6 +269,7 @@
                 <input
                   type="date"
                   id="endDate"
+                  value="<%= offer?.endDate ? offer.endDate.toISOString().split('T')[0] : '' %>"
                   name="endDate">
 
                 <small id="endDateError" class="error"></small>
@@ -247,8 +286,17 @@
 
               <select id="isActive" name="isActive">
 
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
+              <option
+                  value="true"
+                  <%= offer?.isActive !== false ? "selected" : "" %>>
+                  Active
+              </option>
+
+              <option
+                  value="false"
+                  <%= offer?.isActive===false ? "selected" : "" %>>
+                  Inactive
+              </option>
 
               </select>
 
@@ -271,7 +319,7 @@
                 type="submit"
                 class="save-btn">
 
-                Save Offer
+                <%= isEdit ? "Update Offer" : "Save Offer" %>
 
               </button>
 
@@ -370,7 +418,7 @@
 
   <%- include("./partials/scripts") %>
 
-  <script src="/js/admin/addOffer.js"></script>
+  <script src="/js/admin/offerForm.js"></script>
 
 </body>
 </html>

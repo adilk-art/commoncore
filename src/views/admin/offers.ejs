@@ -138,38 +138,9 @@
 
             <div class="toolbar">
 
-              <!-- SEARCH -->
+              
 
-              <form action="/admin/offers" method="GET" class="search-box">
 
-                <input type="hidden" name="status" value="<%= status || 'all' %>">
-                <input type="hidden" name="scope" value="<%= scope || 'all' %>">
-                <input type="hidden" name="discount" value="<%= discount || 'all' %>">
-                <input type="hidden" name="sort" value="<%= sort || 'latest' %>">
-
-                <input
-                  type="text"
-                  name="search"
-                  value="<%= search || '' %>"
-                  placeholder="Search offers..."
-                >
-
-                <button type="submit">
-
-                  <i class="fa-solid fa-search"></i>
-
-                </button>
-
-                <% if (hasFilters) { %>
-
-                <a href="/admin/offers" class="clear-btn">
-                    <i class="fa-solid fa-xmark"></i>
-                    Clear
-                </a>
-
-                <% } %>
-
-              </form>
 
               <!-- FILTERS -->
 
@@ -249,6 +220,40 @@
                   </option>
 
                 </select>
+
+              </form>
+
+              <!-- SEARCH -->
+
+
+                <form action="/admin/offers" method="GET" class="search-box">
+
+                <input type="hidden" name="status" value="<%= status || 'all' %>">
+                <input type="hidden" name="scope" value="<%= scope || 'all' %>">
+                <input type="hidden" name="discount" value="<%= discount || 'all' %>">
+                <input type="hidden" name="sort" value="<%= sort || 'latest' %>">
+
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= search || '' %>"
+                  placeholder="Search offers..."
+                >
+
+                <button type="submit">
+
+                  <i class="fa-solid fa-search"></i>
+
+                </button>
+
+                <% if (hasFilters) { %>
+
+                <a href="/admin/offers" class="clear-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                    Clear
+                </a>
+
+                <% } %>
 
               </form>
 
@@ -340,7 +345,7 @@
 
                   <td>
 
-                    <span class="status ">
+                    <span class="status <%= offer.status.toLowerCase().replaceAll(' ','-') %> ">
 
                       <%= offer.status %>
 
@@ -353,8 +358,9 @@
                     <div class="actions">
 
                       <a
-                        href="/admin/offers/edit/<%= offer._id %>"
+                        href="/admin/offers/<%= offer._id %>/edit"
                         class="icon-action"
+                        title="Edit Offer"
                         data-tooltip="Edit Offer">
 
                         <i class="fa-solid fa-pen"></i>
@@ -395,14 +401,6 @@
                       Promotional offers you create will appear here.
 
                     </p>
-
-                    <a href="/admin/offers/add" class="add-offer-btn">
-
-                      <i class="fa-solid fa-plus"></i>
-
-                      Create First Offer
-
-                    </a>
 
                   </div>
 

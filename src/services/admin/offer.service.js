@@ -7,6 +7,8 @@ import {
   getExpiredOffersCount,
   findOfferByTitleScopeAndTarget,
   createOffer,
+  findOfferById,
+  updateOffer,
 } from "../../repositories/admin/offer.repository.js";
 import {
   getAllActiveProductsName,
@@ -152,8 +154,14 @@ export const getAllActiveProductsAndCategoriesService = async () => {
 };
 
 export const addOfferService = async (data) => {
-  const validatedData = offerSchema.safeParse(data);
+  const result = offerSchema.safeParse(data);
 
+  if (!result.success) {
+    const error = new Error(result.error.issues[0].message);
+    error.status = 400;
+    throw error;
+  }
+  const validatedData = result.data;
   const {
     title,
     offerScope,
@@ -166,7 +174,7 @@ export const addOfferService = async (data) => {
     startDate,
     endDate,
     isActive,
-  } = validatedData.data;
+  } = validatedData;
 
   if (offerScope === "PRODUCT") {
     const product = await findProductById(appliesTo);
@@ -213,4 +221,88 @@ export const addOfferService = async (data) => {
   });
 
   return offer;
+};
+
+export const loadEditOfferPageService = async (id) => {
+  const offer = await findOfferById(id);
+  if (!offer) {
+    const err = new Error("Offer not found");
+    err.status = 404;
+    throw err;
+  }
+  return offer;
+};
+
+export const editOfferService = async (offerId, payload) => {
+  const result = offerSchema.safeParse(payload);
+
+  if (!result.success) {
+    const error = new Error(result.error.issues[0].message);
+    error.status = 400;
+    throw error;
+  }
+
+  const validatedData = result.data;
+
+  const existingOffer = await findOfferById(offerId);
+  if (!existingOffer) {
+    const err = new Error("Offer not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const {
+    title,
+    offerScope,
+    appliesTo,
+    discountType,
+    discountValue,
+    maxDiscountAmount,
+    minOrderAmount,
+    startDate,
+    endDate,
+    isActive,
+  } = validatedData;
+
+  if (offerScope === "PRODUCT") {
+    const product = await findProductById(appliesTo);
+    if (!product) {
+      const err = new Error("Selected product not found");
+      err.status = 404;
+      throw err;
+    }
+  } else {
+    const category = await findCategoryById(appliesTo);
+    if (!category) {
+      const err = new Error("Selected category not found");
+      err.status = 404;
+      throw err;
+    }
+  }
+
+  const duplicate = await findOfferByTitleScopeAndTarget(
+    title,
+    offerScope,
+    appliesTo,
+  );
+
+  if (duplicate && duplicate._id.toString() !== offerId) {
+    const err = new Error("Offer already exists for this target");
+    err.status = 400;
+    throw err;
+  }
+
+  return await updateOffer(offerId, {
+    title,
+    offerScope,
+    appliesTo,
+    appliesToModel: offerScope === "PRODUCT" ? "Product" : "Category",
+    discountType,
+    discountValue,
+    maxDiscountAmount: discountType === "PERCENTAGE" ? maxDiscountAmount : null,
+    minOrderAmount,
+    startDate,
+    endDate,
+    isActive,
+  });
 };

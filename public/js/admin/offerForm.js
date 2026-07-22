@@ -1,5 +1,6 @@
 const form = document.getElementById("form");
-
+const mode = form.dataset.mode;
+const action = form.dataset.action;
 const titleInput = document.getElementById("title");
 const scopeInput = document.getElementById("offerScope");
 
@@ -23,7 +24,6 @@ const endDateInput = document.getElementById("endDate");
 const statusInput = document.getElementById("isActive");
 const submitBtn = form?.querySelector("button[type='submit']");
 
-
 const previewScope = document.getElementById("previewScope");
 const previewTarget = document.getElementById("previewTarget");
 const previewType = document.getElementById("previewType");
@@ -32,7 +32,6 @@ const previewMinOrder = document.getElementById("previewMinOrder");
 const previewMaxDiscount = document.getElementById("previewMaxDiscount");
 const previewDates = document.getElementById("previewDates");
 const previewStatus = document.getElementById("previewStatus");
-
 
 const showError = (id, msg) => {
   const el = document.getElementById(id);
@@ -75,36 +74,43 @@ function restoreScrollPosition() {
 
 document.addEventListener("DOMContentLoaded", restoreScrollPosition);
 
-
-scopeInput.addEventListener("change", () => {
+function toggleScopeFields() {
   if (scopeInput.value === "PRODUCT") {
     productGroup.style.display = "flex";
     categoryGroup.style.display = "none";
-    categoryInput.value = "";
   } else if (scopeInput.value === "CATEGORY") {
     categoryGroup.style.display = "flex";
     productGroup.style.display = "none";
-    productInput.value = "";
   } else {
     productGroup.style.display = "none";
     categoryGroup.style.display = "none";
   }
+}
 
+scopeInput.addEventListener("change", () => {
+  if (scopeInput.value === "PRODUCT") {
+    categoryInput.value = "";
+  } else if (scopeInput.value === "CATEGORY") {
+    productInput.value = "";
+  }
+
+  toggleScopeFields();
   updatePreview();
 });
 
-
-discountTypeInput.addEventListener("change", () => {
+function toggleDiscountFields() {
   if (discountTypeInput.value === "PERCENTAGE") {
     maxDiscountGroup.style.display = "flex";
   } else {
     maxDiscountGroup.style.display = "none";
     maxDiscountInput.value = "";
   }
+}
 
+discountTypeInput.addEventListener("change", () => {
+  toggleDiscountFields();
   updatePreview();
 });
-
 
 function updatePreview() {
   previewScope.textContent =
@@ -166,7 +172,6 @@ function updatePreview() {
   previewStatus.className = `status ${active ? "active" : "inactive"}`;
 }
 
-
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -178,7 +183,8 @@ form.addEventListener("submit", async (e) => {
 
   const offerScope = scopeInput.value;
 
-  const appliesTo = offerScope === "PRODUCT" ? productInput.value : categoryInput.value;
+  const appliesTo =
+    offerScope === "PRODUCT" ? productInput.value : categoryInput.value;
 
   const discountType = discountTypeInput.value;
 
@@ -236,6 +242,21 @@ form.addEventListener("submit", async (e) => {
     hasError = true;
   }
 
+  const minOrder = Number(minOrderAmount);
+  const maxDiscount = Number(maxDiscountAmount);
+  if (
+    discountType === "PERCENTAGE" &&
+    maxDiscountInput.value &&
+    minOrder > 0 &&
+    minOrder <= maxDiscount
+  ) {
+    showError(
+      "maxDiscountError",
+      "Minimum order amount must be greater than the maximum discount",
+    );
+    hasError = true;
+  }
+
   if (!startDate) {
     showError("startDateError", "Start date required");
     hasError = true;
@@ -260,12 +281,12 @@ form.addEventListener("submit", async (e) => {
   submitBtn.disabled = true;
 
   submitBtn.innerHTML = `
-      <span class="btn-loader"></span>
-      Saving...
-  `;
+    <span class="btn-loader"></span>
+    ${mode === "edit" ? "Updating..." : "Saving..."}
+`;
 
   try {
-    const res = await axios.post("/admin/offers/add", {
+    const payload = {
       title,
       offerScope,
       appliesTo,
@@ -277,10 +298,19 @@ form.addEventListener("submit", async (e) => {
       startDate,
       endDate,
       isActive,
-    });
+    };
+
+    const res =
+      mode === "edit"
+        ? await axios.patch(action, payload)
+        : await axios.post(action, payload);
 
     if (res.data.success) {
-      utils.showToast(res.data.message);
+      utils.showToast(
+        mode === "edit"
+          ? "Offer updated successfully"
+          : "Offer created successfully",
+      );
 
       saveScrollPosition();
 
@@ -298,7 +328,6 @@ form.addEventListener("submit", async (e) => {
     submitBtn.innerHTML = originalText;
   }
 });
-
 
 form.addEventListener("input", () => {
   clearErrors();
@@ -319,5 +348,6 @@ form.addEventListener("input", () => {
   el.addEventListener("change", updatePreview);
 });
 
+toggleScopeFields();
+toggleDiscountFields();
 updatePreview();
-

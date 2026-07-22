@@ -2,7 +2,9 @@ import {
   getAllOffersService,
   getOfferStatsService,
   getAllActiveProductsAndCategoriesService,
+  loadEditOfferPageService,
   addOfferService,
+  editOfferService,
 } from "../../services/admin/offer.service.js";
 
 export const loadOfferPage = async (req, res, next) => {
@@ -26,7 +28,6 @@ export const loadOfferPage = async (req, res, next) => {
       currentPage: page,
       skip,
       limit,
-
       search,
       status,
       scope,
@@ -45,7 +46,9 @@ export const loadAddOfferPage = async (req, res, next) => {
     const { products, categories } =
       await getAllActiveProductsAndCategoriesService();
 
-    res.render("admin/add-offer", {
+    res.render("admin/offer-form", {
+      offer: null,
+      isEdit: false,
       products,
       categories,
     });
@@ -53,7 +56,6 @@ export const loadAddOfferPage = async (req, res, next) => {
     next(err);
   }
 };
-
 
 export const addOffer = async (req, res, next) => {
   try {
@@ -64,6 +66,39 @@ export const addOffer = async (req, res, next) => {
       message: "Offer created successfully",
     });
   } catch (err) {
+    console.log(err);
+    next(err);
+  }
+};
+
+export const loadEditOfferPage = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const offer = await loadEditOfferPageService(id);
+    const { products, categories } =
+      await getAllActiveProductsAndCategoriesService();
+    res.render("admin/offer-form", {
+      offer,
+      isEdit: true,
+      products,
+      categories,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const editOffer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await editOfferService(id, req.body);
+    res.status(200).json({
+      success: true,
+      message: "Offer updated successfully",
+    });
+  } catch (err) {
+    console.log(err);
     next(err);
   }
 };

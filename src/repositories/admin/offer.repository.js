@@ -57,3 +57,18 @@ export const findOfferByTitleScopeAndTarget = async (
 export const createOffer = async (offerData) => {
   return await Offer.create(offerData);
 };
+
+export const findOfferById=async(id)=>{
+  return await Offer.findById(id);
+}
+
+export const updateOffer = async (offerId, data) => {
+  return await Offer.findByIdAndUpdate(
+    offerId,
+    data,
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  );
+};
