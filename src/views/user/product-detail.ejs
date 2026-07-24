@@ -40,9 +40,7 @@
 
       <!-- MAIN IMAGE -->
       <div class="pd-image-box">
-        <% if (selectedVariant.stock <= 0) { %>
-          <div class="pd-soldout">Sold Out</div>
-        <% } %>
+
         <div class="pd-image-zoom" id="zoomContainer">
           <img
             src="<%= selectedVariant.images[0]?.url %>"
@@ -57,23 +55,65 @@
       <div class="pd-info">
 
         <!-- Category tag -->
+
         <p class="pd-category-tag"><%= product.categoryId.name %></p>
 
         <!-- Title -->
         <h1 class="pd-title"><%= product.name %></h1>
 
         <!-- Price -->
-        <div class="pd-price-wrap">
-          <span class="pd-price" id="displayPrice">
-            ₹<%= selectedVariant.price.toLocaleString('en-IN') %>
-          </span>
-          <% if (product.comparePrice && product.comparePrice > selectedVariant.price) { %>
-            <span class="pd-old-price">₹<%= product.comparePrice.toLocaleString('en-IN') %></span>
-            <span class="pd-discount">
-              <%= Math.round(((product.comparePrice - selectedVariant.price) / product.comparePrice) * 100) %>% OFF
-            </span>
-          <% } %>
-        </div>
+<div class="pd-price-wrap">
+
+  <span class="pd-price" id="displayPrice">
+    ₹<%= product.finalPrice.toLocaleString('en-IN') %>
+  </span>
+
+  <% if (product.hasOffer) { %>
+
+    <span class="pd-old-price">
+      ₹<%= product.originalPrice.toLocaleString('en-IN') %>
+    </span>
+
+<div class="pd-offer-pills">
+
+  <div class="pd-offer-meta">
+
+  <span class="pd-discount-pill">
+
+    <% if (product.discountType === "PERCENTAGE") { %>
+
+      <%= Number(product.discountValue) %>% OFF
+
+      <% if (product.maxDiscountAmount != null) { %>
+        <span class="pd-cap-separator">·</span>
+        Max ₹<%= Number(
+          product.maxDiscountAmount
+        ).toLocaleString("en-IN") %>
+      <% } %>
+
+    <% } else { %>
+
+      ₹<%= Number(
+        product.discountValue
+      ).toLocaleString("en-IN") %> OFF
+
+    <% } %>
+
+  </span>
+
+  <% if (product.offerTitle) { %>
+    <span class="pd-offer-name">
+      <%= product.offerTitle %>
+    </span>
+  <% } %>
+
+</div>
+
+</div>
+
+  <% } %>
+
+</div>
 
         <!-- Description -->
         <p class="pd-desc"><%= product.description %></p>
@@ -309,7 +349,33 @@
               </div>
               <div class="pd-related-info">
                 <h4 class="pd-related-name"><%= item.name %></h4>
-                <p class="pd-related-price">₹<%= item.basePrice.toLocaleString('en-IN') %></p>
+                <div class="pd-related-price-wrap">
+
+                <span class="pd-related-price">
+                  ₹<%= item.finalPrice.toLocaleString("en-IN") %>
+                </span>
+
+                <% if(item.hasOffer){ %>
+
+                  <span class="pd-related-old-price">
+                    ₹<%= item.originalPrice.toLocaleString("en-IN") %>
+                  </span>
+
+                <% } %>
+
+              </div>
+
+              <% if(item.hasOffer){ %>
+
+              <div class="pd-related-offer">
+                <%=
+                  item.discountType === "PERCENTAGE"
+                    ? `${Number(item.discountValue)}% OFF`
+                    : `SAVE ₹${item.discountAmount.toLocaleString("en-IN")}`
+                %>
+              </div>
+
+              <% } %>
               </div>
             </a>
           <% }) %>

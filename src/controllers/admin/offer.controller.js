@@ -13,12 +13,12 @@ export const loadOfferPage = async (req, res, next) => {
     const page = Number(req.query.page) || 1;
     const search = req.query.search || "";
     const status = req.query.status || "all";
-    const scope = req.query.scope || "all";
+    const targetScope = req.query.targetScope || "all";
     const discount = req.query.discount || "all";
     const sort = req.query.sort || "latest";
 
     const { offers, offerCount, totalPages, skip, limit } =
-      await getAllOffersService(page, search, status, scope, discount, sort);
+      await getAllOffersService(page, search, status, targetScope, discount, sort);
 
     const stats = await getOfferStatsService();
 
@@ -31,7 +31,7 @@ export const loadOfferPage = async (req, res, next) => {
       limit,
       search,
       status,
-      scope,
+      targetScope,
       discount,
       sort,
 

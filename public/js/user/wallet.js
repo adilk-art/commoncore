@@ -161,20 +161,3 @@ backBtn?.addEventListener("click", () => {
 if (window.walletPaymentSuccess) {
   showSuccessModal(window.walletPaymentSuccess);
 }
-
-window.addEventListener("beforeunload", () => {
-  sessionStorage.setItem("walletScrollPosition", window.scrollY);
-});
-
-window.addEventListener("load", () => {
-  const scrollPosition = sessionStorage.getItem("walletScrollPosition");
-
-  if (scrollPosition) {
-    window.scrollTo({
-      top: Number(scrollPosition),
-      behavior: "instant",
-    });
-
-    sessionStorage.removeItem("walletScrollPosition");
-  }
-});

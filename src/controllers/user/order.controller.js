@@ -58,19 +58,30 @@ export const loadOrderDetail = async (req, res, next) => {
   try {
     const {
       order,
+      originalSubtotal,
+      discountTotal,
       cancelledAmount,
       activeSubtotal,
+      activeOriginalSubtotal,
+      activeDiscountTotal,
       currentValue,
       gstAmount,
       fullyCancelled,
       partiallyCancelled,
       canCancelAnyItem,
-    } = await getOrderDetailService(req.params.orderId, req.session.userId);
+    } = await getOrderDetailService(
+      req.params.orderId,
+      req.session.userId,
+    );
 
     res.render("user/order-detail", {
       order,
+      originalSubtotal,
+      discountTotal,
       cancelledAmount,
       activeSubtotal,
+      activeOriginalSubtotal,
+      activeDiscountTotal,
       currentValue,
       gstAmount,
       fullyCancelled,

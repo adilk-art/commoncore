@@ -209,39 +209,37 @@
 
             <!-- Row -->
 
-            <div class="form-row">
+<div class="form-row">
 
-              <div class="form-group" id="maxDiscountGroup">
+<div class="form-group" id="maxDiscountGroup">
 
-                <label>Maximum Discount</label>
+  <label>
+    Maximum Discount
+    <span class="optional-label">(Optional)</span>
+  </label>
 
-                <input
-                  type="number"
-                  id="maxDiscountAmount"
-                  name="maxDiscountAmount"
-                  value="<%= offer?.maxDiscountAmount || '' %>"
-                  placeholder="Optional">
+  <input
+    type="number"
+    id="maxDiscountAmount"
+    name="maxDiscountAmount"
+    value="<%= offer?.maxDiscountAmount || '' %>"
+    placeholder="Leave empty for no limit"
+    min="1"
+  >
 
-                <small id="maxDiscountError" class="error"></small>
+  <small id="maxDiscountError" class="error"></small>
 
-              </div>
+  <p
+    class="max-discount-warning"
+    id="maxDiscountWarning"
+    hidden
+  >
+    No maximum limit — the full percentage discount will apply.
+  </p>
 
-              <div class="form-group">
+</div>
 
-                <label>Minimum Order Amount</label>
-
-                <input
-                  type="number"
-                  id="minOrderAmount"
-                  name="minOrderAmount"
-                  value="<%= offer?.minOrderAmount || '' %>"
-                  placeholder="Optional">
-
-                <small id="minOrderError" class="error"></small>
-
-              </div>
-
-            </div>
+</div>
 
             <!-- Dates -->
 
@@ -371,14 +369,14 @@
 
             </div>
 
-            <div class="preview-row">
-                <span>Minimum Order</span>
-                <strong id="previewMinOrder">₹0</strong>
-            </div>
-
-            <div class="preview-row">
-                <span>Maximum Discount</span>
-                <strong id="previewMaxDiscount">₹0</strong>
+            <div
+              class="preview-row"
+              id="previewMaxDiscountRow"
+            >
+              <span>Maximum Discount</span>
+              <strong id="previewMaxDiscount">
+                No Limit
+              </strong>
             </div>
 
             <div class="preview-validity">

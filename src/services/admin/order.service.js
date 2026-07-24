@@ -102,70 +102,109 @@ export const getOrderDetailService = async (orderId) => {
   const computedOrderStatus = calculateOrderStatus(order.items);
 
   const activeItems = order.items.filter(
-    (item) => item.status !== "Cancelled"
+    (item) => item.status !== "Cancelled",
   );
 
   const cancelledItems = order.items.filter(
-    (item) => item.status === "Cancelled"
+    (item) => item.status === "Cancelled",
+  );
+
+  const originalSubtotal = Number(
+    order.originalSubtotal ??
+      order.subtotal ??
+      0,
+  );
+
+  const discountTotal = Number(
+    order.discountTotal || 0,
+  );
+
+  const activeOriginalSubtotal = activeItems.reduce(
+    (sum, item) =>
+      sum +
+      Number(
+        item.originalUnitPrice ??
+          item.unitPrice,
+      ) *
+        Number(item.quantity),
+    0,
   );
 
   const activeSubtotal = activeItems.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0
+    (sum, item) =>
+      sum +
+      Number(item.unitPrice) *
+        Number(item.quantity),
+    0,
   );
+
+  const activeDiscountTotal =
+    activeOriginalSubtotal -
+    activeSubtotal;
 
   const cancelledAmount = cancelledItems.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0
+    (sum, item) =>
+      sum +
+      Number(item.unitPrice) *
+        Number(item.quantity),
+    0,
   );
 
-  const gstAmount = activeItems.reduce((total, item) => {           
-    return total + calculateItemGstAmount(item);
-  }, 0);
+  const gstAmount = activeItems.reduce(
+    (total, item) =>
+      total + calculateItemGstAmount(item),
+    0,
+  );
 
   const shippingFee =
-    activeSubtotal >= 999
-      ? 0
-      : activeSubtotal > 0
-      ? order.shippingFee
+    activeItems.length > 0
+      ? Number(order.shippingFee || 0)
       : 0;
 
-  const total = activeSubtotal + shippingFee;
+  const total =
+    activeSubtotal + shippingFee;
 
   const fullyCancelled =
     order.items.length > 0 &&
-    order.items.every((i) => i.status === "Cancelled");
+    order.items.every(
+      (item) => item.status === "Cancelled",
+    );
 
   const partiallyCancelled =
-    cancelledAmount > 0 && !fullyCancelled;
+    cancelledAmount > 0 &&
+    !fullyCancelled;
 
   const showCodButton =
-  order.paymentMethod === "CashOnDelivery" &&
-  order.paymentStatus === "Pending" &&
-  canMarkCodPaid(order.items);
+    order.paymentMethod === "CashOnDelivery" &&
+    order.paymentStatus === "Pending" &&
+    canMarkCodPaid(order.items);
 
   return {
-  order: {
-    ...order,
-    user: order.customer,
-    orderStatus: computedOrderStatus,
-  },
+    order: {
+      ...order,
+      user: order.customer,
+      orderStatus: computedOrderStatus,
+    },
 
-  activeItems,
-  cancelledItems,
+    activeItems,
+    cancelledItems,
 
-  activeSubtotal,
-  cancelledAmount,
+    originalSubtotal,
+    discountTotal,
 
-  gstAmount: Number(gstAmount.toFixed(2)),
+    activeOriginalSubtotal,
+    activeDiscountTotal,
+    activeSubtotal,
+    cancelledAmount,
 
-  shippingFee,
-  total,
+    gstAmount: Number(gstAmount.toFixed(2)),
+    shippingFee,
+    total,
 
-  fullyCancelled,
-  partiallyCancelled,
-  showCodButton
-};
+    fullyCancelled,
+    partiallyCancelled,
+    showCodButton,
+  };
 };
 
 export const markCodAsPaidService = async (orderId) => {

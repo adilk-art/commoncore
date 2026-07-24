@@ -10,6 +10,7 @@ import {
 } from "../../repositories/shop.repository.js";
 
 import { findWishlistByUserId } from "../../repositories/wishlist.repository.js";
+import {buildActiveOfferLookup, getBestOfferPricing} from "../../services/shared/pricing.service.js"
 
 export const getShopPageService = async (query, userId) => {
 
@@ -79,14 +80,20 @@ export const getShopPageService = async (query, userId) => {
     wishlistProductIds = wishlist?.products?.map((item) => String(item)) || [];
   }
 
-  const products = data.map((product) => ({
-    ...product,
+  const offerLookup = await buildActiveOfferLookup();     //cat and prod offer - 2 objs 
 
-    isWishlisted: wishlistProductIds.includes(String(product._id)),
-  }));
+ const products = data.map((product) => {
+ 
+        const pricing = getBestOfferPricing(product,product.previewVariant,offerLookup); //the fn attached best offer related data
+
+          return {
+            ...product,
+            ...pricing,
+            isWishlisted: wishlistProductIds.includes(String(product._id)),
+          };
+        });
 
   const total = await countShopProducts(filter);
-
   const categories = await getShopCategories();
 
   return {
@@ -101,6 +108,8 @@ export const getShopPageService = async (query, userId) => {
     maxPrice,
   };
 };
+
+
 
 export const getProductDetailService = async ({ productId, userId }) => {
   if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -131,34 +140,60 @@ export const getProductDetailService = async ({ productId, userId }) => {
     throw error;
   }
 
-  let selectedVariant = activeVariants.find(
-    (v) => v.isDefault,
-  );
+  let selectedVariant = activeVariants.find((v) => v.isDefault);
 
   if (!selectedVariant) {
     selectedVariant = activeVariants[0];
   }
-
+ 
   const relatedProducts = await findRelatedProducts(
     product.categoryId._id,
     product._id,
   );
 
   let isWishlisted = false;
+  let wishlistProductIds = [];
 
   if (userId) {
     const wishlist = await findWishlistByUserId(userId);
 
-    isWishlisted = wishlist?.products?.some(
-      (id) => String(id) === String(productId),
-    );
+    wishlistProductIds =
+      wishlist?.products?.map((id) => String(id)) || [];
+
+    isWishlisted = wishlistProductIds.includes(String(product._id));
   }
 
+  const offerLookup = await buildActiveOfferLookup();
+
+  const pricing = getBestOfferPricing (product,selectedVariant,offerLookup);
+
+  const productData = {
+    ...product,
+    ...pricing,
+  };
+
+ const relatedProductsData = relatedProducts
+  .filter((item) => item.previewVariant)
+  .map((item) => {
+    const pricing = getBestOfferPricing(
+      item,
+      item.previewVariant,
+      offerMaps,
+    );
+
+    return {
+      ...item,
+      ...pricing,
+      isWishlisted: wishlistProductIds.includes(String(item._id)),
+    };
+  });
+
+
   return {
-    product,
+    product: productData,
     variants: activeVariants,
     selectedVariant,
-    relatedProducts,
+    relatedProducts: relatedProductsData,
     isWishlisted,
     isUnavailable,
   };

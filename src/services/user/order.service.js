@@ -27,6 +27,7 @@ import { log } from "console";
 import { verifyRazorpaySignature } from "../../utils/razorpayVerification.js";
 import { debitWalletService, creditWalletService } from "./wallet.service.js";
 import { findWalletByUserId } from "../../repositories/wallet.repository.js";
+import {  buildActiveOfferLookup, getBestOfferPricing } from "../shared/pricing.service.js";
 
 export const getUserOrdersService = async ({ userId, search, page }) => {
   const limit = 5;
@@ -78,52 +79,77 @@ const generateOrderNumber = () => {
   return "ORD-" + Date.now();
 };
 
-export const placeOrderService = async (userId, payload) => {
-  const { shippingAddress, paymentMethod, isBuyNow, variantId, quantity } =
-    payload;
-
-  if (!shippingAddress) {
-    const error = new Error("Please select address");
-    error.status = 400;
-    throw error;
-  }
-
-  if (!paymentMethod) {
-    const error = new Error("Please select payment method");
-    error.status = 400;
-    throw error;
-  }
-
-  const address = await getUserAddressById(shippingAddress, userId);
-  if (!address) {
-    const error = new Error("Address not found");
-    error.status = 404;
-    throw error;
-  }
-
-  let items, subtotal;
+const buildOrderPricing = async ({
+  userId,
+  isBuyNow,
+  variantId,
+  quantity,
+}) => {
+  let items = [];
 
   if (isBuyNow) {
-    const { variant, qty } = await validateBuyNowService(variantId, quantity);
+    const { variant, qty } =
+      await validateBuyNowService(
+        variantId,
+        quantity,
+      );
+
     const product = variant.productId;
+
+    if (!product) {
+      const error = new Error("Product not found");
+      error.status = 404;
+      throw error;
+    }
+
+    const offerLookup =
+      await buildActiveOfferLookup();
+
+    const pricing = getBestOfferPricing(
+      product,
+      variant,
+      offerLookup,
+    );
 
     items = [
       {
         productId: product._id,
         variantId: variant._id,
         productName: product.name,
-        productImage: variant.images?.[0]?.url || "",
+        productImage:
+          variant.images?.[0]?.url || "",
         size: variant.size,
         color: variant.color.name,
-        quantity: qty,
-        unitPrice: variant.price,
-        gstRate: product.gstRate,
+        quantity: Number(qty),
+
+        unitPrice: Number(pricing.finalPrice),
+        originalUnitPrice: Number(
+          pricing.originalPrice,
+        ),
+        discountAmount: Number(
+          pricing.discountAmount || 0,
+        ),
+
+        hasOffer: Boolean(pricing.hasOffer),
+        offerId: pricing.offerId || undefined,
+        offerTitle:
+          pricing.offerTitle || undefined,
+        offerType:
+          pricing.offerType || undefined,
+        discountType:
+          pricing.discountType || undefined,
+        discountValue:
+          pricing.discountValue ?? undefined,
+
+        gstRate:
+          Number(product.gstRate) || 0,
+
         status: "Placed",
       },
     ];
-    subtotal = variant.price * qty;
   } else {
     const cart = await getCartService(userId);
+
     if (!cart || cart.items.length === 0) {
       const error = new Error("Cart is empty");
       error.status = 400;
@@ -132,7 +158,10 @@ export const placeOrderService = async (userId, payload) => {
     }
 
     if (cart.invalid) {
-      const error = new Error("Some items in your cart are unavailable");
+      const error = new Error(
+        "Some items in your cart are unavailable",
+      );
+
       error.status = 400;
       error.code = "INVALID_CART";
       throw error;
@@ -142,44 +171,182 @@ export const placeOrderService = async (userId, payload) => {
       productId: item.product._id,
       variantId: item.variant._id,
       productName: item.product.name,
-      productImage: item.variant.images?.[0]?.url || "",
+      productImage:
+        item.variant.images?.[0]?.url || "",
       size: item.variant.size,
       color: item.variant.color.name,
-      quantity: item.quantity,
-      unitPrice: item.variant.price,
-      gstRate: item.product.gstRate,
+      quantity: Number(item.quantity),
+
+      unitPrice: Number(item.finalPrice),
+      originalUnitPrice: Number(
+        item.originalPrice,
+      ),
+      discountAmount: Number(
+        item.discountAmount || 0,
+      ),
+
+      hasOffer: Boolean(item.hasOffer),
+      offerId: item.offerId || undefined,
+      offerTitle:
+        item.offerTitle || undefined,
+      offerType:
+        item.offerType || undefined,
+      discountType:
+        item.discountType || undefined,
+      discountValue:
+        item.discountValue ?? undefined,
+
+      gstRate:
+        Number(item.product.gstRate) || 0,
+
       status: "Placed",
     }));
-    subtotal = cart.subtotal;
   }
 
-  const shippingFee = subtotal >= 999 ? 0 : 99;
+  const originalSubtotal = items.reduce(
+    (sum, item) =>
+      sum +
+      Number(item.originalUnitPrice) *
+        Number(item.quantity),
+    0,
+  );
+
+  const subtotal = items.reduce(
+    (sum, item) =>
+      sum +
+      Number(item.unitPrice) *
+        Number(item.quantity),
+    0,
+  );
+
+  const discountTotal = items.reduce(
+    (sum, item) =>
+      sum +
+      Number(item.discountAmount) *
+        Number(item.quantity),
+    0,
+  );
+
+  const shippingFee =
+    subtotal >= 999
+      ? 0
+      : subtotal > 0
+        ? 99
+        : 0;
+
   const total = subtotal + shippingFee;
+
+  return {
+    items,
+    originalSubtotal,
+    discountTotal,
+    subtotal,
+    shippingFee,
+    total,
+  };
+};
+
+export const placeOrderService = async (
+  userId,
+  payload,
+) => {
+  const {
+    shippingAddress,
+    paymentMethod,
+    isBuyNow,
+    variantId,
+    quantity,
+  } = payload;
+
+  if (!shippingAddress) {
+    const error = new Error(
+      "Please select address",
+    );
+
+    error.status = 400;
+    throw error;
+  }
+
+  if (!paymentMethod) {
+    const error = new Error(
+      "Please select payment method",
+    );
+
+    error.status = 400;
+    throw error;
+  }
+
+  const address = await getUserAddressById(
+    shippingAddress,
+    userId,
+  );
+
+  if (!address) {
+    const error = new Error(
+      "Address not found",
+    );
+
+    error.status = 404;
+    throw error;
+  }
+
+  const {
+    items,
+    originalSubtotal,
+    discountTotal,
+    subtotal,
+    shippingFee,
+    total,
+  } = await buildOrderPricing({
+    userId,
+    isBuyNow,
+    variantId,
+    quantity,
+  });
+
   if (paymentMethod === "Wallet") {
-    const wallet = await findWalletByUserId(userId);
+    const wallet =
+      await findWalletByUserId(userId);
 
     if (!wallet) {
-      const error = new Error("Wallet not found");
+      const error = new Error(
+        "Wallet not found",
+      );
+
       error.status = 400;
       throw error;
     }
 
-    if (wallet.balance < total) {
-      const error = new Error("Insufficient wallet balance");
+    if (
+      Number(wallet.balance) <
+      Number(total)
+    ) {
+      const error = new Error(
+        "Insufficient wallet balance",
+      );
+
       error.status = 400;
-      error.code = "INSUFFICIENT_WALLET_BALANCE";
+      error.code =
+        "INSUFFICIENT_WALLET_BALANCE";
+
       throw error;
     }
   }
-  const estimatedDeliveryDate = new Date();
 
-  estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+  const estimatedDeliveryDate =
+    new Date();
+
+  estimatedDeliveryDate.setDate(
+    estimatedDeliveryDate.getDate() + 5,
+  );
+
   const order = await createOrderRepo({
     orderNumber: generateOrderNumber(),
     userId,
     items,
     paymentMethod,
     estimatedDeliveryDate,
+
     shippingAddress: {
       fullName: address.fullName,
       phone: address.phone,
@@ -189,21 +356,34 @@ export const placeOrderService = async (userId, payload) => {
       state: address.state,
       pincode: address.pincode,
     },
-    shippingFee,
+
+    originalSubtotal,
+    discountTotal,
     subtotal,
+    shippingFee,
     total,
-    paymentStatus: paymentMethod === "Wallet" ? "Paid" : "Pending",
+
+    paymentStatus:
+      paymentMethod === "Wallet"
+        ? "Paid"
+        : "Pending",
+
     orderStatus: "Placed",
   });
 
   for (const item of items) {
-    await reduceVariantStock(item.variantId, item.quantity);
+    await reduceVariantStock(
+      item.variantId,
+      item.quantity,
+    );
   }
+
   if (paymentMethod === "Wallet") {
     await debitWalletService(userId, {
       amount: total,
       category: "OrderPayment",
-      description: `Payment for Order ${order.orderNumber}`,
+      description:
+        `Payment for Order ${order.orderNumber}`,
       reference: order.orderNumber,
     });
   }
@@ -215,8 +395,14 @@ export const placeOrderService = async (userId, payload) => {
   return order;
 };
 
-export const getOrderSuccessService = async (orderId, userId) => {
-  const order = await findUserOrderById(orderId, userId);
+export const getOrderSuccessService = async (
+  orderId,
+  userId,
+) => {
+  const order = await findUserOrderById(
+    orderId,
+    userId,
+  );
 
   if (!order) {
     const error = new Error("Order not found");
@@ -224,24 +410,57 @@ export const getOrderSuccessService = async (orderId, userId) => {
     throw error;
   }
 
-  const gstAmount = order.items.reduce((total, item) => {
-    const itemSubtotal = item.unitPrice * item.quantity;
+  const gstAmount = order.items.reduce(
+    (total, item) => {
+      const itemSubtotal =
+        Number(item.unitPrice) *
+        Number(item.quantity);
 
-    const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
+      const gstRate =
+        Number(item.gstRate) || 0;
 
-    const itemGst = itemSubtotal - taxableValue;
+      const taxableValue =
+        itemSubtotal /
+        (1 + gstRate / 100);
 
-    return total + itemGst;
-  }, 0);
+      return total + (
+        itemSubtotal - taxableValue
+      );
+    },
+    0,
+  );
+
+  const originalSubtotal =
+    Number(
+      order.originalSubtotal ??
+      order.subtotal,
+    );
+
+  const discountTotal =
+    Number(order.discountTotal || 0);
 
   return {
     order,
+    originalSubtotal,
+    discountTotal,
     gstAmount: Number(gstAmount.toFixed(2)),
   };
 };
 
-export const getOrderDetailService = async (orderId, userId) => {
-  const order = await findUserOrderById(orderId, userId);
+export const getOrderDetailService = async (
+  orderId,
+  userId,
+) => {
+  const order = await findUserOrderById(
+    orderId,
+    userId,
+  );
+
+  if (!order) {
+    const error = new Error("Order not found");
+    error.status = 404;
+    throw error;
+  }
 
   const returnRequests = await Return.find({
     orderId: order._id,
@@ -249,27 +468,31 @@ export const getOrderDetailService = async (orderId, userId) => {
   }).lean();
 
   const returnMap = new Map(
-    returnRequests.map((ret) => [String(ret.itemId), ret]),
+    returnRequests.map((ret) => [
+      String(ret.itemId),
+      ret,
+    ]),
   );
 
-  order.orderStatus = calculateOrderStatus(order.items);
+  order.orderStatus = calculateOrderStatus(
+    order.items,
+  );
 
-  if (!order) {
-    const error = new Error("Order not found");
-    error.status = 404;
-    throw error;
-  }
   const RETURN_WINDOW_DAYS = 14;
 
   order.items.forEach((item) => {
-    item.canCancel = item.status === "Placed" || item.status === "Processing";
+    item.canCancel =
+      item.status === "Placed" ||
+      item.status === "Processing";
 
     item.canReturn = false;
     item.returnDaysLeft = 0;
     item.showReturnStatusBtn = false;
     item.statusMetaText = "";
 
-    const itemReturn = returnMap.get(String(item._id));
+    const itemReturn = returnMap.get(
+      String(item._id),
+    );
 
     const deliveredAt = item.statusUpdatedAt
       ? new Date(item.statusUpdatedAt)
@@ -277,12 +500,19 @@ export const getOrderDetailService = async (orderId, userId) => {
 
     let diffDays = null;
 
-    if (item.status === "Delivered" && deliveredAt) {
+    if (
+      item.status === "Delivered" &&
+      deliveredAt
+    ) {
       diffDays = Math.floor(
-        (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24),
+        (Date.now() - deliveredAt.getTime()) /
+          (1000 * 60 * 60 * 24),
       );
 
-      item.returnDaysLeft = Math.max(0, RETURN_WINDOW_DAYS - diffDays);
+      item.returnDaysLeft = Math.max(
+        0,
+        RETURN_WINDOW_DAYS - diffDays,
+      );
     }
 
     if (itemReturn) {
@@ -300,54 +530,74 @@ export const getOrderDetailService = async (orderId, userId) => {
 
       item.showReturnStatusBtn = true;
 
+      const statusDateOptions = {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      };
+
       if (itemReturn.status === "Requested") {
-        item.statusMetaText = `Return requested on ${new Date(
-          itemReturn.requestedAt,
-        ).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`;
-      } else if (itemReturn.status === "Approved") {
-        item.statusMetaText = `Return approved on ${new Date(
-          itemReturn.approvedAt || itemReturn.updatedAt,
-        ).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`;
-      } else if (itemReturn.status === "Picked Up") {
-        item.statusMetaText = `Item picked up on ${new Date(
-          itemReturn.pickedUpAt || itemReturn.updatedAt,
-        ).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`;
-      } else if (itemReturn.status === "Received") {
-        item.statusMetaText = `Returned item received on ${new Date(
-          itemReturn.receivedAt || itemReturn.updatedAt,
-        ).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`;
-      } else if (itemReturn.status === "Refunded") {
-        item.statusMetaText = `Refund processed on ${new Date(
-          itemReturn.refundedAt || itemReturn.updatedAt,
-        ).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`;
-      } else if (itemReturn.status === "Rejected") {
-        item.statusMetaText = `Return rejected on ${new Date(
-          itemReturn.updatedAt,
-        ).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`;
+        item.statusMetaText =
+          `Return requested on ${new Date(
+            itemReturn.requestedAt,
+          ).toLocaleDateString(
+            "en-IN",
+            statusDateOptions,
+          )}`;
+      } else if (
+        itemReturn.status === "Approved"
+      ) {
+        item.statusMetaText =
+          `Return approved on ${new Date(
+            itemReturn.approvedAt ||
+              itemReturn.updatedAt,
+          ).toLocaleDateString(
+            "en-IN",
+            statusDateOptions,
+          )}`;
+      } else if (
+        itemReturn.status === "Picked Up"
+      ) {
+        item.statusMetaText =
+          `Item picked up on ${new Date(
+            itemReturn.pickedUpAt ||
+              itemReturn.updatedAt,
+          ).toLocaleDateString(
+            "en-IN",
+            statusDateOptions,
+          )}`;
+      } else if (
+        itemReturn.status === "Received"
+      ) {
+        item.statusMetaText =
+          `Returned item received on ${new Date(
+            itemReturn.receivedAt ||
+              itemReturn.updatedAt,
+          ).toLocaleDateString(
+            "en-IN",
+            statusDateOptions,
+          )}`;
+      } else if (
+        itemReturn.status === "Refunded"
+      ) {
+        item.statusMetaText =
+          `Refund processed on ${new Date(
+            itemReturn.refundedAt ||
+              itemReturn.updatedAt,
+          ).toLocaleDateString(
+            "en-IN",
+            statusDateOptions,
+          )}`;
+      } else if (
+        itemReturn.status === "Rejected"
+      ) {
+        item.statusMetaText =
+          `Return rejected on ${new Date(
+            itemReturn.updatedAt,
+          ).toLocaleDateString(
+            "en-IN",
+            statusDateOptions,
+          )}`;
       }
 
       return;
@@ -362,46 +612,118 @@ export const getOrderDetailService = async (orderId, userId) => {
     }
   });
 
-  const cancelledAmount = order.items
-    .filter((item) => item.status === "Cancelled")
-    .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const activeItems = order.items.filter(
+    (item) => item.status !== "Cancelled",
+  );
 
-  const activeSubtotal = order.items
-    .filter((item) => item.status !== "Cancelled")
-    .reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const cancelledItems = order.items.filter(
+    (item) => item.status === "Cancelled",
+  );
 
-  const gstAmount = order.items
-    .filter((item) => item.status !== "Cancelled")
-    .reduce((total, item) => {
-      const itemSubtotal = item.unitPrice * item.quantity;
+  const originalSubtotal = Number(
+    order.originalSubtotal ??
+      order.subtotal ??
+      0,
+  );
 
-      const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
+  const discountTotal = Number(
+    order.discountTotal || 0,
+  );
 
-      const itemGst = itemSubtotal - taxableValue;
+  const cancelledAmount =
+    cancelledItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.unitPrice) *
+          Number(item.quantity),
+      0,
+    );
 
-      return total + itemGst;
-    }, 0);
+  const activeOriginalSubtotal =
+    activeItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(
+          item.originalUnitPrice ??
+            item.unitPrice,
+        ) *
+          Number(item.quantity),
+      0,
+    );
+
+  const activeSubtotal = activeItems.reduce(
+    (sum, item) =>
+      sum +
+      Number(item.unitPrice) *
+        Number(item.quantity),
+    0,
+  );
+
+  const activeDiscountTotal =
+    activeOriginalSubtotal -
+    activeSubtotal;
+
+  const gstAmount = activeItems.reduce(
+    (total, item) => {
+      const itemSubtotal =
+        Number(item.unitPrice) *
+        Number(item.quantity);
+
+      const gstRate =
+        Number(item.gstRate) || 0;
+
+      const taxableValue =
+        itemSubtotal /
+        (1 + gstRate / 100);
+
+      return (
+        total +
+        (itemSubtotal - taxableValue)
+      );
+    },
+    0,
+  );
 
   const shippingFee =
-    activeSubtotal >= 999 ? 0 : activeSubtotal > 0 ? order.shippingFee : 0;
+    activeSubtotal >= 999
+      ? 0
+      : activeSubtotal > 0
+        ? Number(order.shippingFee)
+        : 0;
 
-  const currentValue = activeSubtotal + shippingFee;
+  const currentValue =
+    activeSubtotal + shippingFee;
 
   const fullyCancelled =
     order.items.length > 0 &&
-    order.items.every((item) => item.status === "Cancelled");
+    order.items.every(
+      (item) =>
+        item.status === "Cancelled",
+    );
 
-  const partiallyCancelled = cancelledAmount > 0 && !fullyCancelled;
-  const canCancelAnyItem = order.items.some(
-    (item) => item.status === "Placed" || item.status === "Processing",
-  );
+  const partiallyCancelled =
+    cancelledAmount > 0 &&
+    !fullyCancelled;
+
+  const canCancelAnyItem =
+    order.items.some(
+      (item) =>
+        item.status === "Placed" ||
+        item.status === "Processing",
+    );
 
   return {
     order,
+    originalSubtotal,
+    discountTotal,
     cancelledAmount,
     activeSubtotal,
+    activeOriginalSubtotal,
+    activeDiscountTotal,
     currentValue,
-    gstAmount: Number(gstAmount.toFixed(2)),
+    gstAmount: Number(
+      gstAmount.toFixed(2),
+    ),
     fullyCancelled,
     partiallyCancelled,
     canCancelAnyItem,
@@ -524,8 +846,16 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
   };
 };
 
-export const downloadInvoiceService = async ({ userId, orderId, res }) => {
-  const order = await findUserOrderById(orderId, userId);
+export const downloadInvoiceService = async ({
+  userId,
+  orderId,
+  res,
+}) => {
+  const order = await findUserOrderById(
+    orderId,
+    userId,
+  );
+
   if (!order) {
     const error = new Error("Order not found");
     error.status = 404;
@@ -536,92 +866,153 @@ export const downloadInvoiceService = async ({ userId, orderId, res }) => {
     (item) => item.status === "Cancelled",
   );
 
-  const returnedItems = order.items.filter((item) =>
-    ["Returned", "Refunded"].includes(item.status),
+  const returnedItems = order.items.filter(
+    (item) =>
+      ["Returned", "Refunded"].includes(
+        item.status,
+      ),
   );
 
   const activeItems = order.items.filter(
-    (item) => !REFUNDED_STATUSES.has(item.status),
+    (item) =>
+      !REFUNDED_STATUSES.has(item.status),
   );
 
-  const cancelledAmount = cancelledItems.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-  );
+  const cancelledAmount =
+    cancelledItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.unitPrice) *
+          Number(item.quantity),
+      0,
+    );
 
-  const returnedAmount = returnedItems.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-  );
+  const returnedAmount =
+    returnedItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.unitPrice) *
+          Number(item.quantity),
+      0,
+    );
 
-  const activeSubtotal = activeItems.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-  );
+  const activeOriginalSubtotal =
+    activeItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(
+          item.originalUnitPrice ??
+            item.unitPrice,
+        ) *
+          Number(item.quantity),
+      0,
+    );
+
+  const activeSubtotal =
+    activeItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.unitPrice) *
+          Number(item.quantity),
+      0,
+    );
+
+  const activeDiscountTotal =
+    activeOriginalSubtotal -
+    activeSubtotal;
+
+  const shippingFee =
+    activeItems.length > 0
+      ? Number(order.shippingFee || 0)
+      : 0;
 
   const currentTotal =
-    activeSubtotal + (activeItems.length > 0 ? order.shippingFee : 0);
+    activeSubtotal + shippingFee;
 
-  const gstAmount = activeItems.reduce((total, item) => {
-    const itemSubtotal = item.unitPrice * item.quantity;
-    const taxableValue = itemSubtotal / (1 + item.gstRate / 100);
-    return total + (itemSubtotal - taxableValue);
-  }, 0);
+  const gstAmount = activeItems.reduce(
+    (total, item) => {
+      const itemSubtotal =
+        Number(item.unitPrice) *
+        Number(item.quantity);
+
+      const gstRate =
+        Number(item.gstRate) || 0;
+
+      const taxableValue =
+        itemSubtotal /
+        (1 + gstRate / 100);
+
+      return (
+        total +
+        (itemSubtotal - taxableValue)
+      );
+    },
+    0,
+  );
 
   generateInvoicePdf({
     order,
     items: order.items,
+
+    originalSubtotal: Number(
+      order.originalSubtotal ??
+        order.subtotal ??
+        0,
+    ),
+
+    discountTotal: Number(
+      order.discountTotal || 0,
+    ),
+
     cancelledAmount,
     returnedAmount,
+
+    activeOriginalSubtotal,
+    activeDiscountTotal,
     activeSubtotal,
+
+    shippingFee,
     currentTotal,
-    gstAmount: Number(gstAmount.toFixed(2)),
+
+    gstAmount: Number(
+      gstAmount.toFixed(2),
+    ),
+
     res,
   });
 };
 
-export const createRazorpayOrderService = async (userId, payload) => {
-  const { isBuyNow, variantId, quantity } = payload;
+export const createRazorpayOrderService = async (
+  userId,
+  payload,
+) => {
+  const {
+    isBuyNow,
+    variantId,
+    quantity,
+  } = payload;
 
-  let subtotal;
+  const { total } =
+    await buildOrderPricing({
+      userId,
+      isBuyNow,
+      variantId,
+      quantity,
+    });
 
-  if (isBuyNow) {
-    const { variant, qty } = await validateBuyNowService(variantId, quantity);
-
-    subtotal = variant.price * qty;
-  } else {
-    const cart = await getCartService(userId);
-
-    if (!cart || cart.items.length === 0) {
-      const error = new Error("Cart is empty");
-      error.status = 400;
-      error.code = "EMPTY_CART";
-      throw error;
-    }
-
-    if (cart.invalid) {
-      const error = new Error("Some items in your cart are unavailable");
-      error.status = 400;
-      error.code = "INVALID_CART";
-      throw error;
-    }
-
-    subtotal = cart.subtotal;
-  }
-
-  const shippingFee = subtotal >= 999 ? 0 : 99;
-  const total = subtotal + shippingFee;
-
-  const order = await razorpay.orders.create({
-    amount: total * 100,
-    currency: "INR",
-    receipt: `receipt_${Date.now()}`,
-  });
+  const razorpayOrder =
+    await razorpay.orders.create({
+      amount: Math.round(
+        Number(total) * 100,
+      ),
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
 
   return {
     success: true,
     key: process.env.RAZORPAY_KEY,
-    order,
+    order: razorpayOrder,
   };
 };
 

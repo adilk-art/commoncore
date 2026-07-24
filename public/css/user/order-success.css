@@ -310,7 +310,59 @@
 }
 
 /* RESPONSIVE */
+.success-item-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
 
+.success-item-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.success-item-current-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.success-item-old-price {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.success-item-offer-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.summary-row--discount {
+  color: #15803d;
+}
+
+.summary-row--discount span:last-child {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.summary-row--gst {
+  color: var(--text-muted);
+  font-size: 13px;
+}
 @media(max-width:768px){
 
   .success-page{

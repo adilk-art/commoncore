@@ -1,6 +1,8 @@
 const form = document.getElementById("form");
+
 const mode = form.dataset.mode;
 const action = form.dataset.action;
+
 const titleInput = document.getElementById("title");
 const scopeInput = document.getElementById("offerScope");
 
@@ -10,32 +12,63 @@ const categoryGroup = document.getElementById("categoryGroup");
 const productInput = document.getElementById("productId");
 const categoryInput = document.getElementById("categoryId");
 
-const discountTypeInput = document.getElementById("discountType");
-const discountValueInput = document.getElementById("discountValue");
+const discountTypeInput =
+  document.getElementById("discountType");
 
-const maxDiscountGroup = document.getElementById("maxDiscountGroup");
-const maxDiscountInput = document.getElementById("maxDiscountAmount");
+const discountValueInput =
+  document.getElementById("discountValue");
 
-const minOrderInput = document.getElementById("minOrderAmount");
+const maxDiscountGroup =
+  document.getElementById("maxDiscountGroup");
 
-const startDateInput = document.getElementById("startDate");
-const endDateInput = document.getElementById("endDate");
+const maxDiscountInput =
+  document.getElementById("maxDiscountAmount");
 
-const statusInput = document.getElementById("isActive");
-const submitBtn = form?.querySelector("button[type='submit']");
+const maxDiscountWarning =
+  document.getElementById("maxDiscountWarning");
 
-const previewScope = document.getElementById("previewScope");
-const previewTarget = document.getElementById("previewTarget");
-const previewType = document.getElementById("previewType");
-const previewValue = document.getElementById("previewValue");
-const previewMinOrder = document.getElementById("previewMinOrder");
-const previewMaxDiscount = document.getElementById("previewMaxDiscount");
-const previewDates = document.getElementById("previewDates");
-const previewStatus = document.getElementById("previewStatus");
+const startDateInput =
+  document.getElementById("startDate");
 
-const showError = (id, msg) => {
-  const el = document.getElementById(id);
-  if (el) el.textContent = msg;
+const endDateInput =
+  document.getElementById("endDate");
+
+const statusInput =
+  document.getElementById("isActive");
+
+const submitBtn =
+  form.querySelector("button[type='submit']");
+
+const previewScope =
+  document.getElementById("previewScope");
+
+const previewTarget =
+  document.getElementById("previewTarget");
+
+const previewType =
+  document.getElementById("previewType");
+
+const previewValue =
+  document.getElementById("previewValue");
+
+const previewMaxDiscount =
+  document.getElementById("previewMaxDiscount");
+
+const previewMaxDiscountRow =
+  document.getElementById("previewMaxDiscountRow");
+
+const previewDates =
+  document.getElementById("previewDates");
+
+const previewStatus =
+  document.getElementById("previewStatus");
+
+const showError = (id, message) => {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.textContent = message;
+  }
 };
 
 const clearErrors = () => {
@@ -47,7 +80,6 @@ const clearErrors = () => {
     "discountTypeError",
     "discountValueError",
     "maxDiscountError",
-    "minOrderError",
     "startDateError",
     "endDateError",
     "validationError",
@@ -55,279 +87,204 @@ const clearErrors = () => {
 };
 
 function saveScrollPosition() {
-  const content = document.querySelector(".content");
+  const content =
+    document.querySelector(".content");
+
   if (!content) return;
-  sessionStorage.setItem("contentScroll", content.scrollTop);
+
+  sessionStorage.setItem(
+    "contentScroll",
+    content.scrollTop,
+  );
 }
 
 function restoreScrollPosition() {
-  const content = document.querySelector(".content");
-  const saved = sessionStorage.getItem("contentScroll");
+  const content =
+    document.querySelector(".content");
+
+  const saved =
+    sessionStorage.getItem("contentScroll");
 
   if (!content || saved === null) return;
 
   requestAnimationFrame(() => {
     content.scrollTop = Number(saved);
-    sessionStorage.removeItem("contentScroll");
+
+    sessionStorage.removeItem(
+      "contentScroll",
+    );
   });
 }
 
-document.addEventListener("DOMContentLoaded", restoreScrollPosition);
-
 function toggleScopeFields() {
-  if (scopeInput.value === "PRODUCT") {
-    productGroup.style.display = "flex";
-    categoryGroup.style.display = "none";
-  } else if (scopeInput.value === "CATEGORY") {
-    categoryGroup.style.display = "flex";
-    productGroup.style.display = "none";
-  } else {
-    productGroup.style.display = "none";
-    categoryGroup.style.display = "none";
-  }
+  const scope = scopeInput.value;
+
+  productGroup.style.display =
+    scope === "PRODUCT" ? "flex" : "none";
+
+  categoryGroup.style.display =
+    scope === "CATEGORY" ? "flex" : "none";
 }
 
-scopeInput.addEventListener("change", () => {
-  if (scopeInput.value === "PRODUCT") {
-    categoryInput.value = "";
-  } else if (scopeInput.value === "CATEGORY") {
-    productInput.value = "";
-  }
+function updateMaxDiscountWarning() {
+  if (!maxDiscountWarning) return;
 
-  toggleScopeFields();
-  updatePreview();
-});
+  const isPercentage =
+    discountTypeInput.value ===
+    "PERCENTAGE";
+
+  const hasMaximum =
+    maxDiscountInput.value.trim() !== "";
+
+  maxDiscountWarning.hidden =
+    !isPercentage || hasMaximum;
+}
 
 function toggleDiscountFields() {
-  if (discountTypeInput.value === "PERCENTAGE") {
-    maxDiscountGroup.style.display = "flex";
-  } else {
-    maxDiscountGroup.style.display = "none";
-    maxDiscountInput.value = "";
+  const isPercentage =
+    discountTypeInput.value ===
+    "PERCENTAGE";
+
+  maxDiscountGroup.style.display =
+    isPercentage ? "flex" : "none";
+
+  if (previewMaxDiscountRow) {
+    previewMaxDiscountRow.style.display =
+      isPercentage ? "flex" : "none";
   }
+
+  if (!isPercentage) {
+    maxDiscountInput.value = "";
+    showError("maxDiscountError", "");
+  }
+
+  updateMaxDiscountWarning();
 }
 
-discountTypeInput.addEventListener("change", () => {
-  toggleDiscountFields();
-  updatePreview();
-});
-
-function updatePreview() {
-  previewScope.textContent =
-    scopeInput.value === "CATEGORY"
-      ? "Category"
-      : scopeInput.value === "PRODUCT"
-        ? "Product"
-        : "Not Selected";
-
-  let target = "Not Selected";
-
-  if (scopeInput.value === "PRODUCT") {
-    target =
-      productInput.options[productInput.selectedIndex]?.text || "Not Selected";
+function getSelectedOptionText(select) {
+  if (!select.value) {
+    return "Not Selected";
   }
 
-  if (scopeInput.value === "CATEGORY") {
-    target =
-      categoryInput.options[categoryInput.selectedIndex]?.text ||
+  return (
+    select.options[select.selectedIndex]
+      ?.textContent.trim() ||
+    "Not Selected"
+  );
+}
+
+function updatePreview() {
+  const scope = scopeInput.value;
+  const discountType =
+    discountTypeInput.value;
+
+  previewScope.textContent =
+    scope === "PRODUCT"
+      ? "Product"
+      : scope === "CATEGORY"
+        ? "Category"
+        : "Not Selected";
+
+  if (scope === "PRODUCT") {
+    previewTarget.textContent =
+      getSelectedOptionText(productInput);
+  } else if (scope === "CATEGORY") {
+    previewTarget.textContent =
+      getSelectedOptionText(categoryInput);
+  } else {
+    previewTarget.textContent =
       "Not Selected";
   }
 
-  previewTarget.textContent = target;
-
   previewType.textContent =
-    discountTypeInput.value === "PERCENTAGE"
+    discountType === "PERCENTAGE"
       ? "Percentage"
-      : discountTypeInput.value === "FLAT"
+      : discountType === "FLAT"
         ? "Flat"
-        : "-";
+        : "—";
 
-  if (discountTypeInput.value === "PERCENTAGE") {
-    previewValue.textContent = `${discountValueInput.value || 0}% OFF`;
-  } else if (discountTypeInput.value === "FLAT") {
-    previewValue.textContent = `₹${discountValueInput.value || 0} OFF`;
+  const discountValue =
+    Number(discountValueInput.value) || 0;
+
+  if (discountType === "PERCENTAGE") {
+    previewValue.textContent =
+      `${discountValue}% OFF`;
+  } else if (discountType === "FLAT") {
+    previewValue.textContent =
+      `₹${discountValue.toLocaleString(
+        "en-IN",
+      )} OFF`;
   } else {
-    previewValue.textContent = "-";
+    previewValue.textContent = "—";
   }
 
-  previewMinOrder.textContent = minOrderInput.value
-    ? `₹${minOrderInput.value}`
-    : "—";
+  if (discountType === "PERCENTAGE") {
+    const maxDiscount =
+      Number(maxDiscountInput.value);
 
-  previewMaxDiscount.textContent =
-    discountTypeInput.value === "PERCENTAGE"
-      ? `₹${maxDiscountInput.value || 0}`
-      : "—";
-
-  if (startDateInput.value && endDateInput.value) {
-    previewDates.textContent = `${startDateInput.value} → ${endDateInput.value}`;
+    previewMaxDiscount.textContent =
+      maxDiscountInput.value.trim()
+        ? `₹${maxDiscount.toLocaleString(
+            "en-IN",
+          )}`
+        : "No Limit";
   } else {
-    previewDates.textContent = "Not selected";
+    previewMaxDiscount.textContent = "—";
   }
 
-  const active = statusInput.value === "true";
+  if (
+    startDateInput.value &&
+    endDateInput.value
+  ) {
+    previewDates.textContent =
+      `${startDateInput.value} → ${endDateInput.value}`;
+  } else {
+    previewDates.textContent =
+      "Not selected";
+  }
 
-  previewStatus.textContent = active ? "Active" : "Inactive";
+  const isActive =
+    statusInput.value === "true";
 
-  previewStatus.className = `status ${active ? "active" : "inactive"}`;
+  previewStatus.textContent =
+    isActive ? "Active" : "Inactive";
+
+  previewStatus.className =
+    `status ${isActive ? "active" : "inactive"}`;
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  clearErrors();
-
-  let hasError = false;
-
-  const title = titleInput.value.trim().replace(/\s+/g, " ");
-
-  const offerScope = scopeInput.value;
-
-  const appliesTo =
-    offerScope === "PRODUCT" ? productInput.value : categoryInput.value;
-
-  const discountType = discountTypeInput.value;
-
-  const discountValue = Number(discountValueInput.value);
-
-  const maxDiscountAmount = maxDiscountInput.value;
-
-  const minOrderAmount = minOrderInput.value;
-
-  const startDate = startDateInput.value;
-
-  const endDate = endDateInput.value;
-
-  const isActive = statusInput.value;
-
-  const appliesToModel = offerScope === "PRODUCT" ? "Product" : "Category";
-
-  if (!title) {
-    showError("titleError", "Offer title is required");
-    hasError = true;
-  }
-
-  if (!offerScope) {
-    showError("offerScopeError", "Select offer scope");
-    hasError = true;
-  }
-
-  if (offerScope === "PRODUCT" && !productInput.value) {
-    showError("productError", "Select a product");
-    hasError = true;
-  }
-
-  if (offerScope === "CATEGORY" && !categoryInput.value) {
-    showError("categoryError", "Select a category");
-    hasError = true;
-  }
-
-  if (!discountType) {
-    showError("discountTypeError", "Select discount type");
-    hasError = true;
-  }
-
-  if (!discountValue || discountValue <= 0) {
-    showError("discountValueError", "Enter valid discount");
-    hasError = true;
-  }
-
-  if (discountType === "PERCENTAGE" && discountValue > 100) {
-    showError("discountValueError", "Percentage cannot exceed 100");
-    hasError = true;
-  }
-
-  if (discountType === "PERCENTAGE" && !maxDiscountAmount) {
-    showError("maxDiscountError", "Maximum discount required");
-    hasError = true;
-  }
-
-  const minOrder = Number(minOrderAmount);
-  const maxDiscount = Number(maxDiscountAmount);
-  if (
-    discountType === "PERCENTAGE" &&
-    maxDiscountInput.value &&
-    minOrder > 0 &&
-    minOrder <= maxDiscount
-  ) {
-    showError(
-      "maxDiscountError",
-      "Minimum order amount must be greater than the maximum discount",
-    );
-    hasError = true;
-  }
-
-  if (!startDate) {
-    showError("startDateError", "Start date required");
-    hasError = true;
-  }
-
-  if (!endDate) {
-    showError("endDateError", "End date required");
-    hasError = true;
-  }
-
-  if (startDate && endDate) {
-    if (new Date(endDate) <= new Date(startDate)) {
-      showError("endDateError", "End date must be after start date");
-      hasError = true;
+scopeInput.addEventListener(
+  "change",
+  () => {
+    if (scopeInput.value === "PRODUCT") {
+      categoryInput.value = "";
+    } else if (
+      scopeInput.value === "CATEGORY"
+    ) {
+      productInput.value = "";
     }
-  }
 
-  if (hasError) return;
+    toggleScopeFields();
+    updatePreview();
+  },
+);
 
-  const originalText = submitBtn.innerHTML;
+discountTypeInput.addEventListener(
+  "change",
+  () => {
+    toggleDiscountFields();
+    updatePreview();
+  },
+);
 
-  submitBtn.disabled = true;
-
-  submitBtn.innerHTML = `
-    <span class="btn-loader"></span>
-    ${mode === "edit" ? "Updating..." : "Saving..."}
-`;
-
-  try {
-    const payload = {
-      title,
-      offerScope,
-      appliesTo,
-      appliesToModel,
-      discountType,
-      discountValue,
-      maxDiscountAmount,
-      minOrderAmount,
-      startDate,
-      endDate,
-      isActive,
-    };
-
-    const res =
-      mode === "edit"
-        ? await axios.patch(action, payload)
-        : await axios.post(action, payload);
-
-    if (res.data.success) {
-      utils.showToast(
-        mode === "edit"
-          ? "Offer updated successfully"
-          : "Offer created successfully",
-      );
-
-      saveScrollPosition();
-
-      setTimeout(() => {
-        window.location.href = "/admin/offers";
-      }, 1000);
-    }
-  } catch (err) {
-    showError(
-      "validationError",
-      err.response?.data?.message || "Something went wrong",
-    );
-
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalText;
-  }
-});
+maxDiscountInput.addEventListener(
+  "input",
+  () => {
+    updateMaxDiscountWarning();
+    showError("maxDiscountError", "");
+    updatePreview();
+  },
+);
 
 form.addEventListener("input", () => {
   clearErrors();
@@ -337,16 +294,270 @@ form.addEventListener("input", () => {
 [
   productInput,
   categoryInput,
-  discountTypeInput,
   discountValueInput,
-  maxDiscountInput,
-  minOrderInput,
   startDateInput,
   endDateInput,
   statusInput,
-].forEach((el) => {
-  el.addEventListener("change", updatePreview);
+].forEach((element) => {
+  element.addEventListener(
+    "change",
+    updatePreview,
+  );
 });
+
+form.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+
+    clearErrors();
+
+    let hasError = false;
+
+    const title = titleInput.value
+      .trim()
+      .replace(/\s+/g, " ");
+
+    const offerScope =
+      scopeInput.value;
+
+    const appliesTo =
+      offerScope === "PRODUCT"
+        ? productInput.value
+        : offerScope === "CATEGORY"
+          ? categoryInput.value
+          : "";
+
+    const appliesToModel =
+      offerScope === "PRODUCT"
+        ? "Product"
+        : offerScope === "CATEGORY"
+          ? "Category"
+          : "";
+
+    const discountType =
+      discountTypeInput.value;
+
+    const discountValue =
+      Number(discountValueInput.value);
+
+    const maxDiscountAmount =
+      discountType === "PERCENTAGE" &&
+      maxDiscountInput.value.trim()
+        ? Number(maxDiscountInput.value)
+        : null;
+
+    const startDate =
+      startDateInput.value;
+
+    const endDate =
+      endDateInput.value;
+
+    const isActive =
+      statusInput.value === "true";
+
+    if (!title) {
+      showError(
+        "titleError",
+        "Offer title is required",
+      );
+
+      hasError = true;
+    }
+
+    if (!offerScope) {
+      showError(
+        "offerScopeError",
+        "Select offer scope",
+      );
+
+      hasError = true;
+    }
+
+    if (
+      offerScope === "PRODUCT" &&
+      !productInput.value
+    ) {
+      showError(
+        "productError",
+        "Select a product",
+      );
+
+      hasError = true;
+    }
+
+    if (
+      offerScope === "CATEGORY" &&
+      !categoryInput.value
+    ) {
+      showError(
+        "categoryError",
+        "Select a category",
+      );
+
+      hasError = true;
+    }
+
+    if (!discountType) {
+      showError(
+        "discountTypeError",
+        "Select discount type",
+      );
+
+      hasError = true;
+    }
+
+    if (
+      !Number.isFinite(discountValue) ||
+      discountValue <= 0
+    ) {
+      showError(
+        "discountValueError",
+        "Enter a valid discount",
+      );
+
+      hasError = true;
+    }
+
+    if (
+      discountType === "PERCENTAGE" &&
+      discountValue > 100
+    ) {
+      showError(
+        "discountValueError",
+        "Percentage cannot exceed 100",
+      );
+
+      hasError = true;
+    }
+
+    if (
+      discountType === "PERCENTAGE" &&
+      maxDiscountAmount !== null &&
+      (
+        !Number.isFinite(
+          maxDiscountAmount,
+        ) ||
+        maxDiscountAmount <= 0
+      )
+    ) {
+      showError(
+        "maxDiscountError",
+        "Maximum discount must be greater than 0",
+      );
+
+      hasError = true;
+    }
+
+    if (!startDate) {
+      showError(
+        "startDateError",
+        "Start date required",
+      );
+
+      hasError = true;
+    }
+
+    if (!endDate) {
+      showError(
+        "endDateError",
+        "End date required",
+      );
+
+      hasError = true;
+    }
+
+    if (
+      startDate &&
+      endDate &&
+      new Date(endDate) <=
+        new Date(startDate)
+    ) {
+      showError(
+        "endDateError",
+        "End date must be after start date",
+      );
+
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    const originalText =
+      submitBtn.innerHTML;
+
+    submitBtn.disabled = true;
+
+    submitBtn.innerHTML = `
+      <span class="btn-loader"></span>
+      ${mode === "edit"
+        ? "Updating..."
+        : "Saving..."}
+    `;
+
+    try {
+      const payload = {
+        title,
+        offerScope,
+        appliesTo,
+        appliesToModel,
+        discountType,
+        discountValue,
+        maxDiscountAmount,
+        startDate,
+        endDate,
+        isActive,
+      };
+
+      const response =
+        mode === "edit"
+          ? await axios.patch(
+              action,
+              payload,
+            )
+          : await axios.post(
+              action,
+              payload,
+            );
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message ||
+          "Unable to save offer",
+        );
+      }
+
+      utils.showToast(
+        mode === "edit"
+          ? "Offer updated successfully"
+          : "Offer created successfully",
+      );
+
+      saveScrollPosition();
+
+      setTimeout(() => {
+        window.location.href =
+          "/admin/offers";
+      }, 1000);
+    } catch (error) {
+      showError(
+        "validationError",
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML =
+        originalText;
+    }
+  },
+);
+
+document.addEventListener(
+  "DOMContentLoaded",
+  restoreScrollPosition,
+);
 
 toggleScopeFields();
 toggleDiscountFields();

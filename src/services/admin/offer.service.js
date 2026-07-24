@@ -26,7 +26,7 @@ export const getAllOffersService = async (
   page,
   search,
   status,
-  scope,
+  targetScope,
   discount,
   sort,
 ) => {
@@ -42,8 +42,8 @@ export const getAllOffersService = async (
     };
   }
 
-  if (scope && scope !== "all") {
-    filter.offerScope = scope.toUpperCase();
+  if (targetScope && targetScope !== "all") {
+      filter.offerScope = targetScope.toUpperCase();
   }
 
   if (discount && discount !== "all") {
@@ -158,11 +158,16 @@ export const addOfferService = async (data) => {
   const result = offerSchema.safeParse(data);
 
   if (!result.success) {
-    const error = new Error(result.error.issues[0].message);
+    const error = new Error(
+      result.error.issues[0].message,
+    );
+
     error.status = 400;
     throw error;
   }
+
   const validatedData = result.data;
+
   const {
     title,
     offerScope,
@@ -171,41 +176,57 @@ export const addOfferService = async (data) => {
     discountType,
     discountValue,
     maxDiscountAmount,
-    minOrderAmount,
     startDate,
     endDate,
     isActive,
   } = validatedData;
 
   if (offerScope === "PRODUCT") {
-    const product = await findProductById(appliesTo);
+    const product =
+      await findProductById(appliesTo);
 
     if (!product) {
-      const err = new Error("Selected product not found");
-      err.status = 404;
-      throw err;
+      const error = new Error(
+        "Selected product not found",
+      );
+
+      error.status = 404;
+      throw error;
     }
   } else {
-    const category = await findCategoryById(appliesTo);
+    const category =
+      await findCategoryById(appliesTo);
+
     if (!category) {
-      const err = new Error("Selected category not found");
-      err.status = 404;
-      throw err;
+      const error = new Error(
+        "Selected category not found",
+      );
+
+      error.status = 404;
+      throw error;
     }
   }
-  const existingOffer = await findOfferByTitleScopeAndTarget(
-    title,
-    offerScope,
-    appliesTo,
-  );
+
+  const existingOffer =
+    await findOfferByTitleScopeAndTarget(
+      title,
+      offerScope,
+      appliesTo,
+    );
 
   if (existingOffer) {
-    const err = new Error(
+    const error = new Error(
       "An offer already exists for the selected target with this title",
     );
-    err.status = 400;
-    throw err;
+
+    error.status = 400;
+    throw error;
   }
+
+  const normalizedMaxDiscount =
+    discountType === "PERCENTAGE"
+      ? maxDiscountAmount ?? null
+      : null;
 
   const offer = await createOffer({
     title,
@@ -214,8 +235,8 @@ export const addOfferService = async (data) => {
     appliesToModel,
     discountType,
     discountValue,
-    maxDiscountAmount,
-    minOrderAmount,
+    maxDiscountAmount:
+    normalizedMaxDiscount,
     startDate,
     endDate,
     isActive,

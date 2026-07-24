@@ -1,45 +1,79 @@
 import { findActiveVariant } from "../../repositories/checkout.repository.js";
+import { findWalletByUserId } from "../../repositories/wallet.repository.js";
 import { getAddressesService } from "./address.service.js";
 import { getCartService } from "./cart.service.js";
-import { findWalletByUserId } from "../../repositories/wallet.repository.js";
+import {
+  buildActiveOfferLookup,
+  getBestOfferPricing,
+} from "../shared/pricing.service.js";
+
+const MAX_QTY = 5;
+
+const createServiceError = (message, status = 400) => {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+};
+
+const calculateIncludedGst = (amount, gstRate) => {
+  const inclusiveAmount = Number(amount);
+  const rate = Number(gstRate) || 0;
+
+  if (inclusiveAmount <= 0 || rate <= 0) {
+    return 0;
+  }
+  const taxableValue = inclusiveAmount / (1 + rate / 100);
+  return inclusiveAmount - taxableValue;
+};
+
+const calculateShipping = (subtotal) => {
+  const amount = Number(subtotal);
+  if (amount <= 0) {
+    return 0;
+  }
+  return amount >= 999 ? 0 : 99;
+};
 
 export const getCheckoutPageService = async (userId) => {
-  const cart = await getCartService(userId);
-  const wallet = await findWalletByUserId(userId);
-
+  const [cart, wallet, addresses] = await Promise.all([
+    getCartService(userId),
+    findWalletByUserId(userId),
+    getAddressesService(userId),
+  ]);
   if (!cart || cart.items.length === 0) {
-    throw new Error("Your cart is empty.");
+    throw createServiceError("Your cart is empty.");
   }
 
   const invalidCart = cart.invalid;
-
   const message = invalidCart
     ? "Some items in your cart are unavailable. Please review your cart."
     : null;
 
-  const addresses = await getAddressesService(userId);
-
   const gstAmount = cart.items.reduce((total, item) => {
-    const itemSubtotal = item.variant.price * item.quantity;    
-    const gstRate = item.product.gstRate; 
-    const taxableValue = itemSubtotal / (1 + gstRate / 100);
-    const itemGst = itemSubtotal - taxableValue;
-    return total + itemGst;
+    if (item.status !== "active") {
+      return total;
+    }
+    const itemSubtotal = Number(item.finalPrice) * Number(item.quantity);
+    return total + calculateIncludedGst(itemSubtotal, item.product?.gstRate);
   }, 0);
 
-
-  const shipping = cart.subtotal >= 999 ? 0 : 99;
-  const total = cart.subtotal + shipping;
-  const canUseWallet = wallet.balance >= total;
-
+  const shipping = calculateShipping(cart.subtotal);
+  const total = Number(cart.subtotal) + shipping;
+  const walletBalance = Number(wallet?.balance || 0);
+  const canUseWallet = walletBalance >= total;
   return {
     canUseWallet,
     wallet,
     cart,
     addresses,
+    originalSubtotal: cart.originalSubtotal,
+
+    subtotal: cart.subtotal,
+
+    totalDiscount: cart.totalDiscount,
     gstAmount: Number(gstAmount.toFixed(2)),
     shipping,
-    total,
+    total: Number(total.toFixed(2)),
     invalidCart,
     message,
     isBuyNow: false,
@@ -48,65 +82,121 @@ export const getCheckoutPageService = async (userId) => {
 };
 
 export const validateBuyNowService = async (variantId, quantity) => {
-  const qty = parseInt(quantity);
-  if (!qty || qty < 1 || qty > 5) {
-    throw new Error("Invalid quantity");
+  const qty = Number.parseInt(quantity, 10);
+
+  if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) {
+    throw createServiceError(`Quantity must be between 1 and ${MAX_QTY}`);
+  }
+  if (!variantId) {
+    throw createServiceError("Variant ID is required");
   }
   const variant = await findActiveVariant(variantId);
-  if (!variant) throw new Error("Product not found");
-
-  if (variant.stock < qty) throw new Error("Insufficient stock");
-
-  return { variant, qty };
+  if (!variant) {
+    throw createServiceError("Variant not found", 404);
+  }
+  const product = variant.productId;
+  const category = product?.categoryId;
+  if (!product) {
+    throw createServiceError("Product not found", 404);
+  }
+  if (!product.isActive) {
+    throw createServiceError("Product is unavailable");
+  }
+  if (!category?.isActive) {
+    throw createServiceError("Product category is unavailable");
+  }
+  if (!variant.isActive) {
+    throw createServiceError("Variant is unavailable");
+  }
+  const stock = Number(variant.stock);
+  if (stock <= 0) {
+    throw createServiceError("Product is out of stock");
+  }
+  if (qty > stock) {
+    throw createServiceError(`Only ${stock} available`);
+  }
+  return {
+    variant,
+    qty,
+  };
 };
 
 export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
+  const [wallet, addresses, validatedBuyNow, offerLookup] = await Promise.all([
+    findWalletByUserId(userId),
+    getAddressesService(userId),
+    validateBuyNowService(variantId, quantity),
+    buildActiveOfferLookup(),
+  ]);
 
-  const wallet=await findWalletByUserId(userId)
-  const { variant, qty } = await validateBuyNowService(variantId, quantity);
-
+  const { variant, qty } = validatedBuyNow;
   const product = variant.productId;
-  if (!product) throw new Error("Product not found");
-
+  const pricing = getBestOfferPricing(product, variant, offerLookup);
+  const originalPrice = Number(pricing.originalPrice);
+  const finalPrice = Number(pricing.finalPrice);
+  const discountAmount = Number(pricing.discountAmount);
+  const originalSubtotal = originalPrice * qty;
+  const subtotal = finalPrice * qty;
+  const totalDiscount = originalSubtotal - subtotal;
   const item = {
     product,
     variant,
     quantity: qty,
-    price: variant.price,
-    subtotal: variant.price * qty,
+    status: "active",
+    originalPrice,
+    finalPrice,
+    discountAmount,
+
+    hasOffer: pricing.hasOffer,
+
+    offerId: pricing.offerId,
+
+    offerTitle: pricing.offerTitle,
+    offerType: pricing.offerType,
+    discountType: pricing.discountType,
+
+    discountValue: pricing.discountValue,
+    lineOriginalTotal: Number(originalSubtotal.toFixed(2)),
+
+    lineTotal: Number(subtotal.toFixed(2)),
+    lineDiscount: Number(totalDiscount.toFixed(2)),
   };
 
-  const subtotal = item.subtotal;
-  const shipping = subtotal >= 999 ? 0 : 99;
-  const total = subtotal + shipping;
-  const canUseWallet = wallet.balance >= total;
-  const addresses = await getAddressesService(userId);
+  const shipping = calculateShipping(subtotal);
 
-  const gstAmount = [item].reduce((total, item) => {
-  const gstRate = item.product.gstRate || 0;
-  const taxableValue =
-    item.subtotal / (1 + gstRate / 100);
-  return total + (item.subtotal - taxableValue);
-}, 0);
+  const total = subtotal + shipping;
+  const walletBalance = Number(wallet?.balance || 0);
+
+  const canUseWallet = walletBalance >= total;
+
+  const gstAmount = calculateIncludedGst(subtotal, product.gstRate);
 
   return {
     canUseWallet,
     wallet,
     cart: {
       items: [item],
-      subtotal,
-    },
-    addresses,
-    shipping,
-    total,
-    gstAmount: Number(gstAmount.toFixed(2)),
+      invalid: false,
 
+      originalSubtotal: Number(originalSubtotal.toFixed(2)),
+
+      subtotal: Number(subtotal.toFixed(2)),
+      totalDiscount: Number(totalDiscount.toFixed(2)),
+    },
+
+    addresses,
+    originalSubtotal: Number(originalSubtotal.toFixed(2)),
+    subtotal: Number(subtotal.toFixed(2)),
+    totalDiscount: Number(totalDiscount.toFixed(2)),
+
+    shipping,
+    total: Number(total.toFixed(2)),
+    gstAmount: Number(gstAmount.toFixed(2)),
     invalidCart: false,
     message: null,
-
     isBuyNow: true,
     buyNow: {
-      variantId,
+      variantId: String(variant._id),
       quantity: qty,
     },
   };

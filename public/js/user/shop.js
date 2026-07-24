@@ -1,36 +1,32 @@
 const filterBtn = document.getElementById("filterBtn");
 const sortBtn = document.getElementById("sortBtn");
-
 const filterPanel = document.getElementById("filterPanel");
 const sortPanel = document.getElementById("sortPanel");
-
 const panelsRow = document.getElementById("panelsRow");
 const searchInput = document.getElementById("searchInput");
 
-
 function updatePanels() {
+  if (!panelsRow) return;
+
   const openCount = [filterPanel, sortPanel].filter(
-    (panel) => !panel.hidden,
+    (panel) => panel && !panel.hidden,
   ).length;
 
   panelsRow.dataset.open = openCount;
-
   panelsRow.classList.toggle("panels-row--visible", openCount > 0);
 }
 
 function togglePanel(panel, button) {
+  if (!panel || !button) return;
+
   const isOpen = !panel.hidden;
 
   panel.hidden = isOpen;
-
   button.classList.toggle("trigger-btn--active", !isOpen);
-
   button.setAttribute("aria-expanded", String(!isOpen));
 
   updatePanels();
 }
-
-
 
 filterBtn?.addEventListener("click", () => {
   togglePanel(filterPanel, filterBtn);
@@ -40,133 +36,94 @@ sortBtn?.addEventListener("click", () => {
   togglePanel(sortPanel, sortBtn);
 });
 
+document.querySelectorAll(".sort-option").forEach((button) => {
+  button.addEventListener("click", function () {
+    const sortInput = document.getElementById("sortInput");
+    const sortForm = document.getElementById("sortForm");
 
-document.querySelectorAll(".sort-option").forEach((btn) => {
-  btn.addEventListener("click", function () {
-    document.getElementById("sortInput").value = this.dataset.val;
+    if (!sortInput || !sortForm) return;
 
-    document.getElementById("sortForm").submit();
+    sortInput.value = this.dataset.val || "";
+    sortForm.submit();
   });
 });
-
 
 document
   .querySelectorAll('#filterPanel input[type="radio"]')
   .forEach((radio) => {
     radio.addEventListener("change", function () {
-      this.closest("form").submit();
+      this.closest("form")?.submit();
     });
   });
 
-
-searchInput?.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
+searchInput?.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
     this.value = "";
   }
 });
-
 
 const navToggle = document.getElementById("navToggle");
 const mobileNav = document.getElementById("mobileNav");
 
 navToggle?.addEventListener("click", () => {
-  mobileNav.classList.toggle("mobile-nav--open");
-
+  mobileNav?.classList.toggle("mobile-nav--open");
   navToggle.classList.toggle("hamburger--open");
 });
 
-
 updatePanels();
-const wishlistForms = document.querySelectorAll(".wish-form");
 
-wishlistForms.forEach((form) => {
+document.querySelectorAll(".wish-form").forEach((form) => {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  form.addEventListener("submit", async (e) => {
+    const productId = new FormData(form).get("productId");
+    const button = form.querySelector(".wish-btn");
+    const svg = button?.querySelector("svg");
 
-    e.preventDefault();
+    if (!productId || !button || !svg) return;
 
     try {
+      const isWishlisted = button.classList.contains("wish-btn--active");
 
-      const formData = new FormData(form);
-
-      const productId = formData.get("productId");
-
-      const button = form.querySelector(".wish-btn");
-
-      const svg = button.querySelector("svg");
-
-      const isWishlisted =
-        button.classList.contains("wish-btn--active");
-
-      let response;
-
-      if (isWishlisted) {
-
-        response = await axios.delete(
-          `/user/wishlist/${productId}`,
-          {
+      const response = isWishlisted
+        ? await axios.delete(`/user/wishlist/${productId}`, {
             headers: {
               "X-Requested-With": "XMLHttpRequest",
             },
-          },
-        );
-
-        button.classList.remove("wish-btn--active");
-
-        svg.setAttribute("fill", "none");
-
-      } else {
-
-        response = await axios.post(
-          "/user/wishlist/add",
-          { productId },
-          {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest",
+          })
+        : await axios.post(
+            "/user/wishlist/add",
+            { productId },
+            {
+              headers: {
+                "X-Requested-With": "XMLHttpRequest",
+              },
             },
-          },
-        );
+          );
 
-        button.classList.add("wish-btn--active");
+      button.classList.toggle("wish-btn--active", !isWishlisted);
+      svg.setAttribute("fill", isWishlisted ? "none" : "currentColor");
 
-        svg.setAttribute("fill", "currentColor");
-      }
+      const wishlistCount = document.getElementById("wishlistCount");
 
-      // update wishlist count
-      const wishlistCount =
-        document.getElementById("wishlistCount");
-
-      if (
-        wishlistCount &&
-        response.data.wishlistCount !== undefined
-      ) {
-        wishlistCount.textContent =
-          response.data.wishlistCount;
+      if (wishlistCount && response.data.wishlistCount !== undefined) {
+        wishlistCount.textContent = response.data.wishlistCount;
       }
 
       userToast(response.data.message);
-
     } catch (error) {
-
       const status = error?.response?.status;
-
-      const message =
-        error?.response?.data?.message;
+      const message = error?.response?.data?.message;
 
       if (status === 401) {
-
         userToast(message || "Please login first");
-
         return;
       }
 
-      userToast(
-        message || "Failed to update wishlist",
-      );
+      userToast(message || "Failed to update wishlist");
     }
   });
 });
-
 
 const cartModal = document.getElementById("cartVariantModal");
 const closeCartModalBtn = document.getElementById("closeCartVariantModal");
@@ -178,48 +135,149 @@ const previewPrice = document.getElementById("variantPreviewPrice");
 const previewName = document.getElementById("variantProductName");
 const stockText = document.getElementById("variantStockText");
 const cartError = document.getElementById("cartVariantError");
+
+const offerPills = document.getElementById("variantOfferPills");
+const discountPill = document.getElementById("variantDiscountPill");
+const offerNamePill = document.getElementById("variantOfferNamePill");
+const originalPrice = document.getElementById("variantOriginalPrice");
+
 let allVariants = [];
 let selectedColor = null;
 let selectedVariant = null;
+let selectedProductPricing = null;
 
+function formatPrice(value) {
+  return Number(value || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 2,
+  });
+}
 
-document.querySelectorAll(".cart-form").forEach((form) => {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+function showSelectedProductPricing() {
+  if (!selectedProductPricing) return;
 
-    try {
-      const formData = new FormData(form);
-      const productId = formData.get("productId");
-      const response = await axios.get(`/user/cart/variants/${productId}`);
-      allVariants = response.data.variants;
-      renderColors();
+  const {
+    productName,
+    originalPrice: regularPrice,
+    finalPrice,
+    hasOffer,
+    discountType,
+    discountValue,
+    offerTitle,
+  } = selectedProductPricing;
 
-      cartModal.classList.add("active");
-      document.body.style.overflow = "hidden";
-    } catch (error) {
-      const status = error?.response?.status;
-    const message = error?.response?.data?.message;
+  if (previewName) {
+    previewName.textContent = productName || "Product";
+  }
 
-    if (status === 401) {
-    userToast(message || "Please login first");
+  if (previewPrice) {
+    previewPrice.textContent = formatPrice(finalPrice);
+  }
+
+  if (hasOffer) {
+    if (originalPrice) {
+      originalPrice.hidden = false;
+      originalPrice.textContent = `₹${formatPrice(regularPrice)}`;
+    }
+
+    if (offerPills) {
+      offerPills.hidden = false;
+    }
+
+    if (discountPill) {
+      discountPill.textContent =
+        discountType === "PERCENTAGE"
+          ? `${Number(discountValue)}% OFF`
+          : `₹${formatPrice(discountValue)} OFF`;
+    }
+
+    if (offerNamePill) {
+      offerNamePill.textContent = offerTitle || "Offer applied";
+    }
 
     return;
   }
 
-      userToast(error?.response?.data?.message || "Failed to load variants");
+  if (originalPrice) {
+    originalPrice.hidden = true;
+    originalPrice.textContent = "";
+  }
+
+  if (offerPills) {
+    offerPills.hidden = true;
+  }
+
+  if (discountPill) {
+    discountPill.textContent = "";
+  }
+
+  if (offerNamePill) {
+    offerNamePill.textContent = "";
+  }
+}
+
+document.querySelectorAll(".cart-form").forEach((form) => {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const productId = new FormData(form).get("productId");
+    const cartButton = form.querySelector(".open-cart-modal");
+
+    if (!productId || !cartButton) return;
+
+    selectedProductPricing = {
+      productName: cartButton.dataset.productName || "Product",
+      originalPrice: Number(cartButton.dataset.originalPrice || 0),
+      finalPrice: Number(cartButton.dataset.finalPrice || 0),
+      hasOffer: cartButton.dataset.hasOffer === "true",
+      discountType: cartButton.dataset.discountType || "",
+      discountValue: Number(cartButton.dataset.discountValue || 0),
+      offerTitle: cartButton.dataset.offerTitle || "",
+    };
+
+    showSelectedProductPricing();
+
+    try {
+      const response = await axios.get(`/user/cart/variants/${productId}`);
+
+      allVariants = response.data.variants || [];
+
+      if (!allVariants.length) {
+        userToast("No variants available");
+        return;
+      }
+
+      renderColors();
+
+      cartModal?.classList.add("active");
+      document.body.style.overflow = "hidden";
+    } catch (error) {
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message;
+
+      selectedProductPricing = null;
+
+      if (status === 401) {
+        userToast(message || "Please login first");
+        return;
+      }
+
+      userToast(message || "Failed to load variants");
     }
   });
 });
 
-
 function renderColors() {
+  if (!colorList) return;
+
   colorList.innerHTML = "";
 
   const uniqueColors = [];
 
   allVariants.forEach((variant) => {
-    const exists = uniqueColors.find(
-      (item) => item.name === variant.color.name,
+    if (!variant.color?.name) return;
+
+    const exists = uniqueColors.some(
+      (color) => color.name === variant.color.name,
     );
 
     if (!exists) {
@@ -229,17 +287,20 @@ function renderColors() {
 
   uniqueColors.forEach((color) => {
     const button = document.createElement("button");
+
     button.className = "variant-color";
     button.type = "button";
-    button.style.background = color.code;
+    button.style.background = color.code || "#ffffff";
     button.title = color.name;
 
     button.addEventListener("click", () => {
-      document
-        .querySelectorAll(".variant-color")
-        .forEach((el) => el.classList.remove("active"));
+      colorList.querySelectorAll(".variant-color").forEach((element) => {
+        element.classList.remove("active");
+      });
+
       button.classList.add("active");
       selectedColor = color.name;
+      selectedVariant = null;
 
       renderSizes();
     });
@@ -250,25 +311,31 @@ function renderColors() {
   colorList.querySelector(".variant-color")?.click();
 }
 
-
 function renderSizes() {
+  if (!sizeList) return;
+
   sizeList.innerHTML = "";
 
-  const filtered = allVariants.filter(
-    (variant) => variant.color.name === selectedColor,
+  const filteredVariants = allVariants.filter(
+    (variant) => variant.color?.name === selectedColor,
   );
 
-  filtered.forEach((variant) => {
+  filteredVariants.forEach((variant) => {
     const button = document.createElement("button");
 
     button.className = "variant-size";
     button.type = "button";
     button.textContent = variant.size;
 
+    if (Number(variant.stock) <= 0) {
+      button.classList.add("disabled");
+      button.disabled = true;
+    }
+
     button.addEventListener("click", () => {
-      document
-        .querySelectorAll(".variant-size")
-        .forEach((el) => el.classList.remove("active"));
+      sizeList.querySelectorAll(".variant-size").forEach((element) => {
+        element.classList.remove("active");
+      });
 
       button.classList.add("active");
       selectedVariant = variant;
@@ -279,90 +346,156 @@ function renderSizes() {
     sizeList.appendChild(button);
   });
 
-  sizeList.querySelector(".variant-size")?.click();
-}
+  const firstAvailableSize = sizeList.querySelector(
+    ".variant-size:not(:disabled)",
+  );
 
+  if (firstAvailableSize) {
+    firstAvailableSize.click();
+  } else {
+    selectedVariant = filteredVariants[0] || null;
+    updatePreview();
+  }
+}
 
 function updatePreview() {
   if (!selectedVariant) return;
-  previewImage.src = selectedVariant.images?.[0]?.url || "/images/no-image.png";
-  previewName.textContent = selectedVariant.productId?.name || "Product";
-  previewPrice.textContent = selectedVariant.price.toLocaleString("en-IN");
 
-  const stock = selectedVariant.stock;
+  if (previewImage) {
+    previewImage.src =
+      selectedVariant.images?.[0]?.url || "/images/no-image.png";
+  }
 
-  if (stock < 10) {
-    stockText.textContent = `${stock} items left in stock`;
+  showSelectedProductPricing();
+
+  const stock = Number(selectedVariant.stock) || 0;
+
+  if (stockText) {
     stockText.style.display = "block";
-  } else {
-    stockText.textContent = "";
-    stockText.style.display = "none";
+
+    if (stock <= 0) {
+      stockText.textContent = "Out of stock";
+    } else if (stock <= 10) {
+      stockText.textContent = `Only ${stock} item${stock === 1 ? "" : "s"} left`;
+    } else {
+      stockText.textContent = "In stock";
+    }
+  }
+
+  if (confirmCartBtn) {
+    confirmCartBtn.disabled = stock <= 0;
   }
 }
 
-confirmCartBtn.addEventListener("click", async () => {
-
-  try {
-
-    if (!selectedVariant) {
-
-      cartError.textContent =
-        "Please select a variant";
-
-      return;
+confirmCartBtn?.addEventListener("click", async () => {
+  if (!selectedVariant) {
+    if (cartError) {
+      cartError.textContent = "Please select a variant";
     }
 
-    cartError.textContent = "";
+    return;
+  }
 
-    const response = await axios.post(
-      "/user/cart/add",
-      {
-        variantId: selectedVariant._id,
-        quantity: 1,
-      }
-    );
+  try {
+    if (cartError) {
+      cartError.textContent = "";
+    }
 
-    const cartCountEl =
-      document.getElementById("cartCount");
+    confirmCartBtn.disabled = true;
 
-    if (cartCountEl) {
+    const response = await axios.post("/user/cart/add", {
+      variantId: selectedVariant._id,
+      quantity: 1,
+    });
 
-      cartCountEl.textContent =
-        response.data.cartCount;
+    const cartCount = document.getElementById("cartCount");
+
+    if (cartCount && response.data.cartCount !== undefined) {
+      cartCount.textContent = response.data.cartCount;
     }
 
     userToast(response.data.message);
-
     closeCartModal();
-
   } catch (error) {
+    if (cartError) {
+      cartError.textContent =
+        error?.response?.data?.message || "Failed to add to cart";
+    }
 
-    cartError.textContent =
-      error?.response?.data?.message ||
-      "Failed to add to cart";
+    confirmCartBtn.disabled = Number(selectedVariant?.stock) <= 0;
   }
 });
-
 
 function closeCartModal() {
-
-  cartModal.classList.remove("active");
+  cartModal?.classList.remove("active");
   document.body.style.overflow = "";
-  selectedVariant = null;
-  selectedColor = null;
+
   allVariants = [];
-  cartError.textContent = "";
+  selectedColor = null;
+  selectedVariant = null;
+  selectedProductPricing = null;
+
+  if (colorList) {
+    colorList.innerHTML = "";
+  }
+
+  if (sizeList) {
+    sizeList.innerHTML = "";
+  }
+
+  if (cartError) {
+    cartError.textContent = "";
+  }
+
+  if (stockText) {
+    stockText.textContent = "";
+    stockText.style.display = "none";
+  }
+
+  if (previewImage) {
+    previewImage.src = "";
+  }
+
+  if (previewPrice) {
+    previewPrice.textContent = "0";
+  }
+
+  if (previewName) {
+    previewName.textContent = "Product Name";
+  }
+
+  if (originalPrice) {
+    originalPrice.hidden = true;
+    originalPrice.textContent = "";
+  }
+
+  if (offerPills) {
+    offerPills.hidden = true;
+  }
+
+  if (discountPill) {
+    discountPill.textContent = "";
+  }
+
+  if (offerNamePill) {
+    offerNamePill.textContent = "";
+  }
+
+  if (confirmCartBtn) {
+    confirmCartBtn.disabled = false;
+  }
 }
 
-closeCartModalBtn.addEventListener("click", closeCartModal);
-cartModal.addEventListener("click", (e) => {
-  if (e.target === cartModal) {
+closeCartModalBtn?.addEventListener("click", closeCartModal);
+
+cartModal?.addEventListener("click", (event) => {
+  if (event.target === cartModal) {
     closeCartModal();
   }
 });
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && cartModal.classList.contains("active")) {
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && cartModal?.classList.contains("active")) {
     closeCartModal();
   }
 });

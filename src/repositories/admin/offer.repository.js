@@ -80,3 +80,13 @@ export const updateOfferStatus = async (id, isActive) => {
     { returnDocument: "after" }
   );
 };
+
+export const getActiveOffers = async () => {
+  const now = new Date();
+
+  return await Offer.find({
+    isActive: true,
+    startDate: { $lte: now },
+    endDate: { $gte: now },
+  }).lean();
+};

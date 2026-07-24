@@ -147,33 +147,89 @@
   <div class="right-column">
    
 
-    <div class="card">
+<div class="card">
 
-      <h3 class="card-title">
-        Order Summary
-      </h3>
+  <h3 class="card-title">
+    Order Summary
+  </h3>
 
-      <div class="summary-row">
-        <span>Items Total</span>
-        <strong>₹<%= activeSubtotal %></strong>
-      </div>
+  <div class="summary-row">
+    <span>Original Subtotal</span>
 
-      <div class="summary-row">
-        <span>GST</span>
-        <strong>₹<%= gstAmount %></strong>
-      </div>
+    <strong>
+      ₹<%= Number(
+        activeOriginalSubtotal
+      ).toLocaleString("en-IN") %>
+    </strong>
+  </div>
 
-      <div class="summary-row">
-        <span>Shipping</span>
-        <strong>₹<%= shippingFee %></strong>
-      </div>
+  <% if (activeDiscountTotal > 0) { %>
+    <div class="summary-row summary-discount">
+      <span>Offer Discount</span>
 
-      <div class="summary-row total-row">
-        <span>Grand Total</span>
-        <strong>₹<%= total %></strong>
-      </div>
-
+      <strong>
+        −₹<%= Number(
+          activeDiscountTotal
+        ).toLocaleString("en-IN") %>
+      </strong>
     </div>
+  <% } %>
+
+  <div class="summary-row">
+    <span>Active Subtotal</span>
+
+    <strong>
+      ₹<%= Number(
+        activeSubtotal
+      ).toLocaleString("en-IN") %>
+    </strong>
+  </div>
+
+  <% if (cancelledAmount > 0) { %>
+    <div class="summary-row summary-cancelled">
+      <span>Cancelled Items</span>
+
+      <strong>
+        −₹<%= Number(
+          cancelledAmount
+        ).toLocaleString("en-IN") %>
+      </strong>
+    </div>
+  <% } %>
+
+  <div class="summary-row summary-gst">
+    <span>GST Included</span>
+
+    <strong>
+      ₹<%= Number(gstAmount).toFixed(2) %>
+    </strong>
+  </div>
+
+  <div class="summary-row">
+    <span>Shipping</span>
+
+    <strong>
+      <%= shippingFee === 0
+        ? "Free"
+        : `₹${Number(
+            shippingFee
+          ).toLocaleString("en-IN")}` %>
+    </strong>
+  </div>
+
+  <div class="summary-row total-row">
+    <span>
+      <%= partiallyCancelled
+        ? "Current Total"
+        : "Grand Total" %>
+    </span>
+
+    <strong>
+      ₹<%= Number(total).toLocaleString("en-IN") %>
+    </strong>
+  </div>
+
+</div>
 
     <div class="card payment-card">
 
@@ -282,9 +338,55 @@
                 <%= item.color %> • <%= item.size %>
               </p>
 
-              <p>
-                Qty: <%= item.quantity %> × ₹<%= item.unitPrice %>
-              </p>
+<div class="admin-item-price">
+
+<div class="item-price-row">
+
+  <span class="item-price-left">
+
+    <span class="item-qty">
+      <%= item.quantity %> ×
+    </span>
+
+    <span class="item-current-price">
+      ₹<%= Number(item.unitPrice).toLocaleString("en-IN") %>
+    </span>
+
+    <% if (item.hasOffer) { %>
+      <span class="item-old-price">
+        ₹<%= Number(item.originalUnitPrice).toLocaleString("en-IN") %>
+      </span>
+    <% } %>
+
+  </span>
+
+  <span class="item-arrow">→</span>
+
+  <strong class="item-total-price">
+    ₹<%= Number(item.unitPrice * item.quantity).toLocaleString("en-IN") %>
+  </strong>
+
+</div>
+
+  <% if (item.hasOffer) { %>
+    <div class="item-offer-row">
+
+      <span class="item-offer-badge">
+        <% if (item.discountType === "PERCENTAGE") { %>
+          <%= item.discountValue %>% OFF
+        <% } else { %>
+          ₹<%= Number(item.discountValue).toLocaleString("en-IN") %> OFF
+        <% } %>
+      </span>
+
+      <span class="item-offer-name">
+        <%= item.offerTitle %>
+      </span>
+
+    </div>
+  <% } %>
+
+</div>
 
             </div>
 

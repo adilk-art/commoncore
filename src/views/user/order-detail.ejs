@@ -195,15 +195,57 @@
 
   <div class="summary-item-right">
 
-    <div class="item-price-breakdown">
-      <span class="unit-price">
-        ₹<%= item.unitPrice.toLocaleString("en-IN") %> × <%= item.quantity %>
-      </span>
+<div class="item-price-breakdown">
 
-      <strong class="<%= item.status === 'Cancelled' ? 'price-cancelled' : '' %>">
-        ₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %>
-      </strong>
-    </div>
+  <div class="item-unit-price-row">
+    <span class="unit-price">
+      ₹<%= Number(
+        item.unitPrice
+      ).toLocaleString("en-IN") %>
+      × <%= item.quantity %>
+    </span>
+
+    <% if (item.hasOffer) { %>
+      <span class="item-old-unit-price">
+        ₹<%= Number(
+          item.originalUnitPrice ??
+          item.unitPrice
+        ).toLocaleString("en-IN") %>
+      </span>
+    <% } %>
+  </div>
+
+  <div class="item-line-price-row">
+    <strong
+      class="<%= item.status === 'Cancelled'
+        ? 'price-cancelled'
+        : '' %>"
+    >
+      ₹<%= Number(
+        item.unitPrice *
+        item.quantity
+      ).toLocaleString("en-IN") %>
+    </strong>
+
+    <% if (item.hasOffer) { %>
+      <span class="item-offer-badge">
+        <% if (
+          item.discountType ===
+          "PERCENTAGE"
+        ) { %>
+          <%= Number(
+            item.discountValue
+          ) %>% OFF
+        <% } else { %>
+          ₹<%= Number(
+            item.discountValue
+          ).toLocaleString("en-IN") %> OFF
+        <% } %>
+      </span>
+    <% } %>
+  </div>
+
+</div>
 
     <% if (item.canCancel) { %>
       <button
@@ -244,122 +286,160 @@
 
 <div class="summary-divider"></div>
 
-<% if(fullyCancelled){ %>
+<% if (fullyCancelled) { %>
 
-<div class="summary-row">
-  <span>Items Subtotal</span>
-  <span>
-    ₹<%= order.subtotal.toLocaleString("en-IN") %>
-  </span>
-</div>
+  <div class="summary-row">
+    <span>Original subtotal</span>
+    <span>
+      ₹<%= Number(
+        originalSubtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-<div class="summary-row">
-  <span>Shipping</span>
-  <span>
-    <%= order.shippingFee === 0
-      ? "Free"
-      : `₹${order.shippingFee}` %>
-  </span>
-</div>
+  <% if (discountTotal > 0) { %>
+    <div class="summary-row summary-discount">
+      <span>Offer discount</span>
+      <span>
+        −₹<%= Number(
+          discountTotal
+        ).toLocaleString("en-IN") %>
+      </span>
+    </div>
+  <% } %>
 
-<div class="summary-row">
-  <span>GST Included</span>
-  <span>
-    ₹<%= order.items.reduce((total,item)=>{
+  <div class="summary-row">
+    <span>Subtotal</span>
+    <span>
+      ₹<%= Number(
+        order.subtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-      const itemSubtotal =
-        item.unitPrice * item.quantity;
+  <div class="summary-row summary-cancelled">
+    <span>Cancelled items</span>
+    <span>
+      −₹<%= Number(
+        order.subtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-      const taxable =
-        itemSubtotal / (1 + item.gstRate / 100);
+  <div class="summary-row">
+    <span>Current subtotal</span>
+    <span>₹0</span>
+  </div>
 
-      return total + (itemSubtotal - taxable);
+  <div class="summary-row">
+    <span>GST Included</span>
+    <span>₹0.00</span>
+  </div>
 
-    },0).toFixed(2) %>
-  </span>
-</div>
+  <div class="summary-row">
+    <span>Shipping</span>
+    <span>Free</span>
+  </div>
 
-<div class="summary-divider"></div>
+  <div class="summary-divider"></div>
 
-<div class="summary-row total-row">
-  <span>Order Total</span>
-  <span>
-    ₹<%= order.total.toLocaleString("en-IN") %>
-  </span>
-</div>
-
-
-
-<div class="summary-divider"></div>
-
+  <div class="summary-row total-row">
+    <span>Current total</span>
+    <span>₹0</span>
+  </div>
 
 <% } else { %>
 
-<div class="summary-row">
-  <span>Original Subtotal</span>
-  <span>
-    ₹<%= order.subtotal.toLocaleString("en-IN") %>
-  </span>
-</div>
+  <div class="summary-row">
+    <span>Original subtotal</span>
+    <span>
+      ₹<%= Number(
+        activeOriginalSubtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-<% if(cancelledAmount > 0){ %>
+  <% if (activeDiscountTotal > 0) { %>
+    <div class="summary-row summary-discount">
+      <span>Offer discount</span>
+      <span>
+        −₹<%= Number(
+          activeDiscountTotal
+        ).toLocaleString("en-IN") %>
+      </span>
+    </div>
+  <% } %>
 
-<div class="summary-row summary-cancelled">
-  <span>Cancelled Items</span>
-  <span>
-    -₹<%= cancelledAmount.toLocaleString("en-IN") %>
-  </span>
-</div>
+  <div class="summary-row">
+    <span>
+      <%= cancelledAmount > 0
+        ? "Active subtotal"
+        : "Subtotal" %>
+    </span>
 
-<% } %>
-<% if(cancelledAmount > 0){ %>
+    <span>
+      ₹<%= Number(
+        activeSubtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-<div class="summary-row">
-  <span>Active Subtotal</span>
-  <span>
-    ₹<%= activeSubtotal.toLocaleString("en-IN") %>
-  </span>
-</div>
+  <% if (cancelledAmount > 0) { %>
+    <div class="summary-row summary-cancelled">
+      <span>Cancelled items</span>
+      <span>
+        −₹<%= Number(
+          cancelledAmount
+        ).toLocaleString("en-IN") %>
+      </span>
+    </div>
+  <% } %>
 
-<% } %>
-<div class="summary-row">
-  <span>Shipping</span>
-  <span>
-    <%= order.shippingFee === 0
-      ? "Free"
-      : `₹${order.shippingFee}` %>
-  </span>
-</div>
+  <div class="summary-row">
+    <span>Shipping</span>
+    <span>
+      <%= currentValue - activeSubtotal === 0
+        ? "Free"
+        : `₹${Number(
+            currentValue - activeSubtotal
+          ).toLocaleString("en-IN")}` %>
+    </span>
+  </div>
 
-<div class="summary-row">
-  <span>GST Included</span>
-  <span>
-    ₹<%= gstAmount.toFixed(2) %>
-  </span>
-</div>
+  <div class="summary-row summary-gst">
+    <span>GST Included</span>
+    <span>
+      ₹<%= Number(
+        gstAmount
+      ).toFixed(2) %>
+    </span>
+  </div>
 
-<div class="summary-row">
-  <span>Payment</span>
-  <span>
-    <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
-  </span>
-</div>
+  <div class="summary-row">
+    <span>Payment</span>
+    <span>
+      <%= order.paymentMethod.replace(
+        /([a-z])([A-Z])/g,
+        "$1 $2",
+      ) %>
+    </span>
+  </div>
 
-<div class="summary-divider"></div>
+  <div class="summary-divider"></div>
 
-<div class="summary-row total-row">
-  <span>
+  <div class="summary-row total-row">
+    <span>
+      <%= partiallyCancelled
+        ? "Current total"
+        : "Order total" %>
+    </span>
 
-    <%= partiallyCancelled
-      ? "Total"
-      : "Order Total"
-    %>
-
-  </span>
-  <span>
-    ₹<%= currentValue.toLocaleString("en-IN") %>
-  </span>
-</div>
+    <span>
+      ₹<%= Number(
+        currentValue
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
 <% } %>
 

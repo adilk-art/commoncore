@@ -9,6 +9,7 @@ export const getShopPage = async (req, res, next) => {
     res.render("user/shop.ejs", result);
 
   } catch (error) {
+    console.log(error)
     next(error);
   }
 };
@@ -27,6 +28,7 @@ export const getProductDetail = async (req, res, next) => {
     );
 
   } catch (error) {
+    console.error(error);
     next(error);
   }
   

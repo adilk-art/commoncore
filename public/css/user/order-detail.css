@@ -997,12 +997,10 @@
   border-bottom:none;
   padding-bottom:0;
 }
-/* Cancelled row in summary */
 .summary-cancelled {
   color: #dc2626;
   font-weight: 500;
 }
-/* CURRENT ACTIVE STAGE FEEL */
 .track-step.completed:last-of-type .track-dot {
   box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.12);
 }
@@ -1030,6 +1028,53 @@
 
 .return-item-btn {
   width: 100%;
+}
+.item-price-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+}
+
+.item-unit-price-row,
+.item-line-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.item-old-unit-price {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-decoration: line-through;
+}
+
+.item-offer-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summary-discount {
+  color: #15803d;
+}
+
+.summary-discount span:last-child {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.summary-gst {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 @media(max-width:900px){
 

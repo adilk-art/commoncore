@@ -1,8 +1,14 @@
-import { addToCartService,getCartService,updateCartQuantityService,removeCartItemService,getCartVariantsService,moveCartItemToWishlistService } from "../../services/user/cart.service.js";
+import {
+  addToCartService,
+  getCartService,
+  updateCartQuantityService,
+  removeCartItemService,
+  getCartVariantsService,
+  moveCartItemToWishlistService,
+} from "../../services/user/cart.service.js";
 
 export const addToCart = async (req, res) => {
   try {
-
     const userId = req.session.userId;
 
     if (!userId) {
@@ -13,27 +19,32 @@ export const addToCart = async (req, res) => {
     }
 
     const { variantId, quantity } = req.body;
-    const result = await addToCartService({
+
+    const cart = await addToCartService({
       userId,
       variantId,
       quantity,
     });
 
-    return res.status(200).json(result);
+    const cartCount = cart.items.reduce(
+      (total, item) => total + Number(item.quantity),
+      0,
+    );
 
+    return res.status(200).json({
+      success: true,
+      message: "Added to cart",
+      cartCount,
+    });
   } catch (error) {
-
-    return res.status(400).json({
+    return res.status(error.status || 400).json({
       success: false,
       message: error.message || "Failed to add to cart",
     });
-
   }
 };
-
 export const loadCart = async (req, res) => {
   try {
-
     const userId = req.session.userId;
 
     let cart = await getCartService(userId);
@@ -43,7 +54,6 @@ export const loadCart = async (req, res) => {
     }
 
     res.render("user/cart", { cart });
-
   } catch {
     res.redirect("/");
   }
@@ -51,7 +61,6 @@ export const loadCart = async (req, res) => {
 
 export const updateCartQuantity = async (req, res) => {
   try {
-
     const userId = req.session.userId;
     const { itemId, action } = req.body;
 
@@ -62,20 +71,16 @@ export const updateCartQuantity = async (req, res) => {
     });
 
     res.json(result);
-
   } catch (error) {
-
     res.status(400).json({
       success: false,
       message: error.message,
     });
-
   }
 };
 
 export const removeCartItem = async (req, res) => {
   try {
-
     const userId = req.session.userId;
     const { itemId } = req.params;
 
@@ -87,72 +92,47 @@ export const removeCartItem = async (req, res) => {
     res.json({
       success: true,
     });
-
   } catch (error) {
-
     res.status(400).json({
       success: false,
       message: error.message,
     });
-
   }
 };
 
-export const moveToWishlist = async (
-  req,
-  res,
-) => {
-
+export const moveToWishlist = async (req, res) => {
   try {
-
-    const result =
-      await moveCartItemToWishlistService({
-        userId: req.session.userId,
-        itemId: req.body.itemId,
-      });
+    const result = await moveCartItemToWishlistService({
+      userId: req.session.userId,
+      itemId: req.body.itemId,
+    });
 
     return res.json(result);
-
   } catch (error) {
-
     return res.status(400).json({
       success: false,
       message: error.message,
     });
-
   }
-
 };
 
-export const getCartVariants = async (
-  req,
-  res,
-) => {
-
+export const getCartVariants = async (req, res) => {
   try {
-      if(!req.session.userId){
+    if (!req.session.userId) {
       return res.status(401).json({
-    message: "Please login to use cart",
-    });
-
+        message: "Please login to use cart",
+      });
     }
-    const variants =
-      await getCartVariantsService(
-        req.params.productId,
-      );
+    const variants = await getCartVariantsService(req.params.productId);
 
     return res.json({
       success: true,
       variants,
     });
-
   } catch (error) {
-
     return res.status(400).json({
       success: false,
       message: error.message,
     });
-
   }
-
 };

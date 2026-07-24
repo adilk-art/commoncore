@@ -14,10 +14,7 @@ export const offerSchema = z
       }),
     }),
 
-    appliesTo: z
-      .string()
-      .trim()
-      .min(1, "Please select a product or category"),
+    appliesTo: z.string().trim().min(1, "Please select a product or category"),
 
     appliesToModel: z.enum(["Product", "Category"]),
 
@@ -32,20 +29,7 @@ export const offerSchema = z
       .positive("Discount value must be greater than 0"),
 
     maxDiscountAmount: z
-      .union([
-        z.coerce.number().positive(),
-        z.literal(""),
-        z.null(),
-      ])
-      .transform((value) => (value === "" ? null : value))
-      .optional(),
-
-    minOrderAmount: z
-      .union([
-        z.coerce.number().min(0),
-        z.literal(""),
-        z.null(),
-      ])
+      .union([z.coerce.number().positive(), z.literal(""), z.null()])
       .transform((value) => (value === "" ? null : value))
       .optional(),
 
@@ -59,10 +43,7 @@ export const offerSchema = z
     ]),
   })
   .superRefine((data, ctx) => {
-    if (
-      data.discountType === "PERCENTAGE" &&
-      data.discountValue > 100
-    ) {
+    if (data.discountType === "PERCENTAGE" && data.discountValue > 100) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["discountValue"],
@@ -70,38 +51,11 @@ export const offerSchema = z
       });
     }
 
-    if (
-      data.discountType === "PERCENTAGE" &&
-      data.maxDiscountAmount == null
-    ) {
+    if (data.maxDiscountAmount != null && data.maxDiscountAmount <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["maxDiscountAmount"],
-        message: "Maximum discount amount is required",
-      });
-    }
-
-    if (
-      data.maxDiscountAmount != null &&
-      data.minOrderAmount != null &&
-      data.minOrderAmount <= data.maxDiscountAmount
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["minOrderAmount"],
-        message: "Minimum order amount must be greater than maximum discount",
-      });
-    }
-
-    if (
-      data.discountType === "FLAT" &&
-      data.minOrderAmount != null &&
-      data.discountValue >= data.minOrderAmount
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["discountValue"],
-        message: "Flat discount must be less than the minimum order amount",
+        message: "Maximum discount must be greater than 0",
       });
     }
 

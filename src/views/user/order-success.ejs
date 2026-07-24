@@ -211,14 +211,40 @@
 
           </div>
 
-          <div class="success-item-price">
+<div class="success-item-price">
 
-            ₹<%= (
-              item.unitPrice *
-              item.quantity
-            ).toLocaleString("en-IN") %>
+  <div class="success-item-price-row">
 
-          </div>
+    <span class="success-item-current-price">
+      ₹<%= Number(
+        item.unitPrice * item.quantity
+      ).toLocaleString("en-IN") %>
+    </span>
+
+    <% if (item.hasOffer) { %>
+      <span class="success-item-old-price">
+        ₹<%= Number(
+          (item.originalUnitPrice ?? item.unitPrice) *
+          item.quantity
+        ).toLocaleString("en-IN") %>
+      </span>
+    <% } %>
+
+  </div>
+
+  <% if (item.hasOffer) { %>
+    <span class="success-item-offer-badge">
+      <% if (item.discountType === "PERCENTAGE") { %>
+        <%= Number(item.discountValue) %>% OFF
+      <% } else { %>
+        ₹<%= Number(
+          item.discountValue
+        ).toLocaleString("en-IN") %> OFF
+      <% } %>
+    </span>
+  <% } %>
+
+</div>
 
         </div>
 
@@ -230,63 +256,83 @@
 
     <!-- PRICE SUMMARY -->
 
-    <div class="success-summary">
+<div class="success-summary">
 
-      <div class="summary-row">
+  <div class="summary-row">
+    <span>Original subtotal</span>
 
-        <span>
-          Subtotal
-        </span>
+    <span>
+      ₹<%= Number(
+        originalSubtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-        <span>
-          ₹<%= order.subtotal.toLocaleString("en-IN") %>
-        </span>
-
-      </div>
-      <div class="summary-row">
-
-      <span>
-        GST Included
-      </span>
+  <% if (discountTotal > 0) { %>
+    <div class="summary-row summary-row--discount">
+      <span>Offer discount</span>
 
       <span>
-        ₹<%= gstAmount.toFixed(2) %>
+        −₹<%= Number(
+          discountTotal
+        ).toLocaleString("en-IN") %>
       </span>
-
     </div>
+  <% } %>
 
-      <div class="summary-row">
+  <div class="summary-row">
+    <span>Subtotal</span>
 
-        <span>
-          Shipping
-        </span>
+    <span>
+      ₹<%= Number(
+        order.subtotal
+      ).toLocaleString("en-IN") %>
+    </span>
+  </div>
 
-        <span>
-          <%= order.shippingFee === 0
-            ? "Free"
-            : `₹${order.shippingFee}` %>
-        </span>
+  <div class="summary-row summary-row--gst">
+    <span>GST Included</span>
 
-      </div>
+    <span>
+      ₹<%= Number(
+        gstAmount
+      ).toFixed(2) %>
+    </span>
+  </div>
 
-      <div class="summary-divider"></div>
+  <div class="summary-row">
+    <span>Shipping</span>
 
-      <div class="summary-row summary-total">
+    <span>
+      <%= order.shippingFee === 0
+        ? "Free"
+        : `₹${Number(
+            order.shippingFee
+          ).toLocaleString("en-IN")}` %>
+    </span>
+  </div>
 
-        <span>
-          Total      
-          <span class="text-muted gst-note">
-          (Inclusive of GST.)
-          </span>
-        </span>
+  <div class="summary-divider"></div>
 
-        <span>
-          ₹<%= order.total.toLocaleString("en-IN") %>
-        </span>
+  <div class="summary-row summary-total">
 
-      </div>
+    <span>
+      Total
 
-    </div>
+      <span class="text-muted gst-note">
+        Inclusive of GST
+      </span>
+    </span>
+
+    <span>
+      ₹<%= Number(
+        order.total
+      ).toLocaleString("en-IN") %>
+    </span>
+
+  </div>
+
+</div>
 
   </section>
 

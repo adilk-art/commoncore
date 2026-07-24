@@ -1,47 +1,121 @@
 import mongoose from "mongoose";
+
 const { Schema } = mongoose;
 
 const orderItemSchema = new Schema({
-  productId: { type: Schema.Types.ObjectId, ref: "Product" },
-  variantId: { type: Schema.Types.ObjectId, ref: "Variant" },
+  productId: {
+    type: Schema.Types.ObjectId,
+    ref: "Product",
+  },
+
+  variantId: {
+    type: Schema.Types.ObjectId,
+    ref: "Variant",
+  },
 
   productName: String,
   size: String,
   color: String,
   productImage: String,
-  quantity: Number,
-  unitPrice: Number,
+
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+
+  unitPrice: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+
+  originalUnitPrice: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+
+  discountAmount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+
+  hasOffer: {
+    type: Boolean,
+    default: false,
+  },
+
+  offerId: {
+    type: Schema.Types.ObjectId,
+    ref: "Offer",
+    default: undefined,
+  },
+
+  offerTitle: {
+    type: String,
+    default: undefined,
+  },
+
+  offerType: {
+    type: String,
+    enum: ["PRODUCT", "CATEGORY"],
+    default: undefined,
+  },
+
+  discountType: {
+    type: String,
+    enum: ["PERCENTAGE", "FLAT"],
+    default: undefined,
+  },
+
+  discountValue: {
+    type: Number,
+    default: undefined,
+  },
 
   status: {
-  type: String,
-  enum: [
-    "Placed",
-    "Processing",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
-    "Return Requested",
-    "Return Accepted",
-    "Returned",
-    "Refunded",
-  ],
-  default: "Placed",
-},
+    type: String,
+    enum: [
+      "Placed",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Return Requested",
+      "Return Accepted",
+      "Returned",
+      "Refunded",
+    ],
+    default: "Placed",
+  },
+
   statusUpdatedAt: {
-  type: Date,
-  default: Date.now
-},
+    type: Date,
+    default: Date.now,
+  },
+
   gstRate: {
     type: Number,
     required: true,
+    min: 0,
   },
 });
 
 const orderSchema = new Schema(
   {
-    orderNumber: { type: String, unique: true },
+    orderNumber: {
+      type: String,
+      unique: true,
+      required: true,
+    },
 
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
     items: [orderItemSchema],
 
@@ -56,19 +130,23 @@ const orderSchema = new Schema(
       enum: ["Pending", "Paid", "Failed", "Refunded"],
       default: "Pending",
     },
+
     paymentExpiresAt: {
-      type: Date
+      type: Date,
     },
 
-    razorpayPaymentId:{
-      type:String,
+    razorpayPaymentId: {
+      type: String,
     },
-    razorpayOrderId:{
-      type:String,
+
+    razorpayOrderId: {
+      type: String,
     },
-    razorpaySignature:{
-      type:String
+
+    razorpaySignature: {
+      type: String,
     },
+
     estimatedDeliveryDate: {
       type: Date,
     },
@@ -83,30 +161,57 @@ const orderSchema = new Schema(
       pincode: String,
     },
 
-    shippingFee: { type: Number, default: 0 },
+    originalSubtotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
-    subtotal: Number,
-    total: Number,
+    discountTotal: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    shippingFee: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    subtotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
     orderStatus: {
       type: String,
       enum: [
-  "Placed",
-  "Processing",
-  "Shipped",
-  "Delivered",
-  "Cancelled",
-  "Return Requested",
-  "Return Accepted",
-  "Returned",
-  "Refunded"
-],
+        "Placed",
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+        "Return Requested",
+        "Return Accepted",
+        "Returned",
+        "Refunded",
+      ],
       default: "Placed",
     },
 
     deliveredAt: Date,
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
 export default mongoose.model("Order", orderSchema);

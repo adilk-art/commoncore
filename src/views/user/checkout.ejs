@@ -266,34 +266,52 @@
 
         <% cart.items.forEach(item => { %>
 
-          <div class="summary-product">
+<div class="summary-product">
 
-            <img
-              src="<%= item.variant.images?.[0]?.url %>"
-              alt=""
-            >
+  <img
+    src="<%= item.variant.images?.[0]?.url || '/images/no-image.png' %>"
+    alt="<%= item.product.name %>"
+  >
 
-            <div class="summary-product-info">
+  <div class="summary-product-info">
 
-              <h4>
-                <%= item.product.name %>
-              </h4>
+    <h4>
+      <%= item.product.name %>
+    </h4>
 
-              <p>
-                Qty:
-                <%= item.quantity %>
-              </p>
+    <p>
+      Qty: <%= item.quantity %>
+    </p>
 
-            </div>
+    <% if (item.hasOffer) { %>
+      <span class="checkout-offer-badge">
 
-            <span>
-              ₹<%= (
-                item.variant.price *
-                item.quantity
-              ).toLocaleString('en-IN') %>
-            </span>
+        <% if (item.discountType === "PERCENTAGE") { %>
+          <%= Number(item.discountValue) %>% OFF
+        <% } else { %>
+          ₹<%= Number(item.discountValue).toLocaleString("en-IN") %> OFF
+        <% } %>
 
-          </div>
+      </span>
+    <% } %>
+
+  </div>
+
+  <div class="summary-product-price">
+
+    <span class="summary-product-current">
+      ₹<%= Number(item.lineTotal).toLocaleString("en-IN") %>
+    </span>
+
+    <% if (item.hasOffer) { %>
+      <span class="summary-product-old">
+        ₹<%= Number(item.lineOriginalTotal).toLocaleString("en-IN") %>
+      </span>
+    <% } %>
+
+  </div>
+
+</div>
 
         <% }) %>
 
@@ -301,14 +319,70 @@
 
       <div class="summary-divider"></div>
 
-      <div class="summary-row">
-        <span>Subtotal</span>
-        <span>
-          ₹<%= cart.subtotal.toLocaleString('en-IN') %>
-        </span>
-      </div>
+<div class="summary-row">
+  <span>Original subtotal</span>
 
-      <div class="summary-row">
+  <span id="checkoutOriginalSubtotal">
+    ₹<%= Number(cart.originalSubtotal).toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<div
+  class="summary-row summary-row--discount"
+  <%= cart.totalDiscount <= 0 ? "hidden" : "" %>
+>
+  <span>Offer discount</span>
+
+  <span id="checkoutDiscount">
+    −₹<%= Number(cart.totalDiscount).toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>Subtotal</span>
+
+  <span id="checkoutSubtotal">
+    ₹<%= Number(cart.subtotal).toLocaleString("en-IN") %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>GST Included</span>
+
+  <span>
+    ₹<%= Number(gstAmount).toFixed(2) %>
+  </span>
+</div>
+
+<div class="summary-row">
+  <span>Shipping</span>
+
+  <span>
+    <%= shipping === 0
+      ? "Free"
+      : `₹${Number(shipping).toLocaleString("en-IN")}` %>
+  </span>
+</div>
+
+<div class="summary-divider"></div>
+
+<div class="summary-row summary-total">
+
+  <span>
+    Total
+
+    <span class="text-muted gst-note">
+      Inclusive of GST
+    </span>
+  </span>
+
+  <span>
+    ₹<%= Number(total).toLocaleString("en-IN") %>
+  </span>
+
+</div>
+
+      <!-- <div class="summary-row">
         <span>GST Included</span>
         <span>
           ₹<%= gstAmount.toFixed(2) %>
@@ -337,7 +411,7 @@
           ₹<%= total.toLocaleString('en-IN') %>
         </span>
         
-      </div>
+      </div> -->
 
 
       <button

@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
+
 const { Schema } = mongoose;
+
 const offerSchema = new Schema(
   {
     title: {
@@ -39,10 +41,7 @@ const offerSchema = new Schema(
 
     maxDiscountAmount: {
       type: mongoose.Schema.Types.Decimal128,
-    },
-
-    minOrderAmount: {
-      type: mongoose.Schema.Types.Decimal128,
+      default: null,
     },
 
     startDate: {
