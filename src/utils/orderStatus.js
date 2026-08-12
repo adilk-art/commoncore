@@ -1,59 +1,76 @@
-export const calculateOrderStatus = (items) => {
-  const statuses = items.map(item => item.status);
-
-  const allPlaced = statuses.every(status => status === "Placed");
-  if (allPlaced) {
+export const calculateOrderStatus = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
     return "Placed";
   }
 
-  const allProcessing = statuses.every(status => status === "Processing");
-  if (allProcessing) {
-    return "Processing";
-  }
+  const statuses = items.map((item) => item.status);
 
-  const allShipped = statuses.every(status => status === "Shipped");
-  if (allShipped) {
-    return "Shipped";
-  }
-
-  const allDelivered = statuses.every(status => status === "Delivered");
-  if (allDelivered) {
-    return "Delivered";
-  }
-
-  const allCancelled = statuses.every(status => status === "Cancelled");
-  if (allCancelled) {
+  if (statuses.every((status) => status === "Cancelled")) {
     return "Cancelled";
   }
 
-  // if (statuses.includes("Delivered")) {
-  //   return "Partially Delivered";
-  // }
+  const activeStatuses = statuses.filter((status) => status !== "Cancelled");
 
-  // if (statuses.includes("Shipped")) {
-  //   return "Partially Shipped";
-  // }
+  if (activeStatuses.length === 0) {
+    return "Cancelled";
+  }
 
-  // if (statuses.includes("Cancelled")) {
-  //   return "Partially Cancelled";
-  // }
+  if (activeStatuses.some((status) => status === "Refunded")) {
+    return "Refunded";
+  }
 
-  return "Processing";
+  if (activeStatuses.some((status) => status === "Returned")) {
+    return "Returned";
+  }
+
+  if (activeStatuses.some((status) => status === "Return Accepted")) {
+    return "Return Accepted";
+  }
+
+  if (activeStatuses.some((status) => status === "Return Requested")) {
+    return "Return Requested";
+  }
+
+  if (activeStatuses.some((status) => status === "Delivered")) {
+    return "Delivered";
+  }
+
+  if (activeStatuses.some((status) => status === "Shipped")) {
+    return "Shipped";
+  }
+
+  if (activeStatuses.some((status) => status === "Processing")) {
+    return "Processing";
+  }
+
+  return "Placed";
 };
 
-export const canMarkCodPaid = (items = []) => {
-  const DELIVERED_OR_LATER = new Set([
-    "Delivered",
-    "Return Requested",
-    "Return Accepted",
-    "Returned",
-    "Refunded",
-  ]);
+export const canMarkCodPaid = (
+  items = [],
+) => {
+  const deliveredOrLater =
+    new Set([
+      "Delivered",
+      "Return Requested",
+      "Return Accepted",
+      "Returned",
+      "Refunded",
+    ]);
 
-  const activeItems = items.filter((item) => item.status !== "Cancelled");
+  const activeItems =
+    items.filter(
+      (item) =>
+        item.status !== "Cancelled",
+    );
 
   return (
     activeItems.length > 0 &&
-    activeItems.every((item) => DELIVERED_OR_LATER.has(item.status))
+    activeItems.every(
+      (item) =>
+        deliveredOrLater.has(
+          item.status,
+        ),
+    )
   );
 };

@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
 
+<head>
   <%- include("./partials/head", {
     title: "Order Details"
   }) %>
 
-  <link rel="stylesheet" href="/css/admin/order-details.css">
-
+  <link
+    rel="stylesheet"
+    href="/css/admin/order-details.css"
+  >
 </head>
 
 <body>
 
-<%- include("./partials/header", { title: "Order Details" }) %>
+<%- include("./partials/header", {
+  title: "Order Details"
+}) %>
+
 <%- include("./partials/logout-modal") %>
 
 <div class="layout">
 
-  <%- include("./partials/sidebar", { active: "orders" }) %>
+  <%- include("./partials/sidebar", {
+    active: "orders"
+  }) %>
 
   <div class="main">
 
@@ -25,285 +32,689 @@
 
       <div class="page-top">
 
-        <div>
+        <p class="breadcrumb">
+          Admin Dashboard > Orders > <%= order.orderNumber %>
+        </p>
 
-          <p class="breadcrumb">
-            Admin Dashboard > Orders > <%= order.orderNumber %>
-          </p>
-
-          <h2 class="page-title">
-            Order Details
-          </h2>
-
-        </div>
+        <h2 class="page-title">
+          Order Details
+        </h2>
 
       </div>
 
-      <div class="overview-card">
+      <section class="order-overview">
 
-        <div class="overview-left">
+        <div class="overview-main">
 
-          <div class="overview-title-row">
+          <div class="order-number-row">
 
             <h3>
               #<%= order.orderNumber %>
             </h3>
 
-            
+            <span
+              class="status <%= String(order.orderStatus)
+                .toLowerCase()
+                .replace(/\s+/g, '-') %>"
+            >
+              <%= order.orderStatus %>
+            </span>
 
           </div>
 
-          <p class="order-date">
-            Placed on <%= new Date(order.createdAt).toLocaleString("en-IN") %>
+          <p>
+            Placed on
+            <%= new Date(order.createdAt).toLocaleString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              }
+            ) %>
           </p>
 
         </div>
 
-        <!-- <div class="overview-right">
-            <span class="status <%= order.orderStatus.toLowerCase().replaceAll(' ','-') %> overall-order-status">
-              <%= order.orderStatus %>
+        <div class="overview-meta">
+
+          <div class="overview-meta-item">
+            <span>Items</span>
+            <strong><%= order.items.length %></strong>
+          </div>
+
+          <div class="overview-meta-item">
+
+            <span>Payment Method</span>
+
+            <strong>
+              <%= order.paymentMethod === "CashOnDelivery"
+                ? "Cash On Delivery"
+                : order.paymentMethod.replace(
+                    /([a-z])([A-Z])/g,
+                    "$1 $2"
+                  ) %>
+            </strong>
+
+          </div>
+
+          <div class="overview-meta-item">
+
+            <span>Payment Status</span>
+
+            <strong
+              class="payment-text <%= String(
+                order.paymentStatus
+              ).toLowerCase() %>"
+            >
+              <%= order.paymentStatus %>
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="order-main-grid">
+
+        <div class="left-info-stack">
+
+          <div class="info-card">
+
+            <div class="numbered-card-header">
+
+              <span class="section-number">
+                01
+              </span>
+
+              <div class="numbered-card-title">
+                <span class="section-label">
+                  CUSTOMER
+                </span>
+
+                <h3>
+                  Customer Details
+                </h3>
+              </div>
+
+            </div>
+
+            <div class="customer-info-grid">
+
+              <div class="detail-field">
+                <span>Name</span>
+                <strong>
+                  <%= order.user?.name || "—" %>
+                </strong>
+              </div>
+
+              <div class="detail-field">
+                <span>Phone</span>
+                <strong>
+                  <%= order.user?.phone || "—" %>
+                </strong>
+              </div>
+
+              <div class="detail-field detail-field-wide">
+                <span>Email</span>
+                <strong>
+                  <%= order.user?.email || "—" %>
+                </strong>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="info-card">
+
+            <div class="numbered-card-header">
+
+              <span class="section-number">
+                02
+              </span>
+
+              <div class="numbered-card-title">
+                <span class="section-label">
+                  DELIVERY
+                </span>
+
+                <h3>
+                  Shipping Details
+                </h3>
+              </div>
+
+            </div>
+
+            <div class="shipping-top">
+
+              <div class="detail-field">
+                <span>Recipient</span>
+                <strong>
+                  <%= order.shippingAddress.fullName %>
+                </strong>
+              </div>
+
+              <div class="detail-field">
+                <span>Phone</span>
+                <strong>
+                  <%= order.shippingAddress.phone %>
+                </strong>
+              </div>
+
+            </div>
+
+            <div class="shipping-address">
+
+              <span class="detail-label">
+                Delivery Address
+              </span>
+
+              <div class="shipping-address-lines">
+
+                <p>
+                  <%= order.shippingAddress.line1 %>
+                </p>
+
+                <% if (order.shippingAddress.line2) { %>
+                  <p>
+                    <%= order.shippingAddress.line2 %>
+                  </p>
+                <% } %>
+
+                <p>
+                  <%= order.shippingAddress.city %>,
+                  <%= order.shippingAddress.state %>
+                  - <%= order.shippingAddress.pincode %>
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="info-card">
+
+            <div class="numbered-card-header">
+
+              <span class="section-number">
+                03
+              </span>
+
+              <div class="numbered-card-title">
+
+                <span class="section-label">
+                  PAYMENT
+                </span>
+
+                <h3>
+                  Payment Details
+                </h3>
+
+              </div>
+
+              <span
+                class="payment-badge <%= String(
+                  order.paymentStatus
+                ).toLowerCase() %>"
+              >
+                <%= order.paymentStatus %>
+              </span>
+
+            </div>
+
+            <div class="payment-info-grid">
+
+              <div class="detail-field">
+
+                <span>Method</span>
+
+                <strong>
+                  <%= order.paymentMethod === "CashOnDelivery"
+                    ? "Cash On Delivery"
+                    : order.paymentMethod.replace(
+                        /([a-z])([A-Z])/g,
+                        "$1 $2"
+                      ) %>
+                </strong>
+
+              </div>
+
+              <div class="detail-field">
+
+                <span>Status</span>
+
+                <strong
+                  class="payment-text <%= String(
+                    order.paymentStatus
+                  ).toLowerCase() %>"
+                >
+                  <%= order.paymentStatus %>
+                </strong>
+
+              </div>
+
+            </div>
+
+            <% if (
+              order.paymentMethod === "Razorpay" &&
+              (
+                order.razorpayOrderId ||
+                order.razorpayPaymentId
+              )
+            ) { %>
+
+              <div class="payment-reference-grid">
+
+                <% if (order.razorpayOrderId) { %>
+
+                  <div class="reference-field">
+                    <span>Razorpay Order ID</span>
+                    <strong>
+                      <%= order.razorpayOrderId %>
+                    </strong>
+                  </div>
+
+                <% } %>
+
+                <% if (order.razorpayPaymentId) { %>
+
+                  <div class="reference-field">
+                    <span>Payment ID</span>
+                    <strong>
+                      <%= order.razorpayPaymentId %>
+                    </strong>
+                  </div>
+
+                <% } %>
+
+              </div>
+
+            <% } %>
+
+            <% if (
+              order.paymentMethod === "CashOnDelivery" &&
+              order.paymentStatus === "Pending"
+            ) { %>
+
+              <div class="cod-control">
+
+                <p
+                  id="codPaymentHint"
+                  class="<%= showCodButton ? 'hidden' : '' %>"
+                >
+                  COD payment can be marked as received once all active items are delivered.
+                </p>
+
+                <button
+                  type="button"
+                  id="markCodPaidBtn"
+                  class="cod-paid-btn <%= !showCodButton ? 'hidden' : '' %>"
+                  data-order-id="<%= order._id %>"
+                  <%= !showCodButton ? "disabled" : "" %>
+                >
+                  Mark COD Payment Received
+                </button>
+
+              </div>
+
+            <% } %>
+
+          </div>
+
+        </div>
+
+        <aside class="summary-card">
+
+          <div class="summary-header">
+
+            <div>
+              <span class="summary-eyebrow">
+                PAYMENT BREAKDOWN
+              </span>
+
+              <h3>
+                Order Summary
+              </h3>
+            </div>
+
+            <% if (order.coupon?.code) { %>
+              <span class="coupon-chip">
+                <%= order.coupon.code %>
+              </span>
+            <% } %>
+
+          </div>
+
+          <div class="summary-body">
+
+            <% if (fullyCancelled) { %>
+
+              <div class="summary-row">
+                <span>Original subtotal</span>
+                <strong>
+                  ₹<%= Number(originalSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <% if (offerDiscountTotal > 0) { %>
+                <div class="summary-row summary-discount">
+                  <span>Offer discount</span>
+                  <strong>
+                    −₹<%= Number(offerDiscountTotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <% if (couponDiscountTotal > 0) { %>
+                <div class="summary-row summary-discount">
+                  <span>
+                    Coupon discount
+                    <% if (order.coupon?.code) { %>
+                      (<%= order.coupon.code %>)
+                    <% } %>
+                  </span>
+
+                  <strong>
+                    −₹<%= Number(couponDiscountTotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <div class="summary-row">
+                <span>Paid item value</span>
+                <strong>
+                  ₹<%= Number(discountedSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-row summary-cancelled">
+                <span>Cancelled</span>
+                <strong>
+                  −₹<%= Number(discountedSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-row">
+                <span>Shipping</span>
+                <strong>Free</strong>
+              </div>
+
+              <div class="summary-row summary-muted">
+                <span>GST Included</span>
+                <strong>₹0.00</strong>
+              </div>
+
+              <div class="summary-total">
+                <span>Current Total</span>
+                <strong>₹0.00</strong>
+              </div>
+
+            <% } else if (partiallyCancelled) { %>
+
+              <div class="summary-row">
+                <span>Original subtotal</span>
+
+                <strong>
+                  ₹<%= Number(originalSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-row summary-cancelled">
+                <span>Cancelled</span>
+
+                <strong>
+                  −₹<%= Number(cancelledOriginalAmount).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-row">
+                <span>Remaining subtotal</span>
+
+                <strong>
+                  ₹<%= Number(activeOriginalSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <% if (activeOfferDiscountTotal > 0) { %>
+                <div class="summary-row summary-discount">
+                  <span>Offer discount</span>
+
+                  <strong>
+                    −₹<%= Number(activeOfferDiscountTotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <% if (activeCouponDiscountTotal > 0) { %>
+                <div class="summary-row summary-discount">
+                  <span>
+                    Coupon discount
+                    <% if (order.coupon?.code) { %>
+                      (<%= order.coupon.code %>)
+                    <% } %>
+                  </span>
+
+                  <strong>
+                    −₹<%= Number(activeCouponDiscountTotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <div class="summary-row">
+                <span>Payable items</span>
+
+                <strong>
+                  ₹<%= Number(activeDiscountedSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-row">
+                <span>Shipping</span>
+
+                <strong>
+                  <%= Number(shippingFee) === 0
+                    ? "Free"
+                    : `₹${Number(shippingFee).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}` %>
+                </strong>
+              </div>
+
+              <div class="summary-row summary-muted">
+                <span>GST Included</span>
+
+                <strong>
+                  ₹<%= Number(gstAmount).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-total">
+                <span>Current Total</span>
+
+                <strong>
+                  ₹<%= Number(total).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+            <% } else { %>
+
+              <div class="summary-row">
+                <span>Original subtotal</span>
+
+                <strong>
+                  ₹<%= Number(originalSubtotal).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <% if (offerDiscountTotal > 0) { %>
+                <div class="summary-row summary-discount">
+                  <span>Offer discount</span>
+
+                  <strong>
+                    −₹<%= Number(offerDiscountTotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <% if (couponDiscountTotal > 0) { %>
+                <div class="summary-row summary-discount">
+                  <span>
+                    Coupon discount
+                    <% if (order.coupon?.code) { %>
+                      (<%= order.coupon.code %>)
+                    <% } %>
+                  </span>
+
+                  <strong>
+                    −₹<%= Number(couponDiscountTotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <% if (
+                offerDiscountTotal > 0 ||
+                couponDiscountTotal > 0
+              ) { %>
+                <div class="summary-row">
+                  <span>Discounted subtotal</span>
+
+                  <strong>
+                    ₹<%= Number(discountedSubtotal).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+                </div>
+              <% } %>
+
+              <div class="summary-row">
+                <span>Shipping</span>
+
+                <strong>
+                  <%= Number(shippingFee) === 0
+                    ? "Free"
+                    : `₹${Number(shippingFee).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}` %>
+                </strong>
+              </div>
+
+              <div class="summary-row summary-muted">
+                <span>GST Included</span>
+
+                <strong>
+                  ₹<%= Number(gstAmount).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+              <div class="summary-total">
+                <span>Grand Total</span>
+
+                <strong>
+                  ₹<%= Number(total).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) %>
+                </strong>
+              </div>
+
+            <% } %>
+
+          </div>
+
+        </aside>
+
+      </section>
+
+      <section class="order-items-card">
+
+        <div class="items-header">
+
+          <div>
+            <span class="items-eyebrow">
+              PRODUCTS
             </span>
-          
 
-        </div> -->
+            <h3>
+              Order Items
+            </h3>
+          </div>
 
-      </div>
-
-      <div class="details-grid">
-
-  <div class="left-column">
-     <div class="card">
-
-      <h3 class="card-title">
-        Shipping Address
-      </h3>
-
-      <div class="shipping-address">
-
-        <strong>
-          <%= order.shippingAddress.fullName %>
-        </strong>
-
-        <span>
-          <%= order.shippingAddress.phone %>
-        </span>
-
-        <span>
-          <%= order.shippingAddress.line1 %>
-        </span>
-
-        <% if(order.shippingAddress.line2){ %>
-
-          <span>
-            <%= order.shippingAddress.line2 %>
+          <span class="items-count">
+            <%= order.items.length %>
+            item<%= order.items.length !== 1 ? "s" : "" %>
           </span>
 
-        <% } %>
-
-        <span>
-          <%= order.shippingAddress.city %>,
-          <%= order.shippingAddress.state %>
-        </span>
-
-        <span>
-          <%= order.shippingAddress.pincode %>
-        </span>
-
-      </div>
-
-    </div>
-
-    <div class="card">
-
-      <h3 class="card-title">
-        Customer
-      </h3>
-
-      <div class="info-list">
-
-        <div class="info-row">
-          <span>Name</span>
-          <strong><%= order.user.name %></strong>
         </div>
 
-        <div class="info-row">
-          <span>Email</span>
-          <strong><%= order.user.email %></strong>
-        </div>
+        <div class="items-list">
 
-        <div class="info-row">
-          <span>Phone</span>
-          <strong><%= order.user.phone %></strong>
-        </div>
+          <% order.items.forEach((item) => { %>
 
-      </div>
-
-    </div>
-
-    
-
-  </div>
-
-  <div class="right-column">
-   
-
-<div class="card">
-
-  <h3 class="card-title">
-    Order Summary
-  </h3>
-
-  <div class="summary-row">
-    <span>Original Subtotal</span>
-
-    <strong>
-      ₹<%= Number(
-        activeOriginalSubtotal
-      ).toLocaleString("en-IN") %>
-    </strong>
-  </div>
-
-  <% if (activeDiscountTotal > 0) { %>
-    <div class="summary-row summary-discount">
-      <span>Offer Discount</span>
-
-      <strong>
-        −₹<%= Number(
-          activeDiscountTotal
-        ).toLocaleString("en-IN") %>
-      </strong>
-    </div>
-  <% } %>
-
-  <div class="summary-row">
-    <span>Active Subtotal</span>
-
-    <strong>
-      ₹<%= Number(
-        activeSubtotal
-      ).toLocaleString("en-IN") %>
-    </strong>
-  </div>
-
-  <% if (cancelledAmount > 0) { %>
-    <div class="summary-row summary-cancelled">
-      <span>Cancelled Items</span>
-
-      <strong>
-        −₹<%= Number(
-          cancelledAmount
-        ).toLocaleString("en-IN") %>
-      </strong>
-    </div>
-  <% } %>
-
-  <div class="summary-row summary-gst">
-    <span>GST Included</span>
-
-    <strong>
-      ₹<%= Number(gstAmount).toFixed(2) %>
-    </strong>
-  </div>
-
-  <div class="summary-row">
-    <span>Shipping</span>
-
-    <strong>
-      <%= shippingFee === 0
-        ? "Free"
-        : `₹${Number(
-            shippingFee
-          ).toLocaleString("en-IN")}` %>
-    </strong>
-  </div>
-
-  <div class="summary-row total-row">
-    <span>
-      <%= partiallyCancelled
-        ? "Current Total"
-        : "Grand Total" %>
-    </span>
-
-    <strong>
-      ₹<%= Number(total).toLocaleString("en-IN") %>
-    </strong>
-  </div>
-
-</div>
-
-    <div class="card payment-card">
-
-      <div class="card-header-inline">
-
-        <h3 class="card-title">
-          Payment
-        </h3>
-
-        <span class="payment-badge <%= order.paymentStatus.toLowerCase() %>">
-          <%= order.paymentStatus %>
-        </span>
-
-      </div>
-
-      <div class="info-list">
-
-        <div class="info-row">
-          <span>Method</span>
-          <strong><%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %></strong>
-        </div>
-
-        <div class="info-row">
-          <span>Status</span>
-          <strong class="payment-status-text">
-            <%= order.paymentStatus %>
-          </strong>
-        </div>
-
-      </div>
-
-     <div class="cod-section">
-
-<button
-  type="button"
-  id="markCodPaidBtn"
-  class="cod-paid-btn"
-  data-order-id="<%= order._id %>"
-  <%= !showCodButton ? "disabled" : "" %>
->
-  Mark COD Payment Received
-</button>
-
-</div>
-
-    </div>
-
-  </div>
-
-</div>
-
-      <div class="items-section">
-
-        <div class="section-header">
-
-          <h3>
-            Order Items
-            <span>
-            (<%= order.items.length %> Items)
-          </span>
-          </h3>
-
-          
-
-        </div>
-
-        <% order.items.forEach(item => { %>
-                      <%
+            <%
               const lockedStatuses = [
                 "Delivered",
                 "Cancelled",
                 "Return Requested",
                 "Return Accepted",
-                "Return Rejected",
                 "Returned",
                 "Refunded"
               ];
@@ -311,206 +722,284 @@
               const returnStatuses = [
                 "Return Requested",
                 "Return Accepted",
-                "Return Rejected",
                 "Returned",
                 "Refunded"
               ];
 
-              const isLockedStatus = lockedStatuses.includes(item.status);
-              const isReturnRelated = returnStatuses.includes(item.status);
+              const isLockedStatus =
+                lockedStatuses.includes(item.status);
+
+              const isReturnRelated =
+                returnStatuses.includes(item.status);
+
+              const itemStatusClass =
+                String(item.status)
+                  .toLowerCase()
+                  .replace(/\s+/g, "-");
+
+              const quantity =
+                Number(item.quantity) || 0;
+
+              const originalUnitPrice =
+                Number(item.originalUnitPrice) ||
+                Number(item.unitPrice) ||
+                0;
+
+              const unitPrice =
+                Number(item.unitPrice) || 0;
+
+              const originalAmount =
+                originalUnitPrice * quantity;
+
+              const offerAmount =
+                unitPrice * quantity;
+
+              const offerDiscount =
+                Math.max(
+                  originalAmount - offerAmount,
+                  0
+                );
+
+              const couponDiscount =
+                Number(item.couponDiscountAmount) || 0;
+
+              const finalAmount =
+                Math.max(
+                  offerAmount - couponDiscount,
+                  0
+                );
             %>
 
-          <div class="item-card">
-
-            <img
-              src="<%= item.productImage %>"
-              alt="<%= item.productName %>"
-              class="item-img"
+            <div
+              class="order-item <%= item.status === 'Cancelled'
+                ? 'order-item--cancelled'
+                : '' %>"
             >
 
-            <div class="item-info">
-
-              <h4>
-                <%= item.productName %>
-              </h4>
-
-              <p>
-                <%= item.color %> • <%= item.size %>
-              </p>
-
-<div class="admin-item-price">
-
-<div class="item-price-row">
-
-  <span class="item-price-left">
-
-    <span class="item-qty">
-      <%= item.quantity %> ×
-    </span>
-
-    <span class="item-current-price">
-      ₹<%= Number(item.unitPrice).toLocaleString("en-IN") %>
-    </span>
-
-    <% if (item.hasOffer) { %>
-      <span class="item-old-price">
-        ₹<%= Number(item.originalUnitPrice).toLocaleString("en-IN") %>
-      </span>
-    <% } %>
-
-  </span>
-
-  <span class="item-arrow">→</span>
-
-  <strong class="item-total-price">
-    ₹<%= Number(item.unitPrice * item.quantity).toLocaleString("en-IN") %>
-  </strong>
-
-</div>
-
-  <% if (item.hasOffer) { %>
-    <div class="item-offer-row">
-
-      <span class="item-offer-badge">
-        <% if (item.discountType === "PERCENTAGE") { %>
-          <%= item.discountValue %>% OFF
-        <% } else { %>
-          ₹<%= Number(item.discountValue).toLocaleString("en-IN") %> OFF
-        <% } %>
-      </span>
-
-      <span class="item-offer-name">
-        <%= item.offerTitle %>
-      </span>
-
-    </div>
-  <% } %>
-
-</div>
-
-            </div>
-
-            <div
-  class="item-status-block"
-  data-item-id="<%= item._id %>"
->
-
-              <span
-                class="status item-status-badge <%= item.status.toLowerCase().replace(/\s+/g, '-') %>"
+              <img
+                src="<%= item.productImage || '/images/no-image.png' %>"
+                alt="<%= item.productName %>"
+                class="item-image"
               >
-                <%= item.status %>
-              </span>
 
-              <% if(item.statusUpdatedAt){ %>
+              <div class="item-product">
 
-                <small class="status-date item-status-date">
+                <h4>
+                  <%= item.productName %>
+                </h4>
 
-                <% if(item.status === "Delivered"){ %>
-                  Delivered on
-                <% } else if(item.status === "Shipped"){ %>
-                  Shipped on
-                <% } else if(item.status === "Cancelled"){ %>
-                  Cancelled on
-                <% } else if(item.status === "Return Requested"){ %>
-                  Return requested on
-                <% } else if(item.status === "Return Accepted"){ %>
-                  Return accepted on
-                <% } else if(item.status === "Return Rejected"){ %>
-                  Return rejected on
-                <% } else if(item.status === "Returned"){ %>
-                  Returned on
-                <% } else if(item.status === "Refunded"){ %>
-                  Refunded on
-                <% } else { %>
-                  Updated on
+                <p class="item-variant">
+                  <span><%= item.color %></span>
+                  <span class="item-variant-separator">/</span>
+                  <span><%= item.size %></span>
+                  <span class="item-variant-separator">·</span>
+                  <span>Qty <%= item.quantity %></span>
+                </p>
+
+              </div>
+
+              <div class="item-pricing">
+
+                <span class="item-column-label">
+                  Amount
+                </span>
+
+                <div class="item-price-main">
+
+                  <strong
+                    class="item-final-price <%= item.status === 'Cancelled'
+                      ? 'item-final-price--cancelled'
+                      : '' %>"
+                  >
+                    ₹<%= Number(finalAmount).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) %>
+                  </strong>
+
+                  <% if (originalAmount > finalAmount) { %>
+
+                    <span class="item-original-price">
+                      ₹<%= Number(originalAmount).toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }) %>
+                    </span>
+
+                  <% } %>
+
+                </div>
+
+                <% if (
+                  offerDiscount > 0 ||
+                  couponDiscount > 0
+                ) { %>
+
+                  <div class="item-discounts">
+
+                    <% if (offerDiscount > 0) { %>
+                      <span>
+                        Offer −₹<%= Number(offerDiscount).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }) %>
+                      </span>
+                    <% } %>
+
+                    <% if (couponDiscount > 0) { %>
+                      <span>
+                        Coupon −₹<%= Number(couponDiscount).toLocaleString("en-IN", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }) %>
+                      </span>
+                    <% } %>
+
+                  </div>
+
                 <% } %>
 
-                  <%= new Date(item.statusUpdatedAt).toLocaleString("en-IN",{
-                    day:"2-digit",
-                    month:"short",
-                    year:"numeric",
-                    hour:"2-digit",
-                    minute:"2-digit"
-                  }) %>
+              </div>
 
-                </small>
+              <div class="item-status-column">
 
-              <% } %>
-              <% if (isReturnRelated) { %>
-                <span class="return-flow-note">
-                  This item is in return flow. Manage it from Return Management.
+                <span class="item-column-label">
+                  Status
                 </span>
-              <% } %>
 
-            </div>
+                <span
+                  class="item-status item-status-<%= itemStatusClass %>"
+                >
+                  <%= item.status %>
+                </span>
 
-            <div class="item-actions">
+                <% if (item.statusUpdatedAt) { %>
 
+                  <small class="item-status-date">
+                    <%= new Date(item.statusUpdatedAt).toLocaleDateString(
+                      "en-IN",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                      }
+                    ) %>
+                  </small>
 
+                <% } %>
 
-            <form
-              class="status-form"
-              data-item-id="<%= item._id %>"
-            >
+                <% if (isReturnRelated) { %>
+                  <span class="return-flow-note">
+                    Manage from Returns
+                  </span>
+                <% } %>
 
-              <select
+              </div>
+
+              <div class="item-action-column">
+
+                <span class="item-column-label">
+                  Action
+                </span>
+
+                <form
+                  class="status-form"
+                  data-item-id="<%= item._id %>"
+                >
+
+<select
   name="status"
   class="status-select"
   <%= isLockedStatus ? "disabled" : "" %>
 >
 
-  <option
-    value="Processing"
-    <%= item.status === "Processing" ? "selected" : "" %>
-    <%= ["Shipped","Delivered"].includes(item.status) ? "disabled" : "" %>
-  >
-    Processing
-  </option>
+  <% if (item.status === "Placed") { %>
 
-  <option
-    value="Shipped"
-    <%= item.status === "Shipped" ? "selected" : "" %>
-    <%= item.status === "Delivered" ? "disabled" : "" %>
-  >
-    Shipped
-  </option>
+    <option
+      value="Placed"
+      selected
+      disabled
+    >
+      Placed
+    </option>
 
-  <option
-    value="Delivered"
-    <%= item.status === "Delivered" ? "selected" : "" %>
-  >
-    Delivered
-  </option>
+    <option value="Processing">
+      Processing
+    </option>
 
-  <option
-    value="Cancelled"
-    <%= item.status === "Cancelled" ? "selected" : "" %>
-    <%= item.status !== "Processing" ? "disabled" : "" %>
-  >
-    Cancelled
-  </option>
+    <option value="Shipped">
+      Shipped
+    </option>
+
+    <option value="Delivered">
+      Delivered
+    </option>
+
+  <% } else if (item.status === "Processing") { %>
+
+    <option
+      value="Processing"
+      selected
+      disabled
+    >
+      Processing
+    </option>
+
+    <option value="Shipped">
+      Shipped
+    </option>
+
+    <option value="Delivered">
+      Delivered
+    </option>
+
+  <% } else if (item.status === "Shipped") { %>
+
+    <option
+      value="Shipped"
+      selected
+      disabled
+    >
+      Shipped
+    </option>
+
+    <option value="Delivered">
+      Delivered
+    </option>
+
+  <% } else { %>
+
+    <option
+      value="<%= item.status %>"
+      selected
+      disabled
+    >
+      <%= item.status %>
+    </option>
+
+  <% } %>
 
 </select>
 
-<button
-  type="button"
-  class="update-status-btn"
-  <%= isLockedStatus ? "disabled" : "" %>
->
-  Update
-</button>
+                  <button
+                    type="button"
+                    class="update-status-btn"
+                    <%= isLockedStatus ? "disabled" : "" %>
+                  >
+                    Update
+                  </button>
 
+                </form>
 
-</form>
+              </div>
 
+            </div>
 
+          <% }) %>
 
-</div>
-</div>
+        </div>
 
-<% }) %>
-
-      </div>
+      </section>
 
     </div>
 
@@ -527,4 +1016,5 @@
 <script src="/js/admin/orderDetails.js"></script>
 
 </body>
+
 </html>

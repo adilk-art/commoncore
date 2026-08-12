@@ -6,7 +6,7 @@ import {
   buildActiveOfferLookup,
   getBestOfferPricing,
 } from "../shared/pricing.service.js";
-
+import { getQualifiedCouponsService } from "./coupon.service.js";
 const MAX_QTY = 5;
 
 const createServiceError = (message, status = 400) => {
@@ -40,6 +40,7 @@ export const getCheckoutPageService = async (userId) => {
     findWalletByUserId(userId),
     getAddressesService(userId),
   ]);
+
   if (!cart || cart.items.length === 0) {
     throw createServiceError("Your cart is empty.");
   }
@@ -59,6 +60,12 @@ export const getCheckoutPageService = async (userId) => {
 
   const shipping = calculateShipping(cart.subtotal);
   const total = Number(cart.subtotal) + shipping;
+  const qualifiedCoupons = invalidCart
+    ? []
+    : await getQualifiedCouponsService({
+        userId,
+        subtotal: cart.subtotal,
+      });
   const walletBalance = Number(wallet?.balance || 0);
   const canUseWallet = walletBalance >= total;
   return {
@@ -69,7 +76,8 @@ export const getCheckoutPageService = async (userId) => {
     originalSubtotal: cart.originalSubtotal,
 
     subtotal: cart.subtotal,
-
+    qualifiedCoupons,
+    canApplyCoupon: qualifiedCoupons.some((coupon) => coupon.eligible),
     totalDiscount: cart.totalDiscount,
     gstAmount: Number(gstAmount.toFixed(2)),
     shipping,
@@ -137,6 +145,7 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
   const discountAmount = Number(pricing.discountAmount);
   const originalSubtotal = originalPrice * qty;
   const subtotal = finalPrice * qty;
+  const qualifiedCoupons = await getQualifiedCouponsService(subtotal);
   const totalDiscount = originalSubtotal - subtotal;
   const item = {
     product,
@@ -187,6 +196,8 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
     addresses,
     originalSubtotal: Number(originalSubtotal.toFixed(2)),
     subtotal: Number(subtotal.toFixed(2)),
+    qualifiedCoupons,
+    canApplyCoupon: qualifiedCoupons.length > 0,
     totalDiscount: Number(totalDiscount.toFixed(2)),
 
     shipping,

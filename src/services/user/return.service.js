@@ -32,16 +32,20 @@ export const getReturnRequestPageService = async (orderId, itemId, userId) => {
 
   if (item.status !== "Delivered") {
     const error = new Error("Only delivered items can be returned.");
+
     error.status = 400;
     throw error;
   }
 
   const deliveredAt = new Date(item.statusUpdatedAt);
+
   const returnLastDate = new Date(deliveredAt);
+
   returnLastDate.setDate(returnLastDate.getDate() + 14);
 
   if (Date.now() > returnLastDate.getTime()) {
     const error = new Error("Return window has expired.");
+
     error.status = 400;
     throw error;
   }
@@ -50,11 +54,20 @@ export const getReturnRequestPageService = async (orderId, itemId, userId) => {
 
   if (existing) {
     const error = new Error("Return request already exists.");
+
     error.status = 400;
     throw error;
   }
 
   const addresses = await getAddressesService(userId);
+
+  const quantity = Number(item.quantity) || 0;
+
+  const offerAmount = Number(item.unitPrice || 0) * quantity;
+
+  const couponDiscount = Number(item.couponDiscountAmount || 0);
+
+  const paidAmount = Math.max(offerAmount - couponDiscount, 0);
 
   return {
     order,
@@ -62,6 +75,8 @@ export const getReturnRequestPageService = async (orderId, itemId, userId) => {
     pickupAddress: order.shippingAddress,
     addresses,
     returnLastDate,
+
+    paidAmount: Number(paidAmount.toFixed(2)),
   };
 };
 
@@ -101,7 +116,9 @@ export const createReturnRequestService = async (payload, userId) => {
   }
 
   const deliveredAt = new Date(item.statusUpdatedAt);
+
   const returnLastDate = new Date(deliveredAt);
+
   returnLastDate.setDate(returnLastDate.getDate() + 14);
 
   if (Date.now() > returnLastDate.getTime()) {
@@ -120,6 +137,7 @@ export const createReturnRequestService = async (payload, userId) => {
 
   if (latestReturnNumber) {
     const lastNumeric = Number(latestReturnNumber.replace("RET", ""));
+
     if (!Number.isNaN(lastNumeric)) {
       nextNumber = lastNumeric + 1;
     }
@@ -127,24 +145,47 @@ export const createReturnRequestService = async (payload, userId) => {
 
   const returnNumber = `RET${nextNumber}`;
 
+  const quantity = Number(item.quantity) || 0;
+
+  const itemAmount = Number(item.unitPrice || 0) * quantity;
+
+  const couponDiscount = Number(item.couponDiscountAmount || 0);
+
+  const refundAmount = Math.max(itemAmount - couponDiscount, 0);
+
   const returnRequest = await createReturn({
     returnNumber,
+
     orderId: new mongoose.Types.ObjectId(orderId),
+
     itemId: new mongoose.Types.ObjectId(itemId),
+
     userId: new mongoose.Types.ObjectId(userId),
+
     reason: reason.trim(),
+
     comments: comments?.trim() || "",
+
     pickupAddress: {
       fullName: pickupAddress.fullName.trim(),
+
       phone: pickupAddress.phone.trim(),
+
       line1: pickupAddress.line1.trim(),
+
       line2: pickupAddress.line2?.trim() || "",
+
       city: pickupAddress.city.trim(),
+
       state: pickupAddress.state.trim(),
+
       pincode: pickupAddress.pincode.trim(),
     },
-    refundAmount: item.unitPrice * item.quantity,
+
+    refundAmount: Number(refundAmount.toFixed(2)),
+
     status: "Requested",
+
     requestedAt: new Date(),
   });
 
@@ -265,7 +306,9 @@ const buildReturnTimeline = (returnRequest) => {
         title: "Return Rejected",
         completed: true,
         current: true,
-        date: formatTimelineDate(returnRequest.rejectedAt || returnRequest.updatedAt),
+        date: formatTimelineDate(
+          returnRequest.rejectedAt || returnRequest.updatedAt,
+        ),
         note:
           returnRequest.rejectionReason ||
           "The return request was rejected by the store team.",
@@ -306,7 +349,9 @@ const buildReturnTimeline = (returnRequest) => {
     {
       key: "Approved",
       title: "Return Approved",
-      completed: ["Approved", "Picked Up", "Received", "Refunded"].includes(status),
+      completed: ["Approved", "Picked Up", "Received", "Refunded"].includes(
+        status,
+      ),
       current: status === "Approved",
       date: formatTimelineDate(returnRequest.approvedAt),
       note: "Your return has been approved by the store team.",
@@ -338,11 +383,7 @@ const buildReturnTimeline = (returnRequest) => {
   ];
 };
 
-export const getReturnDetailService = async ({
-  orderId,
-  itemId,
-  userId,
-}) => {
+export const getReturnDetailService = async ({ orderId, itemId, userId }) => {
   const order = await findUserOrderById(orderId, userId);
 
   if (!order) {

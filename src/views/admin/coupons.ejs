@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Coupons"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/coupons.css"
+  >
+
+</head>
+
+<body>
+
+  <%- include("./partials/header", {
+    title: "Coupons"
+  }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", {
+      active: "coupons"
+    }) %>
+
+    <%- include("./partials/logout-modal") %>
+    <%- include("../partials/confirm-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+
+          <div>
+
+            <p class="breadcrumb">
+              Admin Dashboard &gt; Coupons
+            </p>
+
+            <h2 class="page-title">
+              Coupon Management
+            </h2>
+
+          </div>
+
+          <a
+            href="/admin/coupons/add"
+            class="add-coupon-btn"
+          >
+            <i class="fa-solid fa-plus"></i>
+            Create Coupon
+          </a>
+
+        </div>
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <p>Total Coupons</p>
+              <i class="fa-solid fa-ticket"></i>
+            </div>
+
+            <h3>
+              <%= totalCoupons %>
+            </h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <p>Active Coupons</p>
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+
+            <h3>
+              <%= activeCoupons %>
+            </h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <p>Scheduled</p>
+              <i class="fa-solid fa-clock"></i>
+            </div>
+
+            <h3>
+              <%= scheduledCoupons %>
+            </h3>
+
+          </div>
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+              <p>Expired</p>
+              <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+
+            <h3>
+              <%= expiredCoupons %>
+            </h3>
+
+          </div>
+
+        </div>
+
+        <div class="table-container">
+
+          <div class="table-header">
+
+            <h3>Coupons</h3>
+
+            <%
+              const hasFilters =
+                Boolean(search) ||
+                status !== "all" ||
+                discount !== "all" ||
+                usage !== "all" ||
+                sort !== "latest";
+            %>
+
+            <div class="toolbar">
+
+              <form
+                action="/admin/coupons"
+                method="GET"
+                class="filter-form"
+              >
+
+                <input
+                  type="hidden"
+                  name="search"
+                  value="<%= search || '' %>"
+                >
+
+                <input
+                  type="hidden"
+                  name="page"
+                  value="1"
+                >
+
+                <select
+                  name="status"
+                  onchange="this.form.submit()"
+                >
+
+                  <option
+                    value="all"
+                    <%= status === "all" ? "selected" : "" %>
+                  >
+                    All Status
+                  </option>
+
+                  <option
+                    value="active"
+                    <%= status === "active" ? "selected" : "" %>
+                  >
+                    Active
+                  </option>
+
+                  <option
+                    value="scheduled"
+                    <%= status === "scheduled" ? "selected" : "" %>
+                  >
+                    Scheduled
+                  </option>
+
+                  <option
+                    value="expired"
+                    <%= status === "expired" ? "selected" : "" %>
+                  >
+                    Expired
+                  </option>
+
+                  <option
+                    value="disabled"
+                    <%= status === "disabled" ? "selected" : "" %>
+                  >
+                    Disabled
+                  </option>
+
+                  <option
+                    value="limit-reached"
+                    <%= status === "limit-reached" ? "selected" : "" %>
+                  >
+                    Limit Reached
+                  </option>
+
+                </select>
+
+                <select
+                  name="discount"
+                  onchange="this.form.submit()"
+                >
+
+                  <option
+                    value="all"
+                    <%= discount === "all" ? "selected" : "" %>
+                  >
+                    All Discounts
+                  </option>
+
+                  <option
+                    value="percentage"
+                    <%= discount === "percentage" ? "selected" : "" %>
+                  >
+                    Percentage
+                  </option>
+
+                  <option
+                    value="flat"
+                    <%= discount === "flat" ? "selected" : "" %>
+                  >
+                    Flat
+                  </option>
+
+                </select>
+
+                <select
+                  name="usage"
+                  onchange="this.form.submit()"
+                >
+
+                  <option
+                    value="all"
+                    <%= usage === "all" ? "selected" : "" %>
+                  >
+                    All Usage
+                  </option>
+
+                  <option
+                    value="unlimited"
+                    <%= usage === "unlimited" ? "selected" : "" %>
+                  >
+                    Unlimited
+                  </option>
+
+                  <option
+                    value="limited"
+                    <%= usage === "limited" ? "selected" : "" %>
+                  >
+                    Limited
+                  </option>
+
+                  <option
+                    value="exhausted"
+                    <%= usage === "exhausted" ? "selected" : "" %>
+                  >
+                    Exhausted
+                  </option>
+
+                </select>
+
+                <select
+                  name="sort"
+                  onchange="this.form.submit()"
+                >
+
+                  <option
+                    value="latest"
+                    <%= sort === "latest" ? "selected" : "" %>
+                  >
+                    Latest
+                  </option>
+
+                  <option
+                    value="oldest"
+                    <%= sort === "oldest" ? "selected" : "" %>
+                  >
+                    Oldest
+                  </option>
+
+                  <option
+                    value="ending-soon"
+                    <%= sort === "ending-soon" ? "selected" : "" %>
+                  >
+                    Ending Soon
+                  </option>
+
+                  <option
+                    value="most-used"
+                    <%= sort === "most-used" ? "selected" : "" %>
+                  >
+                    Most Used
+                  </option>
+
+                  <option
+                    value="least-used"
+                    <%= sort === "least-used" ? "selected" : "" %>
+                  >
+                    Least Used
+                  </option>
+
+                </select>
+
+              </form>
+
+              <form
+                action="/admin/coupons"
+                method="GET"
+                class="search-box"
+              >
+
+                <input
+                  type="hidden"
+                  name="status"
+                  value="<%= status || 'all' %>"
+                >
+
+                <input
+                  type="hidden"
+                  name="discount"
+                  value="<%= discount || 'all' %>"
+                >
+
+                <input
+                  type="hidden"
+                  name="usage"
+                  value="<%= usage || 'all' %>"
+                >
+
+                <input
+                  type="hidden"
+                  name="sort"
+                  value="<%= sort || 'latest' %>"
+                >
+
+                <input
+                  type="hidden"
+                  name="page"
+                  value="1"
+                >
+
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= search || '' %>"
+                  placeholder="Search coupons..."
+                >
+
+                <button
+                  type="submit"
+                  aria-label="Search coupons"
+                >
+                  <i class="fa-solid fa-search"></i>
+                </button>
+
+                <% if (hasFilters) { %>
+
+                  <a
+                    href="/admin/coupons"
+                    class="clear-btn"
+                  >
+                    <i class="fa-solid fa-xmark"></i>
+                    Clear
+                  </a>
+
+                <% } %>
+
+              </form>
+
+            </div>
+
+          </div>
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Coupon</th>
+                <th>Discount</th>
+                <th>Minimum Purchase</th>
+                <th>Usage</th>
+                <th>Validity</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <% if (coupons.length) { %>
+
+                <% coupons.forEach((coupon) => { %>
+
+                  <tr>
+
+                    <td>
+
+                      <div class="coupon-info">
+
+                        <div class="coupon-code">
+                          <%= coupon.code %>
+                        </div>
+
+                        <div class="coupon-text">
+
+                          <h4>
+                            <%= coupon.name %>
+                          </h4>
+
+                          <% if (coupon.description) { %>
+
+                            <p>
+                              <%= coupon.description %>
+                            </p>
+
+                          <% } %>
+
+                        </div>
+
+                      </div>
+
+                    </td>
+
+                    <td>
+
+                      <div class="discount-block">
+
+                        <% if (
+                          coupon.discountType ===
+                          "PERCENTAGE"
+                        ) { %>
+
+                          <strong>
+                            <%= Number(
+                              coupon.discountValue
+                            ) %>% OFF
+                          </strong>
+
+                          <% if (
+                            coupon.maximumDiscountAmount !=
+                            null
+                          ) { %>
+
+                            <small>
+                              Max ₹<%= Number(
+                                coupon.maximumDiscountAmount
+                              ).toLocaleString("en-IN") %>
+                            </small>
+
+                          <% } %>
+
+                        <% } else { %>
+
+                          <strong>
+                            ₹<%= Number(
+                              coupon.discountValue
+                            ).toLocaleString("en-IN") %> OFF
+                          </strong>
+
+                          <small>
+                            Flat Discount
+                          </small>
+
+                        <% } %>
+
+                      </div>
+
+                    </td>
+
+                    <td>
+
+                      <div class="minimum-block">
+
+                        <% if (
+                          Number(
+                            coupon.minimumPurchaseAmount
+                          ) > 0
+                        ) { %>
+
+                          <strong>
+                            ₹<%= Number(
+                              coupon.minimumPurchaseAmount
+                            ).toLocaleString("en-IN") %>
+                          </strong>
+
+                          <small>
+                            Minimum order
+                          </small>
+
+                        <% } else { %>
+
+                          <strong>No Minimum</strong>
+
+                        <% } %>
+
+                      </div>
+
+                    </td>
+
+                    <td>
+
+                      <% if (
+                        coupon.usageLimit === null ||
+                        coupon.usageLimit === undefined
+                      ) { %>
+
+                        <span class="usage-badge unlimited">
+                          Unlimited
+                        </span>
+
+                        <small class="usage-count">
+                          <%= coupon.usedCount || 0 %>
+                          used
+                        </small>
+
+                      <% } else { %>
+
+                        <div class="usage-block">
+
+                          <span
+                            class="usage-badge <%= Number(coupon.usedCount) >= Number(coupon.usageLimit)
+                              ? 'exhausted'
+                              : 'limited' %>"
+                          >
+                            <%= coupon.usedCount || 0 %>
+                            /
+                            <%= coupon.usageLimit %>
+                          </span>
+
+                          <div class="usage-progress">
+
+                            <span
+                              style="width: <%= Math.min(
+                                100,
+                                (
+                                  Number(
+                                    coupon.usedCount || 0
+                                  ) /
+                                  Number(
+                                    coupon.usageLimit
+                                  )
+                                ) * 100
+                              ) %>%"
+                            ></span>
+
+                          </div>
+
+                        </div>
+
+                      <% } %>
+
+                    </td>
+
+                    <td>
+
+                      <div class="date-block">
+
+                        <span>
+                          <%= coupon.validFrom %>
+                        </span>
+
+                        <small>to</small>
+
+                        <span>
+                          <%= coupon.validUntil %>
+                        </span>
+
+                      </div>
+
+                    </td>
+
+                    <td>
+
+                      <span
+                        class="status <%= coupon.status
+                          .toLowerCase()
+                          .replaceAll(' ', '-') %>"
+                      >
+                        <%= coupon.status %>
+                      </span>
+
+                    </td>
+
+                    <td>
+
+                      <div class="actions">
+
+                        <a
+                          href="/admin/coupons/<%= coupon._id %>/edit"
+                          class="icon-action"
+                          title="Edit Coupon"
+                          data-tooltip="Edit Coupon"
+                        >
+                          <i class="fa-solid fa-pen"></i>
+                        </a>
+
+                        <button
+                          type="button"
+                          class="icon-action toggle-status-btn"
+                          data-id="<%= coupon._id %>"
+                          data-active="<%= coupon.isActive %>"
+                          data-tooltip="<%= coupon.isActive
+                            ? 'Deactivate Coupon'
+                            : 'Activate Coupon' %>"
+                        >
+                          <i
+                            class="fa-solid <%= coupon.isActive
+                              ? 'fa-eye-slash'
+                              : 'fa-eye' %>"
+                          ></i>
+                        </button>
+
+                      </div>
+
+                    </td>
+
+                  </tr>
+
+                <% }) %>
+
+              <% } else { %>
+
+                <tr>
+
+                  <td
+                    colspan="7"
+                    class="empty-row"
+                  >
+
+                    <div class="empty-state">
+
+                      <i class="fa-solid fa-ticket"></i>
+
+                      <h3>No Coupons Found</h3>
+
+                      <p>
+                        Discount coupons you create will appear here.
+                      </p>
+
+                      
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              <% } %>
+
+            </tbody>
+
+          </table>
+
+          <% if (totalPages > 1) { %>
+
+            <div class="pagination">
+
+              <p class="results-text">
+
+                Showing
+
+                <%= couponCount > 0
+                  ? skip + 1
+                  : 0 %>
+
+                to
+
+                <%= Math.min(
+                  currentPage * limit,
+                  couponCount
+                ) %>
+
+                of
+
+                <%= couponCount %>
+
+                results
+
+              </p>
+
+              <% const queryString = [
+                `search=${encodeURIComponent(search || "")}`,
+                `status=${status}`,
+                `discount=${discount}`,
+                `usage=${usage}`,
+                `sort=${sort}`
+              ].join("&"); %>
+
+              <% if (currentPage > 1) { %>
+
+                <a
+                  class="nav-btn"
+                  href="/admin/coupons?page=<%= currentPage - 1 %>&<%= queryString %>"
+                >
+                  Prev
+                </a>
+
+              <% } else { %>
+
+                <span class="nav-btn disabled">
+                  Prev
+                </span>
+
+              <% } %>
+
+              <% for (
+                let i = 1;
+                i <= totalPages;
+                i++
+              ) { %>
+
+                <a
+                  class="page-btn <%= currentPage === i ? 'active' : '' %>"
+                  href="/admin/coupons?page=<%= i %>&<%= queryString %>"
+                >
+                  <%= i %>
+                </a>
+
+              <% } %>
+
+              <% if (
+                currentPage < totalPages
+              ) { %>
+
+                <a
+                  class="nav-btn"
+                  href="/admin/coupons?page=<%= currentPage + 1 %>&<%= queryString %>"
+                >
+                  Next
+                </a>
+
+              <% } else { %>
+
+                <span class="nav-btn disabled">
+                  Next
+                </span>
+
+              <% } %>
+
+            </div>
+
+          <% } %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="/js/admin/coupons.js"></script>
+
+</body>
+
+</html>

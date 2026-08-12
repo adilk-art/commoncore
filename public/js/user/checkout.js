@@ -4,6 +4,104 @@ const addressForm = document.getElementById("addressForm");
 const openAddAddressModal = document.getElementById("openAddAddressModal");
 const closeAddressModal = document.getElementById("closeAddressModal");
 const addressFormTitle = document.getElementById("addressFormTitle");
+const couponCodeInput = document.getElementById("couponCode");
+const applyCouponBtn = document.getElementById("applyCouponBtn");
+const removeCouponBtn = document.getElementById("removeCouponBtn");
+const qualifiedCouponBtns = document.querySelectorAll(".qualified-coupon");
+const qualifiedCouponsContainer = document.getElementById("qualifiedCoupons");
+const couponError = document.getElementById("couponError");
+const appliedCoupon = document.getElementById("appliedCoupon");
+const appliedCouponCode = document.getElementById("appliedCouponCode");
+const appliedCouponMessage = document.getElementById("appliedCouponMessage");
+const appliedCouponIdInput = document.getElementById("appliedCouponId");
+const appliedCouponCodeValue = document.getElementById(
+  "appliedCouponCodeValue",
+);
+
+const couponDiscountRow = document.getElementById("couponDiscountRow");
+const checkoutCouponDiscount = document.getElementById(
+  "checkoutCouponDiscount",
+);
+
+const checkoutGst = document.getElementById("checkoutGst");
+const checkoutShipping = document.getElementById("checkoutShipping");
+const checkoutTotal = document.getElementById("checkoutTotal");
+
+const formatMoney = (value) => {
+  return Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+const getBuyNowPayload = () => {
+  const isBuyNow = document.getElementById("isBuyNow")?.value === "true";
+
+  const payload = {
+    isBuyNow,
+  };
+
+  if (isBuyNow) {
+    payload.variantId = document.getElementById("buyNowVariantId")?.value;
+
+    payload.quantity = Number(document.getElementById("buyNowQuantity")?.value);
+  }
+
+  return payload;
+};
+
+const clearCouponError = () => {
+  if (!couponError) {
+    return;
+  }
+
+  couponError.textContent = "";
+};
+
+const showCouponError = (message) => {
+  if (!couponError) {
+    return;
+  }
+
+  couponError.textContent = message;
+};
+
+const updateCheckoutPricing = (pricing, hasCoupon = true) => {
+  if (!pricing) {
+    return;
+  }
+
+  if (hasCoupon) {
+    couponDiscountRow?.classList.remove("hidden");
+
+    if (checkoutCouponDiscount) {
+      checkoutCouponDiscount.textContent = `−₹${formatMoney(
+        pricing.couponDiscount,
+      )}`;
+    }
+  } else {
+    couponDiscountRow?.classList.add("hidden");
+
+    if (checkoutCouponDiscount) {
+      checkoutCouponDiscount.textContent = "−₹0.00";
+    }
+  }
+
+  if (checkoutGst) {
+    checkoutGst.textContent = `₹${formatMoney(pricing.gstAmount)}`;
+  }
+
+  if (checkoutShipping) {
+    checkoutShipping.textContent =
+      Number(pricing.shippingFee) === 0
+        ? "Free"
+        : `₹${formatMoney(pricing.shippingFee)}`;
+  }
+
+  if (checkoutTotal) {
+    checkoutTotal.textContent = `₹${formatMoney(pricing.total)}`;
+  }
+};
 
 addressCards.forEach((card) => {
   card.addEventListener("click", () => {
@@ -21,11 +119,12 @@ addressCards.forEach((card) => {
   });
 });
 
+/* PAYMENT SELECTION */
+
 const paymentCards = document.querySelectorAll(".payment-option");
 
 paymentCards.forEach((card) => {
   card.addEventListener("click", () => {
-
     const radio = card.querySelector(".payment-radio");
 
     if (!radio || radio.disabled) {
@@ -38,14 +137,230 @@ paymentCards.forEach((card) => {
 
     card.classList.add("active");
     radio.checked = true;
-
   });
 });
 
-/* PLACE ORDER */
+/* APPLY COUPON */
 
+const applyCoupon = async (couponCode) => {
+  const code = String(couponCode || "")
+    .trim()
+    .toUpperCase();
+
+  clearCouponError();
+
+  if (!code) {
+    showCouponError("Please enter a coupon code.");
+
+    couponCodeInput?.focus();
+    return;
+  }
+
+  const currentCoupon = appliedCouponCodeValue?.value;
+
+  if (currentCoupon && currentCoupon === code) {
+    showCouponError("This coupon is already applied.");
+
+    return;
+  }
+
+  const payload = {
+    code,
+    ...getBuyNowPayload(),
+  };
+
+  try {
+    if (applyCouponBtn) {
+      applyCouponBtn.disabled = true;
+      applyCouponBtn.textContent = "Applying...";
+    }
+
+    qualifiedCouponBtns.forEach((button) => {
+      button.disabled = true;
+    });
+
+    const { data } = await axios.post("/user/coupons/apply", payload);
+
+    if (!data.success) {
+      throw new Error(data.message || "Unable to apply coupon.");
+    }
+
+    if (appliedCouponIdInput) {
+      appliedCouponIdInput.value = data.coupon.id || data.coupon._id || "";
+    }
+
+    if (appliedCouponCodeValue) {
+      appliedCouponCodeValue.value = data.coupon.code;
+    }
+
+    if (couponCodeInput) {
+      couponCodeInput.value = data.coupon.code;
+
+      couponCodeInput.disabled = true;
+    }
+
+    if (appliedCouponCode) {
+      appliedCouponCode.textContent = data.coupon.code;
+    }
+
+    if (appliedCouponMessage) {
+      appliedCouponMessage.textContent = `You saved ₹${formatMoney(
+        data.coupon.discountAmount,
+      )}`;
+    }
+
+    appliedCoupon?.classList.remove("hidden");
+
+    qualifiedCouponsContainer?.classList.add("hidden");
+
+    updateCheckoutPricing(data.pricing, true);
+
+    userToast("Coupon applied successfully");
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Unable to apply coupon.";
+
+    showCouponError(message);
+  } finally {
+    if (applyCouponBtn) {
+      applyCouponBtn.disabled = false;
+      applyCouponBtn.textContent = "Apply";
+    }
+
+    qualifiedCouponBtns.forEach((button) => {
+      button.disabled = false;
+    });
+  }
+};
+
+applyCouponBtn?.addEventListener("click", () => {
+  applyCoupon(couponCodeInput?.value);
+});
+
+couponCodeInput?.addEventListener("input", () => {
+  couponCodeInput.value = couponCodeInput.value
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, "");
+
+  clearCouponError();
+});
+
+couponCodeInput?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") {
+    return;
+  }
+
+  event.preventDefault();
+
+  applyCoupon(couponCodeInput.value);
+});
+
+/* QUICK COUPON SELECTION */
+
+qualifiedCouponBtns.forEach((couponBtn) => {
+  couponBtn.addEventListener("click", () => {
+    const code = couponBtn.dataset.code;
+
+    if (!code) {
+      return;
+    }
+
+    if (couponCodeInput) {
+      couponCodeInput.value = code.toUpperCase();
+    }
+
+    applyCoupon(code);
+  });
+});
+
+/* REMOVE COUPON */
+
+removeCouponBtn?.addEventListener("click", async () => {
+  const couponCode = appliedCouponCodeValue?.value;
+
+  if (!couponCode) {
+    return;
+  }
+
+  try {
+    removeCouponBtn.disabled = true;
+    removeCouponBtn.textContent = "Removing...";
+
+    const payload = {
+      ...getBuyNowPayload(),
+    };
+
+    const { data } = await axios.post("/user/coupons/remove", payload);
+
+    if (!data.success) {
+      throw new Error(data.message || "Unable to remove coupon.");
+    }
+
+    if (appliedCouponIdInput) {
+      appliedCouponIdInput.value = "";
+    }
+
+    if (appliedCouponCodeValue) {
+      appliedCouponCodeValue.value = "";
+    }
+
+    if (couponCodeInput) {
+      couponCodeInput.value = "";
+      couponCodeInput.disabled = false;
+    }
+
+    if (appliedCouponCode) {
+      appliedCouponCode.textContent = "";
+    }
+
+    if (appliedCouponMessage) {
+      appliedCouponMessage.textContent = "";
+    }
+
+    appliedCoupon?.classList.add("hidden");
+
+    qualifiedCouponsContainer?.classList.remove("hidden");
+
+    clearCouponError();
+
+    updateCheckoutPricing(data.pricing, false);
+
+    userToast("Coupon removed successfully");
+  } catch (error) {
+    userToast(
+      error.response?.data?.message ||
+        error.message ||
+        "Unable to remove coupon",
+    );
+  } finally {
+    removeCouponBtn.disabled = false;
+    removeCouponBtn.textContent = "Remove";
+  }
+});
+
+/* PLACE ORDER */
+/* PLACE ORDER */
 const placeOrderBtn = document.getElementById("placeOrderBtn");
-const originalButtonText = placeOrderBtn.innerHTML;
+const originalButtonText = placeOrderBtn?.innerHTML || "Place Order";
+
+const resetPlaceOrderButton = () => {
+  if (!placeOrderBtn) return;
+  placeOrderBtn.disabled = false;
+  placeOrderBtn.innerHTML = originalButtonText;
+};
+
+const setPlaceOrderLoading = () => {
+  if (!placeOrderBtn) return;
+  placeOrderBtn.disabled = true;
+  placeOrderBtn.innerHTML = `
+    <span class="btn-spinner"></span>
+    <span>Placing Order...</span>
+  `;
+};
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 placeOrderBtn?.addEventListener("click", async (event) => {
   event.preventDefault();
@@ -53,126 +368,151 @@ placeOrderBtn?.addEventListener("click", async (event) => {
   const selectedAddress = document.querySelector(".address-radio:checked");
   const selectedPayment = document.querySelector(".payment-radio:checked");
 
-  if (!selectedAddress) return userToast("Please select address");
-  if (!selectedPayment) return userToast("Please select payment method");
+  if (!selectedAddress) {
+    return userToast("Please select address");
+  }
+
+  if (!selectedPayment) {
+    return userToast("Please select payment method");
+  }
 
   const isBuyNow = document.getElementById("isBuyNow")?.value === "true";
 
   const payload = {
     shippingAddress: selectedAddress.value,
     paymentMethod: selectedPayment.value,
+    couponCode: appliedCouponCodeValue?.value || null,
+    isBuyNow,
   };
 
   if (isBuyNow) {
-    payload.isBuyNow = true;
     payload.variantId = document.getElementById("buyNowVariantId")?.value;
-    payload.quantity = parseInt(
+    payload.quantity = Number.parseInt(
       document.getElementById("buyNowQuantity")?.value,
+      10,
     );
   }
 
   try {
-    placeOrderBtn.disabled = true;
+    setPlaceOrderLoading();
 
-    placeOrderBtn.innerHTML = `
-      <span class="btn-spinner"></span>
-      <span>Placing Order...</span>
-    `;
-
-    if (payload.paymentMethod === "CashOnDelivery") {
+    if (
+      payload.paymentMethod === "CashOnDelivery" ||
+      payload.paymentMethod === "Wallet"
+    ) {
       const { data } = await axios.post("/user/order/place", payload);
 
-      if (!data.success) {
-        throw new Error(data.message);
+      if (!data.success || !data.order?._id) {
+        throw new Error(data.message || "Unable to place order");
       }
 
-      setTimeout(() => {
-        window.location.href = `/user/order/success/${data.order._id}`;
-      }, 1200);
-
-      return;
-    }
-
-    if (payload.paymentMethod === "Wallet") {
-      const { data } = await axios.post("/user/order/place", payload);
-
-      if (!data.success) {
-        throw new Error(data.message);
-      }
+      await delay(1000);
 
       window.location.href = `/user/order/success/${data.order._id}`;
-
       return;
     }
 
-    const { data } = await axios.post(
+    if (payload.paymentMethod !== "Razorpay") {
+      throw new Error("Invalid payment method");
+    }
+
+    const createResponse = await axios.post(
       "/user/order/create-razorpay-order",
       payload,
     );
 
-    if (!data.success) {
-      throw new Error(data.message);
+    const paymentData = createResponse.data;
+
+    if (
+      !paymentData.success ||
+      !paymentData.databaseOrderId ||
+      !paymentData.order?.id
+    ) {
+      throw new Error(paymentData.message || "Unable to initialize payment");
     }
 
+    const databaseOrderId = paymentData.databaseOrderId;
+
     const options = {
-      key: data.key,
-      amount: data.order.amount,
-      currency: data.order.currency,
+      key: paymentData.key,
+      amount: paymentData.order.amount,
+      currency: paymentData.order.currency,
       name: "Commoncore",
       description: "Order Payment",
-      order_id: data.order.id,
-
-      handler: async function (response) {
+      order_id: paymentData.order.id,
+      retry: {
+        enabled: true,
+        max_count: 3,
+      },
+      handler: async (response) => {
         try {
-          const { data } = await axios.post(
+          const verifyResponse = await axios.post(
             "/user/order/verify-payment",
-            response,
+            {
+              databaseOrderId,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            },
           );
 
-          if (data.success) {
-            window.location.href = `/user/order/success/${data.orderId}`;
-          } else {
-            placeOrderBtn.disabled = false;
-            placeOrderBtn.innerHTML = originalButtonText;
-            userToast("Payment verification failed");
+          const result = verifyResponse.data;
+
+          if (!result.success || !result.orderId) {
+            throw new Error(result.message || "Payment verification failed");
           }
-        } catch (err) {
-          placeOrderBtn.disabled = false;
-          placeOrderBtn.innerHTML = originalButtonText;
+
+          await delay(1000);
+
+          window.location.href = `/user/order/success/${result.orderId}`;
+        } catch (error) {
+          resetPlaceOrderButton();
 
           userToast(
-            err.response?.data?.message || "Payment verification failed",
+            error.response?.data?.message ||
+              error.message ||
+              "Payment verification failed",
           );
         }
       },
-
       modal: {
-        ondismiss: function () {
-          placeOrderBtn.disabled = false;
-          placeOrderBtn.innerHTML = originalButtonText;
+        ondismiss: () => {
+          resetPlaceOrderButton();
+          window.location.href = `/user/order/payment-failed/${databaseOrderId}`;
         },
       },
-
       theme: {
         color: "#000000",
       },
     };
 
-    const razorpay = new Razorpay(options);
+    const razorpayCheckout = new Razorpay(options);
 
-    razorpay.on("payment.failed", function () {
-      placeOrderBtn.disabled = false;
-      placeOrderBtn.innerHTML = originalButtonText;
+    razorpayCheckout.on("payment.failed", async (response) => {
+      try {
+        await axios.post("/user/order/payment-failure", {
+          databaseOrderId,
+          error: {
+            code: response.error?.code,
+            description: response.error?.description,
+            reason: response.error?.reason,
+            source: response.error?.source,
+            step: response.error?.step,
+          },
+        });
+      } catch (error) {
+        console.error(
+          "Unable to record payment failure:",
+          error.response?.data?.message || error.message,
+        );
+      }
 
-      setTimeout(() => {
-        window.location.href = "/user/order/payment-failed";
-      }, 0);
+      window.location.href = `/user/order/payment-failed/${databaseOrderId}`;
     });
 
-    razorpay.open();
+    razorpayCheckout.open();
   } catch (error) {
-    placeOrderBtn.disabled = false;
-    placeOrderBtn.innerHTML = originalButtonText;
+    resetPlaceOrderButton();
 
     const message =
       error.response?.data?.message || error.message || "Failed to place order";
@@ -185,9 +525,39 @@ placeOrderBtn?.addEventListener("click", async (event) => {
       setTimeout(() => {
         window.location.href = "/user/checkout";
       }, 500);
+
+      return;
+    }
+
+    if (code === "INVALID_COUPON") {
+      if (appliedCouponIdInput) {
+        appliedCouponIdInput.value = "";
+      }
+
+      if (appliedCouponCodeValue) {
+        appliedCouponCodeValue.value = "";
+      }
+
+      if (couponCodeInput) {
+        couponCodeInput.value = "";
+        couponCodeInput.disabled = false;
+      }
+
+      if (appliedCouponCode) {
+        appliedCouponCode.textContent = "";
+      }
+
+      if (appliedCouponMessage) {
+        appliedCouponMessage.textContent = "";
+      }
+
+      appliedCoupon?.classList.add("hidden");
+      qualifiedCouponsContainer?.classList.remove("hidden");
     }
   }
 });
+
+/* ADDRESS MODAL */
 
 openAddAddressModal?.addEventListener("click", () => {
   addressForm.reset();
@@ -205,10 +575,15 @@ closeAddressModal?.addEventListener("click", () => {
   addressModal.classList.remove("active");
 
   addressForm.reset();
+
+  clearAddressErrors();
 });
 
 document.querySelectorAll(".checkout-edit-address-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     clearAddressErrors();
 
     addressFormTitle.innerText = "Edit Address";
@@ -235,8 +610,8 @@ document.querySelectorAll(".checkout-edit-address-btn").forEach((btn) => {
   });
 });
 
-addressForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+addressForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
   clearAddressErrors();
 
@@ -256,35 +631,43 @@ addressForm?.addEventListener("submit", async (e) => {
 
   if (fullName.length < 3) {
     showAddressError("fullNameError", "Minimum 3 characters required");
+
     isValid = false;
   }
 
   if (!/^[6-9]\d{9}$/.test(phone)) {
     showAddressError("phoneError", "Invalid phone number");
+
     isValid = false;
   }
 
   if (line1.length < 3) {
     showAddressError("line1Error", "Address is required");
+
     isValid = false;
   }
 
   if (city.length < 2) {
     showAddressError("cityError", "City is required");
+
     isValid = false;
   }
 
   if (state.length < 2) {
     showAddressError("stateError", "State is required");
+
     isValid = false;
   }
 
   if (!/^\d{6}$/.test(pincode)) {
     showAddressError("pincodeError", "Invalid pincode");
+
     isValid = false;
   }
 
-  if (!isValid) return;
+  if (!isValid) {
+    return;
+  }
 
   const formData = new FormData(addressForm);
 
@@ -308,27 +691,37 @@ addressForm?.addEventListener("submit", async (e) => {
     setTimeout(() => {
       location.reload();
     }, 1200);
-  } catch (err) {
-    const errors = err.response?.data?.errors || [];
+  } catch (error) {
+    const errors = error.response?.data?.errors || [];
 
-    errors.forEach((e) => {
-      showAddressError(`${e.path[0]}Error`, e.message);
+    if (errors.length === 0) {
+      userToast(error.response?.data?.message || "Unable to save address");
+
+      return;
+    }
+
+    errors.forEach((item) => {
+      const field = Array.isArray(item.path) ? item.path[0] : item.path;
+
+      showAddressError(`${field}Error`, item.message);
     });
   }
 });
 
 function showAddressError(id, message) {
-  const el = document.getElementById(id);
+  const element = document.getElementById(id);
 
-  if (!el) return;
+  if (!element) {
+    return;
+  }
 
-  el.innerText = message;
-  el.style.display = "block";
+  element.innerText = message;
+  element.style.display = "block";
 }
 
 function clearAddressErrors() {
-  document.querySelectorAll("#addressModal .error-msg").forEach((el) => {
-    el.innerText = "";
-    el.style.display = "none";
+  document.querySelectorAll("#addressModal .error-msg").forEach((element) => {
+    element.innerText = "";
+    element.style.display = "none";
   });
 }

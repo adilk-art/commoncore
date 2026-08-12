@@ -31,22 +31,29 @@ export const findOrdersByUser = async ({
   };
 };
 
-export const createOrderRepo = async (payload) => {
-  const order = await Order.create(payload);
-  return order;
+export const createOrderRepo = async (payload, session = null) => {
+  if (session) {
+    const [order] = await Order.create([payload], { session });
+
+    return order;
+  }
+
+  return Order.create(payload);
 };
 
 export const findOrderByIdRepo = async (orderId) => {
   return await Order.findById(orderId);
 };
 
-export const findUserOrderById = async (orderId, userId) => {
+export const findUserOrderById = async (orderId, userId, session = null) => {
   return Order.findOne({
     _id: orderId,
     userId,
-  }).populate({
-    path: "items.variantId",
-  });
+  })
+    .populate({
+      path: "items.variantId",
+    })
+    .session(session);
 };
 
 export const saveOrder = (order) => {
@@ -73,4 +80,129 @@ export const updateOrderItemStatus = (orderId, itemId, status) => {
       returnDocument: "after",
     },
   );
+};
+
+export const findPendingRazorpayOrderRepo = async (orderId, userId) => {
+  return Order.findOne({
+    _id: orderId,
+    userId,
+    paymentMethod: "Razorpay",
+    paymentStatus: "Pending",
+    orderStatus: "Payment Pending",
+  });
+};
+
+export const updateRazorpayOrderIdRepo = async (orderId, razorpayOrderId) => {
+  return Order.findByIdAndUpdate(
+    orderId,
+    {
+      $set: {
+        razorpayOrderId,
+        lastPaymentAttemptAt: new Date(),
+      },
+      $inc: {
+        paymentAttempts: 1,
+      },
+    },
+    { returnDocument: "after" },
+  );
+};
+
+export const markRazorpayOrderPaidRepo = async ({
+  orderId,
+  userId,
+  razorpayPaymentId,
+  razorpaySignature,
+}) => {
+  return Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      userId,
+      paymentMethod: "Razorpay",
+      paymentStatus: "Pending",
+      orderStatus: "Payment Pending",
+    },
+    {
+      $set: {
+        paymentStatus: "Paid",
+        orderStatus: "Placed",
+        razorpayPaymentId,
+        razorpaySignature,
+        paymentFailure: undefined,
+      },
+    },
+    { returnDocument: "after" },
+  );
+};
+
+export const recordPaymentFailureRepo = async ({
+  orderId,
+  userId,
+  paymentError,
+}) => {
+  return Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      userId,
+      paymentMethod: "Razorpay",
+      paymentStatus: "Pending",
+      orderStatus: "Payment Pending",
+    },
+    {
+      $set: {
+        lastPaymentAttemptAt: new Date(),
+        paymentFailure: {
+          code: paymentError?.code || undefined,
+          description: paymentError?.description || undefined,
+          reason: paymentError?.reason || undefined,
+          source: paymentError?.source || undefined,
+          step: paymentError?.step || undefined,
+        },
+      },
+    },
+    { returnDocument: "after" },
+  );
+};
+
+export const deleteIncompletePendingOrderRepo = async (orderId, userId) => {
+  return Order.deleteOne({
+    _id: orderId,
+    userId,
+    paymentMethod: "Razorpay",
+    paymentStatus: "Pending",
+    orderStatus: "Payment Pending",
+    $or: [
+      { razorpayOrderId: { $exists: false } },
+      { razorpayOrderId: null },
+      { razorpayOrderId: "" },
+    ],
+  });
+};
+
+export const hasUserUsedCoupon = async ({ userId, couponId }) => {
+  const order = await Order.exists({
+    userId,
+    "coupon.couponId": couponId,
+
+    $or: [
+      {
+        paymentMethod: "Razorpay",
+        paymentStatus: "Paid",
+      },
+
+      {
+        paymentMethod: "Wallet",
+        paymentStatus: "Paid",
+      },
+
+      {
+        paymentMethod: "CashOnDelivery",
+        orderStatus: {
+          $ne: "Payment Pending",
+        },
+      },
+    ],
+  });
+
+  return Boolean(order);
 };

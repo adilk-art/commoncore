@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Wishlist — Stitch</title>
+
   <%- include('../partials/user-head') %>
-  <link rel="stylesheet" href="/css/user/wishlist.css">
+
+  <link
+    rel="stylesheet"
+    href="/css/user/wishlist.css"
+  >
 </head>
+
 <body>
 
 <%- include('../partials/user-header') %>
@@ -14,25 +21,58 @@
   <section class="wishlist-card card card-lg">
 
     <div class="wishlist-head">
+
       <div>
-        <h1 class="text-page-title">Wishlist</h1>
-        <p class="text-body"><%= items.length %> saved items</p>
+        <h1 class="text-page-title">
+          Wishlist
+        </h1>
       </div>
 
-      <% if(items.length > 0){ %>
-        <button class="primary-btn" id="addAllBtn">
-          Add All to Cart
-        </button>
-      <% } %>
+      <div class="wishlist-head-right">
+
+        <p class="wishlist-count">
+          <%= items.length %>
+          <%= items.length === 1 ? "item" : "items" %>
+        </p>
+
+        <% if (items.length > 0) { %>
+
+          <button
+            class="primary-btn"
+            id="addAllBtn"
+          >
+            Add All to Cart
+          </button>
+
+        <% } %>
+
+      </div>
+
     </div>
 
-    <% if(items.length === 0){ %>
+    <% if (items.length === 0) { %>
 
       <div class="wishlist-empty">
-        <p class="text-body">Your wishlist is empty.</p>
-        <a href="/user/shop" class="secondary-btn">
+
+        <div class="wishlist-empty-icon">
+          ♡
+        </div>
+
+        <h2 class="wishlist-empty-title">
+          Your wishlist is empty
+        </h2>
+
+        <p class="wishlist-empty-text">
+          Save items you love and they will appear here.
+        </p>
+
+        <a
+          href="/user/shop"
+          class="secondary-btn"
+        >
           Continue Shopping
         </a>
+
       </div>
 
     <% } else { %>
@@ -43,7 +83,10 @@
 
           <article class="wishlist-item">
 
-            <a href="/user/product/<%= item.product._id %>" class="wishlist-image-wrap">
+            <a
+              href="/user/product/<%= item.product._id %>"
+              class="wishlist-image-wrap"
+            >
 
               <img
                 src="<%= item.variant?.images?.[0]?.url || '/images/no-image.png' %>"
@@ -51,36 +94,87 @@
                 alt="<%= item.product.name %>"
               >
 
-              <% if(item.unavailable){ %>
+              <% if (item.unavailable) { %>
 
-  <span class="wishlist-stock-badge">
-    Unavailable
-  </span>
+                <span class="wishlist-stock-badge">
+                  Unavailable
+                </span>
 
-<% } else if(!item.inStock){ %>
+              <% } else if (!item.inStock) { %>
 
-  <span class="wishlist-stock-badge">
-    Out of Stock
-  </span>
+                <span class="wishlist-stock-badge">
+                  Out of Stock
+                </span>
 
-<% } %>
+              <% } %>
 
             </a>
 
             <div class="wishlist-content">
 
-              <div>
+              <div class="wishlist-product-info">
+
                 <p class="wishlist-category">
-                  <%= item.product.categoryId.name %>
+                  <%= item.product.categoryId?.name || "Uncategorized" %>
                 </p>
 
                 <h3 class="wishlist-name">
                   <%= item.product.name %>
                 </h3>
 
-                <p class="wishlist-price">
-                  ₹<%= item.variant?.price?.toLocaleString('en-IN') || '--' %>
-                </p>
+                <div class="wishlist-price-block">
+
+                  <% if (item.variant) { %>
+
+                    <div class="wishlist-price-row">
+
+                      <span class="wishlist-price">
+                        ₹<%= Number(
+                          item.finalPrice
+                        ).toLocaleString("en-IN") %>
+                      </span>
+
+                      <% if (item.hasOffer) { %>
+
+                        <span class="wishlist-old-price">
+                          ₹<%= Number(
+                            item.originalPrice
+                          ).toLocaleString("en-IN") %>
+                        </span>
+
+                        <span class="wishlist-offer-badge">
+
+                          <% if (item.discountType === "PERCENTAGE") { %>
+
+                            <%= Number(
+                              item.discountValue
+                            ) %>% OFF
+
+                          <% } else { %>
+
+                            ₹<%= Number(
+                              item.discountValue
+                            ).toLocaleString("en-IN") %> OFF
+
+                          <% } %>
+
+                        </span>
+
+                      <% } %>
+
+                    </div>
+
+                
+                  <% } else { %>
+
+                    <p class="wishlist-price">
+                      --
+                    </p>
+
+                  <% } %>
+
+                </div>
+
               </div>
 
               <div class="wishlist-actions">
@@ -88,7 +182,7 @@
                 <button
                   class="wishlist-cart-btn move-cart"
                   data-id="<%= item.product._id %>"
-                  <%= !item.inStock ? 'disabled' : '' %>
+                  <%= !item.inStock ? "disabled" : "" %>
                 >
                   Move to Cart
                 </button>
@@ -115,16 +209,27 @@
   </section>
 
 </main>
-<div class="variant-modal" id="variantModal">
+
+<div
+  class="variant-modal"
+  id="variantModal"
+>
 
   <div class="variant-modal-content">
 
     <div class="variant-modal-head">
-      <h3>Select Variant</h3>
 
-      <button id="closeVariantModal">
+      <h3>
+        Select Variant
+      </h3>
+
+      <button
+        type="button"
+        id="closeVariantModal"
+      >
         ×
       </button>
+
     </div>
 
     <div
@@ -138,6 +243,7 @@
     ></div>
 
     <button
+      type="button"
       class="primary-btn"
       id="confirmVariantBtn"
     >
@@ -149,7 +255,9 @@
 </div>
 
 <%- include('../partials/user-scripts') %>
+
 <script src="/js/user/wishlist.js"></script>
 
 </body>
+
 </html>

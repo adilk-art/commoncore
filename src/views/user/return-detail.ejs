@@ -2,10 +2,7 @@
 <html lang="en">
 
 <head>
-
-  <title>
-    Return Details — Commoncore
-  </title>
+  <title>Return Details — Commoncore</title>
 
   <%- include('../partials/user-head') %>
 
@@ -18,7 +15,6 @@
     rel="stylesheet"
     href="/css/user/return-detail.css"
   >
-
 </head>
 
 <body>
@@ -27,18 +23,15 @@
 
 <main class="order-detail-page">
 
-  <!-- HEADER -->
   <section class="order-header card card-md return-header-card">
 
     <div>
-
       <h1 class="order-number">
-        Return Details- <%=returnRequest.returnNumber%>
+        Return Details- <%= returnRequest.returnNumber %>
       </h1>
 
       <p class="order-date">
-        Order Number:
-        <%= order.orderNumber %>
+        Order Number: <%= order.orderNumber %>
       </p>
 
       <p class="order-date">
@@ -49,265 +42,391 @@
           year: "numeric"
         }) %>
       </p>
-
     </div>
 
     <div class="order-header-right">
-
-      <span class="item-status-text return-status-pill return-status-<%= displayStatus.toLowerCase().replaceAll(' ', '-') %>">
+      <span
+        class="item-status-text return-status-pill return-status-<%= displayStatus.toLowerCase().replaceAll(' ', '-') %>"
+      >
         <%= displayStatus %>
       </span>
+    </div>
+
+  </section>
+
+  <section class="return-main-grid">
+
+    <div class="card card-md returned-item-card">
+
+      <div class="return-card-header">
+        <p class="return-card-eyebrow">RETURN ITEM</p>
+        <h3 class="info-title">Returned Item</h3>
+      </div>
+
+      <div class="returned-item">
+
+        <img
+          src="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/default-product.jpg' %>"
+          alt="<%= item.productName %>"
+          class="returned-item-image"
+        >
+
+        <div class="returned-item-content">
+
+          <div class="returned-item-main">
+
+            <div class="returned-product-info">
+              <h4><%= item.productName %></h4>
+
+              <p class="returned-item-variant">
+                <span><%= item.color %></span>
+                <span class="item-separator">/</span>
+                <span><%= item.size %></span>
+                <span class="item-separator">·</span>
+                <span>Qty <%= item.quantity %></span>
+              </p>
+            </div>
+
+            <div class="returned-item-refund">
+              <span>Refund Amount</span>
+
+              <strong>
+                ₹<%= Number(returnRequest.refundAmount).toLocaleString(
+                  "en-IN",
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }
+                ) %>
+              </strong>
+            </div>
+
+          </div>
+
+          <% if (statusMetaText) { %>
+            <div class="returned-item-update">
+              <span class="update-dot"></span>
+              <p><%= statusMetaText %></p>
+            </div>
+          <% } %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card card-md return-info-card">
+
+      <div class="return-card-header">
+        <p class="return-card-eyebrow">REQUEST DETAILS</p>
+        <h3 class="info-title">Return Information</h3>
+      </div>
+
+      <div class="return-info-list">
+
+        <div class="return-info-row">
+          <span class="return-info-label">
+            Return Reason
+          </span>
+
+          <span class="return-info-value">
+            <%= returnRequest.reason %>
+          </span>
+        </div>
+
+        <% if (returnRequest.comments) { %>
+
+          <div class="return-info-row return-info-row-comments">
+            <span class="return-info-label">
+              Comments
+            </span>
+
+            <p class="return-info-comment">
+              <%= returnRequest.comments %>
+            </p>
+          </div>
+
+        <% } %>
+
+        <div class="return-info-row">
+          <span class="return-info-label">
+            Refund Amount
+          </span>
+
+          <strong class="return-info-value refund-value">
+            ₹<%= Number(returnRequest.refundAmount).toLocaleString(
+              "en-IN",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            ) %>
+          </strong>
+        </div>
+
+        <div class="return-info-row">
+          <span class="return-info-label">
+            Current Status
+          </span>
+
+          <span class="return-info-value">
+            <%= displayStatus %>
+          </span>
+        </div>
+
+      </div>
 
     </div>
 
   </section>
 
-  <!-- INFO GRID -->
-  <section class="info-grid">
+  <% if (returnRequest.pickupAddress) { %>
 
-    <!-- Returned Item -->
-    <div class="card card-md">
+    <section class="card card-md pickup-detail-card">
 
-      <h3 class="info-title">
-        Returned Item
-      </h3>
+      <div class="return-card-header">
+        <p class="return-card-eyebrow">
+          COLLECTION DETAILS
+        </p>
 
-      <div class="summary-item return-summary-item">
+        <h3 class="info-title">
+          Pickup Address
+        </h3>
+      </div>
+
+      <div class="pickup-content">
+
+        <div class="pickup-contact">
+
+          <span class="pickup-detail-label">
+            Contact Person
+          </span>
+
+          <p class="pickup-primary">
+            <%= returnRequest.pickupAddress.fullName %>
+          </p>
+
+          <p class="pickup-secondary">
+            +91 <%= returnRequest.pickupAddress.phone %>
+          </p>
+
+        </div>
+
+        <div class="pickup-divider"></div>
+
+        <div class="pickup-address">
+
+          <span class="pickup-detail-label">
+            Pickup Location
+          </span>
+
+          <p class="pickup-primary">
+            <%= returnRequest.pickupAddress.line1 %>
+          </p>
+
+          <% if (returnRequest.pickupAddress.line2) { %>
+            <p class="pickup-secondary">
+              <%= returnRequest.pickupAddress.line2 %>
+            </p>
+          <% } %>
+
+          <p class="pickup-secondary">
+            <%= returnRequest.pickupAddress.city %>,
+            <%= returnRequest.pickupAddress.state %>
+            - <%= returnRequest.pickupAddress.pincode %>
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  <% } %>
+
+  <section class="card card-md return-timeline-card">
+
+    <div class="timeline-header">
+      <div>
+        <h2 class="summary-title">
+          Return Timeline
+        </h2>
+
+        <p class="timeline-subtitle">
+          Latest update:
+          <strong><%= displayStatus %></strong>
+
+          <% if (statusMetaText) { %>
+            · <%= statusMetaText %>
+          <% } %>
+        </p>
+      </div>
+    </div>
+
+    <div class="return-timeline">
+
+      <% timeline.forEach((step, index) => { %>
+
+        <div
+          class="timeline-step <%= step.completed ? 'completed' : '' %> <%= step.current ? 'current' : '' %>"
+        >
+
+          <div class="timeline-left">
+
+            <div class="timeline-dot"></div>
+
+            <% if (index !== timeline.length - 1) { %>
+              <div class="timeline-line"></div>
+            <% } %>
+
+          </div>
+
+          <div class="timeline-content">
+
+            <div class="timeline-top">
+
+              <h4 class="timeline-title">
+                <%= step.title %>
+              </h4>
+
+              <% if (step.current) { %>
+                <span class="timeline-badge">
+                  Current
+                </span>
+              <% } %>
+
+            </div>
+
+            <% if (step.date) { %>
+              <p class="timeline-date">
+                <%= step.date %>
+              </p>
+            <% } %>
+
+            <% if (step.note) { %>
+              <p class="timeline-note">
+                <%= step.note %>
+              </p>
+            <% } %>
+
+          </div>
+
+        </div>
+
+      <% }) %>
+
+    </div>
+
+  </section>
+
+  <div class="order-actions">
+
+    <% if (canCancelReturn) { %>
+
+      <button
+        type="button"
+        id="openCancelReturnModal"
+        class="secondary-btn"
+        data-return-id="<%= returnRequest._id %>"
+      >
+        Cancel Return
+      </button>
+
+    <% } %>
+
+    <a
+      href="/user/order/<%= order._id %>"
+      class="primary-btn"
+    >
+      Back to Order
+    </a>
+
+  </div>
+
+  <div
+    id="cancelReturnModal"
+    class="cancel-modal hidden"
+  >
+
+    <div class="cancel-modal-content">
+
+      <div class="modal-header">
+
+        <h2>Cancel Return</h2>
+
+        <button
+          type="button"
+          id="closeCancelReturnModal"
+          class="modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div class="cancel-product">
 
         <img
           src="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/default-product.jpg' %>"
           alt="<%= item.productName %>"
         >
 
-        <div class="summary-item-content">
+        <div>
+          <h3><%= item.productName %></h3>
 
-          <div class="item-top-row">
-            <h4 class="item-title">
-              <%= item.productName %>
-            </h4>
-          </div>
-
-          <p class="item-variant">
+          <p>
             <%= item.color %> /
             <%= item.size %>
             · Qty <%= item.quantity %>
           </p>
 
-          <p class="item-meta-text">
-            Refund Amount:
-            ₹<%= returnRequest.refundAmount.toLocaleString("en-IN") %>
-          </p>
-
-          <% if (statusMetaText) { %>
-            <p class="item-meta-text">
-              <%= statusMetaText %>
-            </p>
-          <% } %>
-
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- Return Info -->
-    <div class="card card-md">
-
-      <h3 class="info-title">
-        Return Information
-      </h3>
-
-      <div class="order-info-box">
-
-        <div class="info-row">
-          <span>Reason</span>
-          <p>
-            <%= returnRequest.reason %>
-          </p>
-        </div>
-
-        <% if (returnRequest.comments) { %>
-          <div class="info-row">
-            <span>Comments</span>
-            <p>
-              <%= returnRequest.comments %>
-            </p>
-          </div>
-        <% } %>
- 
-        <div class="info-row">
-          <span>Refund Amount</span>
           <strong>
-            ₹<%= returnRequest.refundAmount.toLocaleString("en-IN") %>
+            ₹<%= Number(returnRequest.refundAmount).toLocaleString(
+              "en-IN",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            ) %>
           </strong>
         </div>
 
       </div>
 
-    </div>
-
-  </section>
-    <!-- PICKUP ADDRESS -->
-<% if (returnRequest.pickupAddress) { %>
-
-<section class="card card-md">
-  <h3 class="info-title">
-    Pickup Address
-  </h3>
-
-  <div class="shipping-box">
-    <h4><%= returnRequest.pickupAddress.fullName %></h4>
-
-    <p><%= returnRequest.pickupAddress.line1 %></p>
-
-    <% if (returnRequest.pickupAddress.line2) { %>
-      <p><%= returnRequest.pickupAddress.line2 %></p>
-    <% } %>
-
-    <p>
-      <%= returnRequest.pickupAddress.city %>,
-      <%= returnRequest.pickupAddress.state %>
-    </p>
-
-    <p><%= returnRequest.pickupAddress.pincode %></p>
-    <p>+91 <%= returnRequest.pickupAddress.phone %></p>
-  </div>
-</section>
-
-<% } %>
-  <section class="card card-md return-timeline-card">
-
-  <div class="timeline-header">
-    <div>
-      <h2 class="summary-title">Return Timeline</h2>
-      <p class="timeline-subtitle">
-        Latest update:
-        <strong><%= displayStatus %></strong>
-        <% if (statusMetaText) { %>
-          · <%= statusMetaText %>
-        <% } %>
+      <p class="cancel-return-note">
+        Are you sure you want to cancel this return request?
       </p>
-    </div>
-  </div>
 
-  <div class="return-timeline">
-    <% timeline.forEach((step, index) => { %>
-      <div class="timeline-step <%= step.completed ? 'completed' : '' %> <%= step.current ? 'current' : '' %>">
-        
-        <div class="timeline-left">
-          <div class="timeline-dot"></div>
-          <% if (index !== timeline.length - 1) { %>
-            <div class="timeline-line"></div>
-          <% } %>
-        </div>
+      <div class="cancel-modal-actions">
 
-        <div class="timeline-content">
-          <div class="timeline-top">
-            <h4 class="timeline-title"><%= step.title %></h4>
+        <button
+          type="button"
+          id="keepReturnBtn"
+          class="secondary-btn"
+        >
+          Keep Return
+        </button>
 
-            <% if (step.current) { %>
-              <span class="timeline-badge">Current</span>
-            <% } %>
-          </div>
-
-          <% if (step.date) { %>
-            <p class="timeline-date"><%= step.date %></p>
-          <% } %>
-
-          <% if (step.note) { %>
-            <p class="timeline-note"><%= step.note %></p>
-          <% } %>
-        </div>
+        <button
+          type="button"
+          id="confirmCancelReturnBtn"
+          class="primary-btn"
+          data-return-id="<%= returnRequest._id %>"
+        >
+          Confirm Cancellation
+        </button>
 
       </div>
-    <% }) %>
-  </div>
 
-</section>
-
-
-
-
-
-  <!-- ACTIONS -->
-  <div class="order-actions">
-
-<% if (canCancelReturn) { %>
-  <button
-    type="button"
-    id="openCancelReturnModal"
-    class="secondary-btn"
-    data-return-id="<%= returnRequest._id %>"
-  >
-    Cancel Return
-  </button>
-<% } %>
-
-  <a
-    href="/user/order/<%= order._id %>"
-    class="primary-btn"
-  >
-    Back to Order
-  </a>
-
-  </div>
-<div
-  id="cancelReturnModal"
-  class="cancel-modal hidden"
->
-  <div class="cancel-modal-content">
-    <div class="modal-header">
-      <h2>Cancel Return</h2>
-
-      <button
-        type="button"
-        id="closeCancelReturnModal"
-        class="modal-close"
-      >
-        ×
-      </button>
     </div>
 
-    <div class="cancel-product">
-      <img
-        src="<%= item.variantId?.images?.[0]?.url || '/images/default-product.jpg' %>"
-        alt="<%= item.productName %>"
-      >
-
-      <div>
-        <h3><%= item.productName %></h3>
-        <p><%= item.color %> / <%= item.size %></p>
-        <strong>₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %></strong>
-      </div>
-    </div>
-
-    <p class="cancel-return-note">
-      Are you sure you want to cancel this return request?
-    </p>
-
-    <div class="cancel-modal-actions">
-      <button
-        type="button"
-        id="keepReturnBtn"
-        class="secondary-btn"
-      >
-        Keep Return
-      </button>
-
-      <button
-        type="button"
-        id="confirmCancelReturnBtn"
-        class="primary-btn"
-        data-return-id="<%= returnRequest._id %>"
-      >
-        Confirm Cancellation
-      </button>
-    </div>
   </div>
-</div>
+
 </main>
 
 <%- include('../partials/user-scripts') %>
+
 <script src="/js/user/returnDetail.js"></script>
 
 </body>

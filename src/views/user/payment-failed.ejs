@@ -2,21 +2,19 @@
 <html lang="en">
 
 <head>
-
   <title>Payment Failed — Commoncore</title>
 
-  <%- include('../partials/user-head') %>
+  <%- include("../partials/user-head") %>
 
   <link
     rel="stylesheet"
     href="/css/user/payment-failed.css"
   >
-
 </head>
 
 <body>
 
-<%- include('../partials/user-header') %>
+<%- include("../partials/user-header") %>
 
 <main class="success-page">
 
@@ -27,24 +25,52 @@
     </div>
 
     <h1 class="success-title">
-      Payment Failed
+      Payment Unsuccessful
     </h1>
 
     <p class="success-text">
-      We couldn't complete your payment. No worries, your order hasn't been placed. Please try the payment again or return to checkout.
+      We couldn't complete your payment. Your order has been saved,
+      but it will only be confirmed after successful payment.
     </p>
 
     <div class="success-meta">
 
       <div class="success-meta-item">
+        <span>Order Number</span>
+
+        <strong>
+          <%= order.orderNumber %>
+        </strong>
+      </div>
+
+      <div class="success-meta-item">
         <span>Payment Status</span>
-        <strong>Failed</strong>
+
+        <strong>
+          <%= order.paymentStatus %>
+        </strong>
+      </div>
+
+      <div class="success-meta-item">
+        <span>Order Status</span>
+
+        <strong>
+          <%= order.orderStatus %>
+        </strong>
       </div>
 
       <div class="success-meta-item">
         <span>Date</span>
+
         <strong>
-          <%= new Date().toLocaleDateString("en-IN") %>
+          <%= new Date(order.createdAt).toLocaleDateString(
+            "en-IN",
+            {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            },
+          ) %>
         </strong>
       </div>
 
@@ -65,16 +91,25 @@
       <div class="success-address">
 
         <p>
-          • Payment was cancelled or unsuccessful.
+          • The payment was cancelled or unsuccessful.
         </p>
 
         <p>
-          • Your card/account has not been charged if the transaction failed.
+          • Your order is saved as Payment Pending.
         </p>
 
         <p>
-          • If money was deducted, it is usually refunded automatically by your bank.
+          • Stock has not been reduced and the order is not confirmed yet.
         </p>
+
+        <% if (order.paymentFailure?.description) { %>
+
+          <p class="payment-failure-reason">
+            <strong>Reason:</strong>
+            <%= order.paymentFailure.description %>
+          </p>
+
+        <% } %>
 
       </div>
 
@@ -92,17 +127,30 @@
 
         <div class="delivery-row">
           <span>Retry Payment</span>
-          <strong>Available</strong>
+
+          <strong>
+            <%= canRetryPayment
+              ? "Available"
+              : "Unavailable" %>
+          </strong>
         </div>
 
         <div class="delivery-row">
-          <span>Checkout</span>
-          <strong>Return Anytime</strong>
+          <span>Order Details</span>
+
+          <strong>
+            Available
+          </strong>
         </div>
 
         <div class="delivery-row">
-          <span>Need Help?</span>
-          <strong>Contact Support</strong>
+          <span>Payment Session</span>
+
+          <strong>
+            <%= paymentExpired
+              ? "Expired"
+              : "Active" %>
+          </strong>
         </div>
 
       </div>
@@ -113,27 +161,44 @@
 
   <div class="success-actions">
 
-   <button
-  type="button"
-  class="primary-btn"
-  id="retryPaymentBtn"
->
-  Retry Payment
-</button>
+    <% if (canRetryPayment) { %>
+
+      <button
+        type="button"
+        class="primary-btn"
+        id="retryPaymentBtn"
+        data-order-id="<%= order._id %>"
+      >
+        Retry Payment
+      </button>
+
+    <% } %>
 
     <a
-      href="/user/checkout"
+      href="/user/order/<%= order._id %>"
+      class="<%= canRetryPayment
+        ? 'secondary-btn'
+        : 'primary-btn' %>"
+    >
+      View Order Details
+    </a>
+
+    <a
+      href="/user/orders"
       class="secondary-btn"
     >
-      Back to Checkout
+      My Orders
     </a>
 
   </div>
 
 </main>
 
-<%- include('../partials/user-scripts') %>
+<%- include("../partials/user-scripts") %>
+
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="/js/user/paymentFailed.js"></script>
+
 </body>
+
 </html>

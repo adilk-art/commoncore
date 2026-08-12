@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include("./partials/head", {
+    title: coupon ? "Edit Coupon" : "Add Coupon"
+  }) %>
+
+  <link rel="stylesheet" href="/css/admin/coupon-form.css">
+</head>
+
+<body>
+
+  <%- include("./partials/header", {
+    title: coupon ? "Edit Coupon" : "Add Coupon"
+  }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", {
+      active: "coupons"
+    }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+
+          <div>
+            <p class="breadcrumb">
+              Admin Dashboard &gt; Coupons &gt;
+              <%= coupon ? "Edit" : "Add" %>
+            </p>
+
+            <h2 class="page-title">
+              <%= coupon ? "Edit Coupon" : "Create Coupon" %>
+            </h2>
+          </div>
+
+          <a href="/admin/coupons" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Coupons
+          </a>
+
+        </div>
+
+        <div class="form-layout">
+
+          <form
+            id="couponForm"
+            class="coupon-form"
+            data-id="<%= coupon?._id || '' %>"
+            data-edit="<%= coupon ? 'true' : 'false' %>"
+            novalidate
+          >
+
+            <!-- COUPON DETAILS -->
+
+            <div class="form-card">
+
+              <div class="card-header">
+
+                <div>
+                  <h3>Coupon Details</h3>
+                  <p>Enter the basic information for this coupon.</p>
+                </div>
+
+                <i class="fa-solid fa-ticket"></i>
+
+              </div>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+
+                  <label for="name">
+                    Coupon Name <span>*</span>
+                  </label>
+
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="<%= coupon?.name || '' %>"
+                    placeholder="Enter coupon name"
+                    autocomplete="off"
+                  >
+
+                  <small
+                    class="field-error"
+                    id="nameError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label for="code">
+                    Coupon Code <span>*</span>
+                  </label>
+
+                  <input
+                    type="text"
+                    id="code"
+                    name="code"
+                    value="<%= coupon?.code || '' %>"
+                    placeholder="Enter coupon code"
+                    autocomplete="off"
+                  >
+
+                  <small
+                    class="field-error"
+                    id="codeError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group form-group--full">
+
+                  <label for="description">
+                    Description <span>*</span>
+                  </label>
+
+                  <textarea
+                    id="description"
+                    name="description"
+                    placeholder="Enter coupon description"
+                  ><%= coupon?.description || '' %></textarea>
+
+                  <small
+                    class="field-error"
+                    id="descriptionError"
+                  ></small>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- DISCOUNT RULES -->
+
+            <div class="form-card">
+
+              <div class="card-header">
+
+                <div>
+                  <h3>Discount Rules</h3>
+                  <p>
+                    Configure how the coupon discount should be calculated.
+                  </p>
+                </div>
+
+                <i class="fa-solid fa-percent"></i>
+
+              </div>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+
+                  <label for="discountType">
+                    Discount Type <span>*</span>
+                  </label>
+
+                  <select
+                    id="discountType"
+                    name="discountType"
+                  >
+                    <option value="">
+                      Select discount type
+                    </option>
+
+                    <option
+                      value="PERCENTAGE"
+                      <%= coupon?.discountType === "PERCENTAGE"
+                        ? "selected"
+                        : "" %>
+                    >
+                      Percentage
+                    </option>
+
+                    <option
+                      value="FLAT"
+                      <%= coupon?.discountType === "FLAT"
+                        ? "selected"
+                        : "" %>
+                    >
+                      Flat
+                    </option>
+                  </select>
+
+                  <small
+                    class="field-error"
+                    id="discountTypeError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label for="discountValue">
+                    Discount Value <span>*</span>
+                  </label>
+
+                  <div class="input-prefix">
+
+                    <span id="discountValuePrefix">
+                      <%= coupon?.discountType === "PERCENTAGE"
+                        ? "%"
+                        : "₹" %>
+                    </span>
+
+                    <input
+                      type="number"
+                      id="discountValue"
+                      name="discountValue"
+                      value="<%= coupon?.discountValue ?? '' %>"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter discount value"
+                    >
+
+                  </div>
+
+                  <small
+                    class="field-error"
+                    id="discountValueError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label for="minimumPurchaseAmount">
+                    Minimum Purchase Amount <span>*</span>
+                  </label>
+
+                  <div class="input-prefix">
+
+                    <span>₹</span>
+
+                    <input
+                      type="number"
+                      id="minimumPurchaseAmount"
+                      name="minimumPurchaseAmount"
+                      value="<%= coupon?.minimumPurchaseAmount ?? '' %>"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter minimum purchase amount"
+                    >
+
+                  </div>
+
+                  <small
+                    class="field-error"
+                    id="minimumPurchaseAmountError"
+                  ></small>
+
+                </div>
+
+                <div
+                  class="form-group"
+                  id="maximumDiscountGroup"
+                  <%= coupon?.discountType === "FLAT"
+                    ? 'style="display: none;"'
+                    : "" %>
+                >
+
+                  <label for="maximumDiscountAmount">
+                    Maximum Discount Amount <span>*</span>
+                  </label>
+
+                  <div class="input-prefix">
+
+                    <span>₹</span>
+
+                    <input
+                      type="number"
+                      id="maximumDiscountAmount"
+                      name="maximumDiscountAmount"
+                      value="<%= coupon?.maximumDiscountAmount ?? '' %>"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter maximum discount"
+                    >
+
+                  </div>
+
+                  <small
+                    class="field-error"
+                    id="maximumDiscountAmountError"
+                  ></small>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- VALIDITY AND USAGE -->
+
+            <div class="form-card">
+
+              <div class="card-header">
+
+                <div>
+                  <h3>Validity and Usage</h3>
+                  <p>
+                    Set the coupon validity period and usage restriction.
+                  </p>
+                </div>
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+              </div>
+
+              <div class="form-grid">
+
+                <div class="form-group">
+
+                  <label for="validFrom">
+                    Valid From <span>*</span>
+                  </label>
+
+                    <input
+                    type="datetime-local"
+                    id="validFrom"
+                    name="validFrom"
+                    value="<%= coupon?.validFrom
+                        ? new Date(coupon.validFrom).toISOString().slice(0, 16)
+                        : '' %>"
+                    />
+
+                  <small
+                    class="field-error"
+                    id="validFromError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label for="validUntil">
+                    Valid Until <span>*</span>
+                  </label>
+
+                    <input
+                    type="datetime-local"
+                    id="validUntil"
+                    name="validUntil"
+                    value="<%= coupon?.validUntil
+                        ? new Date(coupon.validUntil).toISOString().slice(0, 16)
+                        : '' %>"
+                    />
+
+                  <small
+                    class="field-error"
+                    id="validUntilError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group">
+
+                  <label for="usageLimit">
+                    Usage Limit (Global)
+                  </label>
+
+                  <input
+                    type="number"
+                    id="usageLimit"
+                    name="usageLimit"
+                    value="<%= coupon?.usageLimit ?? '' %>"
+                    min="1"
+                    step="1"
+                    placeholder="Leave empty for unlimited"
+                  >
+
+                  <small class="field-hint">
+                    Leave empty to allow unlimited usage.
+                  </small>
+
+                  <small
+                    class="field-error"
+                    id="usageLimitError"
+                  ></small>
+
+                </div>
+
+                <div class="form-group status-group">
+
+                  <label>
+                    Coupon Status
+                  </label>
+
+                  <label class="switch-row">
+
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      name="isActive"
+                      <%= coupon
+                        ? coupon.isActive
+                          ? "checked"
+                          : ""
+                        : "checked" %>
+                    >
+
+                    <span class="switch"></span>
+
+                    <span
+                      class="switch-label"
+                      id="statusLabel"
+                    >
+                      <%= coupon
+                        ? coupon.isActive
+                          ? "Active"
+                          : "Inactive"
+                        : "Active" %>
+                    </span>
+
+                  </label>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+
+              <a
+                href="/admin/coupons"
+                class="cancel-btn"
+              >
+                Cancel
+              </a>
+
+              <button
+                type="submit"
+                class="submit-btn"
+                id="submitCouponBtn"
+              >
+
+                <span class="btn-text">
+                  <%= coupon
+                    ? "Update Coupon"
+                    : "Create Coupon" %>
+                </span>
+
+                <span class="btn-loader hidden"></span>
+
+              </button>
+
+            </div>
+
+          </form>
+
+          <!-- PREVIEW -->
+
+          <aside class="preview-card">
+
+            <div class="preview-header">
+
+              <p>Coupon Preview</p>
+
+              <span
+                id="previewStatus"
+                class="preview-status <%= coupon && !coupon.isActive
+                  ? 'inactive'
+                  : 'active' %>"
+              >
+                <%= coupon && !coupon.isActive
+                  ? "Inactive"
+                  : "Active" %>
+              </span>
+
+            </div>
+
+            <div class="preview-ticket">
+
+              <div
+                class="preview-code"
+                id="previewCode"
+              >
+                <%= coupon?.code || "COUPONCODE" %>
+              </div>
+
+              <h3 id="previewName">
+                <%= coupon?.name || "Coupon Name" %>
+              </h3>
+
+              <p id="previewDescription">
+                <%= coupon?.description ||
+                  "Coupon description will appear here." %>
+              </p>
+
+              <div class="preview-discount">
+
+                <strong id="previewDiscount">
+
+                  <% if (coupon?.discountType === "PERCENTAGE") { %>
+
+                    <%= Number(coupon.discountValue) %>% OFF
+
+                  <% } else if (coupon?.discountType === "FLAT") { %>
+
+                    ₹<%= Number(
+                      coupon.discountValue
+                    ).toLocaleString("en-IN") %> OFF
+
+                  <% } else { %>
+
+                    Discount
+
+                  <% } %>
+
+                </strong>
+
+                <small id="previewMaximum">
+
+                  <% if (
+                    coupon?.discountType === "PERCENTAGE" &&
+                    coupon?.maximumDiscountAmount
+                  ) { %>
+
+                    Maximum discount ₹<%= Number(
+                      coupon.maximumDiscountAmount
+                    ).toLocaleString("en-IN") %>
+
+                  <% } %>
+
+                </small>
+
+              </div>
+
+              <div class="preview-meta">
+
+                <div>
+
+                  <span>Minimum Purchase</span>
+
+                  <strong id="previewMinimum">
+
+                    <% if (
+                      coupon?.minimumPurchaseAmount != null
+                    ) { %>
+
+                      ₹<%= Number(
+                        coupon.minimumPurchaseAmount
+                      ).toLocaleString("en-IN") %>
+
+                    <% } else { %>
+
+                      ₹0
+
+                    <% } %>
+
+                  </strong>
+
+                </div>
+
+                <div>
+
+                  <span>Usage</span>
+
+                  <strong id="previewUsage">
+                    <%= coupon?.usageLimit
+                      ? `${coupon.usageLimit} uses`
+                      : "Unlimited" %>
+                  </strong>
+
+                </div>
+
+              </div>
+
+              <div class="preview-validity">
+
+                <i class="fa-regular fa-calendar"></i>
+
+                <span id="previewValidity">
+                  Select validity dates
+                </span>
+
+              </div>
+
+            </div>
+
+          </aside>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="/js/admin/coupon-form.js"></script>
+
+</body>
+
+</html>

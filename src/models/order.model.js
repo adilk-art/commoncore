@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const { Schema } = mongoose;
 
 const orderItemSchema = new Schema({
@@ -36,15 +35,10 @@ const orderItemSchema = new Schema({
     min: 0,
   },
 
-  discountAmount: {
+  couponDiscountAmount: {
     type: Number,
     default: 0,
     min: 0,
-  },
-
-  hasOffer: {
-    type: Boolean,
-    default: false,
   },
 
   offerId: {
@@ -131,25 +125,50 @@ const orderSchema = new Schema(
       default: "Pending",
     },
 
-    paymentExpiresAt: {
+    paymentExpiresAt: Date,
+
+    razorpayPaymentId: String,
+    razorpayOrderId: String,
+    razorpaySignature: String,
+    paymentAttempts: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    lastPaymentAttemptAt: {
       type: Date,
+      default: undefined,
     },
 
-    razorpayPaymentId: {
-      type: String,
+    paymentFailure: {
+      code: {
+        type: String,
+        default: undefined,
+      },
+
+      description: {
+        type: String,
+        default: undefined,
+      },
+
+      reason: {
+        type: String,
+        default: undefined,
+      },
+
+      source: {
+        type: String,
+        default: undefined,
+      },
+
+      step: {
+        type: String,
+        default: undefined,
+      },
     },
 
-    razorpayOrderId: {
-      type: String,
-    },
-
-    razorpaySignature: {
-      type: String,
-    },
-
-    estimatedDeliveryDate: {
-      type: Date,
-    },
+    estimatedDeliveryDate: Date,
 
     shippingAddress: {
       fullName: String,
@@ -161,27 +180,38 @@ const orderSchema = new Schema(
       pincode: String,
     },
 
-    originalSubtotal: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+    coupon: {
+      couponId: {
+        type: Schema.Types.ObjectId,
+        ref: "Coupon",
+        default: undefined,
+      },
 
-    discountTotal: {
-      type: Number,
-      default: 0,
-      min: 0,
+      code: {
+        type: String,
+        default: undefined,
+      },
+
+      name: {
+        type: String,
+        default: undefined,
+      },
+
+      discountType: {
+        type: String,
+        enum: ["PERCENTAGE", "FLAT"],
+        default: undefined,
+      },
+
+      discountValue: {
+        type: Number,
+        default: undefined,
+      },
     },
 
     shippingFee: {
       type: Number,
       default: 0,
-      min: 0,
-    },
-
-    subtotal: {
-      type: Number,
-      required: true,
       min: 0,
     },
 
@@ -194,6 +224,7 @@ const orderSchema = new Schema(
     orderStatus: {
       type: String,
       enum: [
+        "Payment Pending",
         "Placed",
         "Processing",
         "Shipped",
@@ -213,5 +244,14 @@ const orderSchema = new Schema(
     timestamps: true,
   },
 );
+
+
+orderSchema.index({
+  userId: 1,
+  "coupon.couponId": 1,
+  paymentMethod: 1,
+  paymentStatus: 1,
+  orderStatus: 1,
+});
 
 export default mongoose.model("Order", orderSchema);

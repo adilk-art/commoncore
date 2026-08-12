@@ -5,22 +5,37 @@ import {
   cancelReturnRequestService,
 } from "../../services/user/return.service.js";
 
-export const loadReturnRequestPage = async (req, res, next) => {
+export const loadReturnRequestPage = async (
+  req,
+  res,
+  next,
+) => {
   try {
-    const { order, item, pickupAddress, addresses, returnLastDate } =
+    const {
+      order,
+      item,
+      pickupAddress,
+      addresses,
+      returnLastDate,
+      paidAmount,
+    } =
       await getReturnRequestPageService(
         req.params.orderId,
         req.params.itemId,
         req.session.userId,
       );
 
-    res.render("user/return-request", {
-      order,
-      item,
-      pickupAddress,
-      addresses,
-      returnLastDate,
-    });
+    res.render(
+      "user/return-request",
+      {
+        order,
+        item,
+        pickupAddress,
+        addresses,
+        returnLastDate,
+        paidAmount,
+      },
+    );
   } catch (error) {
     next(error);
   }

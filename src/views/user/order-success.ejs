@@ -7,7 +7,7 @@
     Order Successful — Commoncore
   </title>
 
-  <%- include('../partials/user-head') %>
+  <%- include("../partials/user-head") %>
 
   <link
     rel="stylesheet"
@@ -18,7 +18,7 @@
 
 <body>
 
-<%- include('../partials/user-header') %>
+<%- include("../partials/user-header") %>
 
 <main class="success-page">
 
@@ -60,8 +60,9 @@
         </span>
 
         <strong>
-          <%= new Date(order.createdAt)
-            .toLocaleDateString("en-IN") %>
+          <%= new Date(
+            order.createdAt
+          ).toLocaleDateString("en-IN") %>
         </strong>
 
       </div>
@@ -96,7 +97,7 @@
           <%= order.shippingAddress.line1 %>
         </p>
 
-        <% if(order.shippingAddress.line2){ %>
+        <% if (order.shippingAddress.line2) { %>
 
           <p>
             <%= order.shippingAddress.line2 %>
@@ -133,34 +134,57 @@
 
       </div>
 
-     <div class="delivery-info">
+      <div class="delivery-info">
 
-  <div class="delivery-row">
-    <span>Estimated Delivery</span>
-    <strong>
-      <%= new Date(order.estimatedDeliveryDate).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-      }) %>
-    </strong>
-  </div>
+        <div class="delivery-row">
 
-  <div class="delivery-row">
-    <span>Payment Method</span>
-    <strong>
-      <%= order.paymentMethod.replace(/([a-z])([A-Z])/g, "$1 $2") %>
-    </strong>
-  </div>
+          <span>
+            Estimated Delivery
+          </span>
 
-  <div class="delivery-row">
-    <span>Order Status</span>
-    <strong>
-      <%= order.orderStatus %>
-    </strong>
-  </div>
+          <strong>
+            <%= new Date(
+              order.estimatedDeliveryDate
+            ).toLocaleDateString(
+              "en-IN",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              },
+            ) %>
+          </strong>
 
-</div>
+        </div>
+
+        <div class="delivery-row">
+
+          <span>
+            Payment Method
+          </span>
+
+          <strong>
+            <%= order.paymentMethod.replace(
+              /([a-z])([A-Z])/g,
+              "$1 $2",
+            ) %>
+          </strong>
+
+        </div>
+
+        <div class="delivery-row">
+
+          <span>
+            Order Status
+          </span>
+
+          <strong>
+            <%= order.orderStatus %>
+          </strong>
+
+        </div>
+
+      </div>
 
     </section>
 
@@ -177,20 +201,24 @@
       </h2>
 
       <span class="success-order-count">
-        <%= order.items.length %> Items
+        <%= order.items.length %>
+        <%= order.items.length === 1
+          ? "Item"
+          : "Items" %>
       </span>
 
     </div>
 
     <div class="success-items">
 
-      <% order.items.forEach(item => { %>
+      <% order.items.forEach((item) => { %>
 
         <div class="success-item">
 
           <img
-            src="<%= item.variantId?.images?.[0]?.url %>"
-            alt=""
+            src="<%= item.productImage ||
+              '/images/no-image.png' %>"
+            alt="<%= item.productName %>"
           >
 
           <div class="success-item-info">
@@ -211,40 +239,77 @@
 
           </div>
 
-<div class="success-item-price">
+          <div class="success-item-price">
 
-  <div class="success-item-price-row">
+            <div class="success-item-price-row">
 
-    <span class="success-item-current-price">
-      ₹<%= Number(
-        item.unitPrice * item.quantity
-      ).toLocaleString("en-IN") %>
-    </span>
+              <span
+                class="success-item-current-price"
+              >
+                ₹<%= Number(
+                  item.unitPrice *
+                  item.quantity,
+                ).toLocaleString(
+                  "en-IN",
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  },
+                ) %>
+              </span>
 
-    <% if (item.hasOffer) { %>
-      <span class="success-item-old-price">
-        ₹<%= Number(
-          (item.originalUnitPrice ?? item.unitPrice) *
-          item.quantity
-        ).toLocaleString("en-IN") %>
-      </span>
-    <% } %>
+              <% if (item.offerId) { %>
 
-  </div>
+                <span
+                  class="success-item-old-price"
+                >
+                  ₹<%= Number(
+                    item.originalUnitPrice *
+                    item.quantity,
+                  ).toLocaleString(
+                    "en-IN",
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    },
+                  ) %>
+                </span>
 
-  <% if (item.hasOffer) { %>
-    <span class="success-item-offer-badge">
-      <% if (item.discountType === "PERCENTAGE") { %>
-        <%= Number(item.discountValue) %>% OFF
-      <% } else { %>
-        ₹<%= Number(
-          item.discountValue
-        ).toLocaleString("en-IN") %> OFF
-      <% } %>
-    </span>
-  <% } %>
+              <% } %>
 
-</div>
+            </div>
+
+            <% if (item.offerId) { %>
+
+              <span
+                class="success-item-offer-badge"
+              >
+
+                <% if (
+                  item.discountType ===
+                  "PERCENTAGE"
+                ) { %>
+
+                  <%= Number(
+                    item.discountValue
+                  ) %>% OFF
+
+                <% } else { %>
+
+                  ₹<%= Number(
+                    item.discountValue
+                  ).toLocaleString(
+                    "en-IN"
+                  ) %> OFF
+
+                <% } %>
+
+              </span>
+
+            <% } %>
+
+            
+          </div>
 
         </div>
 
@@ -259,57 +324,117 @@
 <div class="success-summary">
 
   <div class="summary-row">
-    <span>Original subtotal</span>
+
+    <span>
+      Original subtotal
+    </span>
 
     <span>
       ₹<%= Number(
         originalSubtotal
-      ).toLocaleString("en-IN") %>
+      ).toLocaleString(
+        "en-IN",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        },
+      ) %>
     </span>
+
   </div>
 
-  <% if (discountTotal > 0) { %>
+  <% if (offerDiscountTotal > 0) { %>
+
     <div class="summary-row summary-row--discount">
-      <span>Offer discount</span>
+
+      <span>
+        Offer discount
+      </span>
 
       <span>
         −₹<%= Number(
-          discountTotal
-        ).toLocaleString("en-IN") %>
+          offerDiscountTotal
+        ).toLocaleString(
+          "en-IN",
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          },
+        ) %>
       </span>
+
     </div>
+
   <% } %>
 
-  <div class="summary-row">
-    <span>Subtotal</span>
+  <% if (couponDiscountTotal > 0) { %>
 
-    <span>
-      ₹<%= Number(
-        order.subtotal
-      ).toLocaleString("en-IN") %>
-    </span>
-  </div>
+    <div class="summary-row summary-row--discount">
+
+      <span>
+        Coupon discount
+
+        <% if (order.coupon?.code) { %>
+          (<%= order.coupon.code %>)
+        <% } %>
+      </span>
+
+      <span>
+        −₹<%= Number(
+          couponDiscountTotal
+        ).toLocaleString(
+          "en-IN",
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          },
+        ) %>
+      </span>
+
+    </div>
+
+  <% } %>
 
   <div class="summary-row summary-row--gst">
-    <span>GST Included</span>
+
+    <span>
+      GST Included
+    </span>
 
     <span>
       ₹<%= Number(
         gstAmount
-      ).toFixed(2) %>
+      ).toLocaleString(
+        "en-IN",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        },
+      ) %>
     </span>
+
   </div>
 
   <div class="summary-row">
-    <span>Shipping</span>
 
     <span>
-      <%= order.shippingFee === 0
+      Shipping
+    </span>
+
+    <span>
+      <%= Number(order.shippingFee) === 0
         ? "Free"
         : `₹${Number(
             order.shippingFee
-          ).toLocaleString("en-IN")}` %>
+          ).toLocaleString(
+            "en-IN",
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            },
+          )}` %>
     </span>
+
   </div>
 
   <div class="summary-divider"></div>
@@ -318,16 +443,18 @@
 
     <span>
       Total
-
-      <span class="text-muted gst-note">
-        Inclusive of GST
-      </span>
     </span>
 
     <span>
       ₹<%= Number(
         order.total
-      ).toLocaleString("en-IN") %>
+      ).toLocaleString(
+        "en-IN",
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        },
+      ) %>
     </span>
 
   </div>
@@ -341,12 +468,11 @@
   <div class="success-actions">
 
     <a
-    href="/user/order/<%= order._id %>"
-    class="primary-btn"
-  >
-    View Order
-  </a>
-
+      href="/user/order/<%= order._id %>"
+      class="primary-btn"
+    >
+      View Order
+    </a>
 
     <a
       href="/user/shop"
@@ -359,7 +485,8 @@
 
 </main>
 
-<%- include('../partials/user-scripts') %>
+<%- include("../partials/user-scripts") %>
 
 </body>
+
 </html>

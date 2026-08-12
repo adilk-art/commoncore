@@ -344,10 +344,10 @@
   min-height: 20px;
   padding: 0 8px;
   border-radius: 999px;
-  background: #111;
+  background: #000000;
   color: #fff;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .summary-row--discount {

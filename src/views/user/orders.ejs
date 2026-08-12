@@ -1,7 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>My Orders</title>
 
@@ -17,7 +23,6 @@
   <link rel="stylesheet" href="/css/user/global.css">
   <link rel="stylesheet" href="/css/user/toast.css">
   <link rel="stylesheet" href="/css/user/user-header.css">
-
 </head>
 
 <body>
@@ -27,238 +32,280 @@
 
   <div class="account-container">
 
-    <%- include("../partials/sidebar", { active: "orders" }) %>
+    <%- include("../partials/sidebar", {
+      active: "orders"
+    }) %>
 
     <div class="main-content">
 
-  <div class="page-header">
+      <div class="page-header">
 
-    <h2 class="page-title">
-      MY ORDERS
-    </h2>
-
-  </div>
-
-  <form
-    class="search-bar"
-    method="GET"
-    action="/user/orders"
-  >
-
-    <i class="fa-solid fa-magnifying-glass"></i>
-
-    <input
-      type="text"
-      name="search"
-      placeholder="Search Order ID..."
-      value="<%= search || '' %>"
-    >
-
-    <button
-      type="button"
-      class="clear-search <%= !search ? 'hidden' : '' %>"
-      onclick="window.location.href='/user/orders'"
-    >
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-
-  </form>
-
-  <% if (orders.length === 0) { %>
-
-    <div class="empty-orders">
-
-      <div class="empty-box">
-
-        <div class="icon">
-          📦
-        </div>
-
-        <% if (search) { %>
-
-          <h3>
-            No matching orders found
-          </h3>
-
-          <p>
-            Try searching with another order number.
-          </p>
-
-        <% } else { %>
-
-          <h3>
-            No Orders Yet
-          </h3>
-
-          <p>
-            Start shopping to see your orders here.
-          </p>
-
-        <% } %>
+        <h2 class="page-title">
+          MY ORDERS
+        </h2>
 
       </div>
 
-    </div>
+      <form
+        class="search-bar"
+        method="GET"
+        action="/user/orders"
+      >
 
-  <% } else { %>
+        <i class="fa-solid fa-magnifying-glass"></i>
 
-    <div class="orders-list">
+        <input
+          type="text"
+          name="search"
+          placeholder="Search Order ID..."
+          value="<%= search || '' %>"
+        >
 
-      <% orders.forEach(order => { %>
+        <button
+          type="button"
+          class="clear-search <%= !search ? 'hidden' : '' %>"
+          onclick="window.location.href='/user/orders'"
+          aria-label="Clear search"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
 
-        <%
-          const firstItem = order.items[0];
+      </form>
 
-          const totalItems = order.items.reduce(
-            (sum, item) => sum + item.quantity,
-            0
-          );
-        %>
+      <% if (!orders || orders.length === 0) { %>
 
-        <div class="order-row">
+        <div class="empty-orders">
 
-          <div class="product-image">
+          <div class="empty-box">
 
-            <img
-              src="<%= firstItem.productImage || '/images/default-product.jpg' %>"
-              alt="<%= firstItem.productName %>"
-            >
+            <div class="icon">
+              📦
+            </div>
 
-          </div>
+            <% if (search) { %>
 
-          <div>
+              <h3>
+                No matching orders found
+              </h3>
 
-            <span class="column-title">
-              ORDER ID
-            </span>
+              <p>
+                Try searching with another order number.
+              </p>
 
-            <h4>
-              <%= order.orderNumber %>
-            </h4>
-
-          </div>
-
-          <div>
-
-            <span class="column-title">
-              PRODUCT DETAILS
-            </span>
-
-            <p class="product-name">
-
-              <%= firstItem.productName %>
-
-              <% if(order.items.length > 1){ %>
-                <br>
-                + <%= order.items.length - 1 %> more
-              <% } %>
-
-            </p>
-
-          </div>
-
-          <div>
-
-            <span class="column-title">
-              TOTAL ITEMS
-            </span>
-
-            <h4>
-              <%= totalItems %> Item<%= totalItems > 1 ? 's' : '' %>
-            </h4>
-
-          </div>
-
-          <div>
-
-            <span class="column-title">
-              AMOUNT
-            </span>
-
-            <h4>
-              ₹<%= order.total.toFixed(2) %>
-            </h4>
-
-          </div>
-
-          <div>
-
-            <span class="column-title">
-              ORDER DATE
-            </span>
-
-            <p>
-              <%= new Date(order.createdAt)
-                .toLocaleDateString("en-IN") %>
-            </p>
-
-          </div>
-
-          <div>
-
-          <div class="order-status-cell">
-
-            <span class="column-title">
-              STATUS
-            </span>
-
-            <% if (!order.itemsStatusMixed) { %>
-              <div class="status-text status-<%= order.itemsSingleStatus.toLowerCase().replace(/\s+/g, '-') %>">
-                <%= order.itemsSingleStatus %>
-              </div>
             <% } else { %>
-              <div class="status-summary-list">
-                <% order.itemsStatusSummaryLines.forEach(line => { %>
-                  <div class="status-summary-line">
-                    <%= line %>
-                  </div>
-                <% }) %>
-              </div>
+
+              <h3>
+                No Orders Yet
+              </h3>
+
+              <p>
+                Start shopping to see your orders here.
+              </p>
+
             <% } %>
 
           </div>
 
-          </div>
+        </div>
 
-          <div>
+      <% } else { %>
 
-            <a
-              href="/user/order/<%= order._id %>"
-              class="view-btn"
-            >
-              View Details
-            </a>
+        <div class="orders-list">
 
-          </div>
+          <% orders.forEach((order) => { %>
+
+            <%
+              const firstItem =
+                order.items && order.items.length > 0
+                  ? order.items[0]
+                  : null;
+
+              const totalItems = Array.isArray(order.items)
+                ? order.items.reduce((sum, item) => {
+                    return sum + (Number(item.quantity) || 0);
+                  }, 0)
+                : 0;
+
+              const statusValue =
+                order.itemsSingleStatus ||
+                order.displayStatus ||
+                "Placed";
+
+              const statusClass = String(statusValue)
+                .toLowerCase()
+                .trim()
+                .replace(/\s+/g, "-");
+            %>
+
+            <div class="order-row">
+
+              <div class="product-image">
+
+                <img
+                  src="<%= firstItem?.productImage || '/images/default-product.jpg' %>"
+                  alt="<%= firstItem?.productName || 'Product image' %>"
+                >
+
+              </div>
+
+              <div>
+
+                <span class="column-title">
+                  ORDER ID
+                </span>
+
+                <h4>
+                  <%= order.orderNumber %>
+                </h4>
+
+              </div>
+
+              <div>
+
+                <span class="column-title">
+                  PRODUCT DETAILS
+                </span>
+
+                <p class="product-name">
+
+                  <%= firstItem?.productName || "Product unavailable" %>
+
+                  <% if (order.items && order.items.length > 1) { %>
+
+                    <br>
+
+                    + <%= order.items.length - 1 %> more
+
+                  <% } %>
+
+                </p>
+
+              </div>
+
+              <div>
+
+                <span class="column-title">
+                  TOTAL ITEMS
+                </span>
+
+                <h4>
+                  <%= totalItems %>
+                  Item<%= totalItems !== 1 ? "s" : "" %>
+                </h4>
+
+              </div>
+
+              <div>
+
+                <span class="column-title">
+                  AMOUNT
+                </span>
+
+                <h4>
+                  ₹<%= Number(order.total || 0).toFixed(2) %>
+                </h4>
+
+              </div>
+
+              <div>
+
+                <span class="column-title">
+                  ORDER DATE
+                </span>
+
+                <p>
+                  <%= new Date(order.createdAt).toLocaleDateString("en-IN") %>
+                </p>
+
+              </div>
+
+              <div class="order-status-cell">
+
+                <span class="column-title">
+                  STATUS
+                </span>
+
+                <% if (order.isPaymentPending) { %>
+
+                  <div
+                    class="status-text <%= order.paymentExpired
+                      ? 'status-payment-expired'
+                      : order.paymentFailed
+                        ? 'status-payment-failed'
+                        : 'status-payment-pending' %>"
+                  >
+                    <%= order.displayStatus %>
+                  </div>
+
+                <% } else if (!order.itemsStatusMixed) { %>
+
+                  <div
+                    class="status-text status-<%= statusClass %>"
+                  >
+                    <%= statusValue %>
+                  </div>
+
+                <% } else { %>
+
+                  <div class="status-summary-list">
+
+                    <% order.itemsStatusSummaryLines.forEach((line) => { %>
+
+                      <div class="status-summary-line">
+                        <%= line %>
+                      </div>
+
+                    <% }) %>
+
+                  </div>
+
+                <% } %>
+
+              </div>
+
+              <div>
+
+                <a
+                  href="/user/order/<%= order._id %>"
+                  class="view-btn <%= order.isPaymentPending && order.canRetryPayment
+                    ? 'view-btn--payment'
+                    : '' %>"
+                >
+                  <%= order.isPaymentPending && order.canRetryPayment
+                    ? "Continue / Pay"
+                    : "View Details" %>
+                </a>
+
+              </div>
+
+            </div>
+
+          <% }) %>
 
         </div>
 
-      <% }) %>
+      <% } %>
 
-    </div>
+      <% if (totalPages > 1) { %>
 
-  <% } %>
+        <div class="pagination">
 
-  <% if (totalPages > 1) { %>
+          <% for (let i = 1; i <= totalPages; i++) { %>
 
-    <div class="pagination">
+            <a
+              href="/user/orders?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>"
+              class="<%= Number(currentPage) === i ? 'active' : '' %>"
+            >
+              <%= i %>
+            </a>
 
-      <% for(let i = 1; i <= totalPages; i++) { %>
+          <% } %>
 
-        <a
-          href="/user/orders?page=<%= i %>&search=<%= search || '' %>"
-          class="<%= currentPage === i ? 'active' : '' %>"
-        >
-          <%= i %>
-        </a>
+        </div>
 
       <% } %>
 
     </div>
-
-  <% } %>
-
-</div>
 
   </div>
 

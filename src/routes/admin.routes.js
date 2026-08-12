@@ -6,6 +6,7 @@ import * as inventoryController from "../controllers/admin/inventory.controller.
 import * as orderController from "../controllers/admin/order.controller.js"
 import * as returnController from "../controllers/admin/return.controller.js"
 import * as offerController from "../controllers/admin/offer.controller.js"
+import * as couponController from "../controllers/admin/coupon.controller.js"
 import { isAdminAuth,isAdminNotAuth } from "../middlewares/adminAuth.middleware.js";
 import userController from "../controllers/user/user.controller.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
@@ -46,7 +47,6 @@ router.patch("/inventory/variant/:variantId/stock",isAdminAuth,inventoryControll
 
 router.get("/orders", isAdminAuth,orderController.getOrdersPage);
 router.get( "/orders/:orderId",isAdminAuth,orderController.getOrderDetailPage);
-router.patch("/orders/item-status", orderController.updateItemStatus);
 router.post("/orders/:orderId/mark-paid", isAdminAuth,orderController.markCodAsPaid);
 router.patch("/orders/item-status", isAdminAuth,orderController.updateItemStatus);
 
@@ -62,6 +62,15 @@ router.post("/offers/add", isAdminAuth,offerController.addOffer);
 router.get("/offers/:id/edit", isAdminAuth,offerController.loadEditOfferPage);
 router.patch("/offers/:id/edit",isAdminAuth,offerController.editOffer);
 router.patch("/offers/status/:id", isAdminAuth, offerController.changeOfferStatus);
+
+
+router.get("/coupons", isAdminAuth,couponController.loadCouponPage);
+router.get("/coupons/add",isAdminAuth,couponController.loadAddCouponPage);
+router.post("/coupons/add",isAdminAuth,couponController.addCoupon);
+router.get("/coupons/:id/edit",isAdminAuth,couponController.loadEditCouponPage);
+router.patch("/coupons/:id/edit",isAdminAuth,couponController.editCoupon);
+router.patch("/coupons/status/:id",isAdminAuth,couponController.changeCouponStatus);
+
 
 export default router;
 

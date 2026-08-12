@@ -72,24 +72,32 @@ export const markCodAsPaid = async (req, res, next) => {
   }
 };
 
-export const updateItemStatus = async (req, res, next) => {
+export const updateItemStatus = async (
+  req,
+  res,
+  next,
+) => {
   try {
-    const { orderId, itemId, status } = req.body;
-
-    const result = await updateItemStatusService({
+    const {
       orderId,
       itemId,
       status,
-    });
-    
+    } = req.body;
 
-    res.json({
-  success: true,
-  message: "Item status updated",
-  orderStatus: result.orderStatus,
-  showCodButton: result.showCodButton
-});
-  } catch (err) {
-    next(err);
+    const result =
+      await updateItemStatusService({
+        orderId,
+        itemId,
+        status,
+      });
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Item status updated successfully",
+      ...result,
+    });
+  } catch (error) {
+    next(error);
   }
 };

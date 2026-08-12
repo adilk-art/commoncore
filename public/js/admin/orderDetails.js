@@ -1,210 +1,358 @@
-const btn = document.getElementById("markCodPaidBtn");
+const codBtn = document.getElementById("markCodPaidBtn");
+const codPaymentHint = document.getElementById("codPaymentHint");
+
+function updateCodSection(paymentStatus, showCodButton) {
+  if (!codBtn) return;
+
+  if (paymentStatus === "Paid") {
+    codBtn.classList.remove("hidden");
+    codBtn.disabled = true;
+    codBtn.textContent = "Payment Received";
+
+    codPaymentHint?.classList.add("hidden");
+
+    return;
+  }
+
+  if (showCodButton) {
+    codBtn.classList.remove("hidden");
+    codBtn.disabled = false;
+    codBtn.textContent = "Mark COD Payment Received";
+
+    codPaymentHint?.classList.add("hidden");
+
+    return;
+  }
+
+  codBtn.classList.add("hidden");
+  codBtn.disabled = true;
+  codBtn.textContent = "Mark COD Payment Received";
+
+  codPaymentHint?.classList.remove("hidden");
+}
 
 function updateStatusSelect(select, status) {
-  [...select.options].forEach((option) => {
-    option.disabled = false;
-  });
+  if (!select) return;
 
+  select.innerHTML = "";
   select.disabled = false;
 
+  const addOption = (
+    value,
+    {
+      selected = false,
+      disabled = false,
+    } = {},
+  ) => {
+    const option =
+      document.createElement("option");
+
+    option.value = value;
+    option.textContent = value;
+    option.selected = selected;
+    option.disabled = disabled;
+
+    select.appendChild(option);
+  };
+
   switch (status) {
+    case "Placed":
+      addOption("Placed", {
+        selected: true,
+        disabled: true,
+      });
+
+      addOption("Processing");
+      addOption("Shipped");
+      addOption("Delivered");
+
+      break;
+
     case "Processing":
-      select.querySelector('option[value="Cancelled"]').disabled = false;
+      addOption("Processing", {
+        selected: true,
+        disabled: true,
+      });
+
+      addOption("Shipped");
+      addOption("Delivered");
+
       break;
 
     case "Shipped":
-      select.querySelector('option[value="Processing"]').disabled = true;
-      select.querySelector('option[value="Cancelled"]').disabled = true;
+      addOption("Shipped", {
+        selected: true,
+        disabled: true,
+      });
+
+      addOption("Delivered");
+
       break;
 
     case "Delivered":
-      select.disabled = true;
-      break;
-
     case "Cancelled":
-      select.disabled = true;
-      break;
-  }
-
-  select.value = status;
-}
-
-btn?.addEventListener("click", async () => {
-  const orderId = btn.dataset.orderId;
-
-  try {
-    btn.disabled = true;
-    btn.textContent = "Updating...";
-
-    const res = await axios.post(`/admin/orders/${orderId}/mark-paid`);
-
-    if (res.data.success) {
-      utils.showToast("COD payment marked as Paid", "success");
-
-      document.querySelectorAll(".payment-status-text").forEach((el) => {
-        el.textContent = "Paid";
+    case "Return Requested":
+    case "Return Accepted":
+    case "Returned":
+    case "Refunded":
+      addOption(status, {
+        selected: true,
+        disabled: true,
       });
 
-      const badge = document.querySelector(".payment-badge");
+      select.disabled = true;
 
-      if (badge) {
-        badge.textContent = "Paid";
-        badge.className = "payment-badge paid";
-      }
+      break;
 
-      btn.disabled = true;
-      btn.textContent = "Payment Received";
+    default:
+      addOption(status, {
+        selected: true,
+        disabled: true,
+      });
+
+      select.disabled = true;
+  }
+}
+
+function updatePaymentUI(paymentStatus) {
+  if (!paymentStatus) return;
+
+  document
+    .querySelectorAll(".payment-text")
+    .forEach((element) => {
+      element.textContent = paymentStatus;
+
+      element.classList.remove(
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+      );
+
+      element.classList.add(
+        paymentStatus.toLowerCase(),
+      );
+    });
+
+  const badge = document.querySelector(".payment-badge");
+
+  if (badge) {
+    badge.textContent = paymentStatus;
+
+    badge.className =
+      `payment-badge ${paymentStatus.toLowerCase()}`;
+  }
+}
+
+function updateOverallOrderStatus(status) {
+  if (!status) return;
+
+  const badge = document.querySelector(
+    ".order-number-row .status",
+  );
+
+  if (!badge) return;
+
+  badge.textContent = status;
+
+  badge.className =
+    `status ${status
+      .toLowerCase()
+      .replace(/\s+/g, "-")}`;
+}
+
+function updateItemUI(itemRow, status) {
+  if (!itemRow) return;
+
+  const badge = itemRow.querySelector(".item-status");
+
+  if (badge) {
+    badge.textContent = status;
+
+    badge.className =
+      `item-status item-status-${status
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`;
+  }
+
+  const dateElement = itemRow.querySelector(
+    ".item-status-date",
+  );
+
+  const now = new Date().toLocaleDateString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    },
+  );
+
+  if (dateElement) {
+    dateElement.textContent = now;
+  }
+
+  if (status === "Cancelled") {
+    itemRow.classList.add("order-item--cancelled");
+  }
+}
+
+codBtn?.addEventListener("click", async () => {
+  const orderId = codBtn.dataset.orderId;
+
+  try {
+    codBtn.disabled = true;
+    codBtn.textContent = "Updating...";
+
+    const response = await axios.post(
+      `/admin/orders/${orderId}/mark-paid`,
+    );
+
+    const data = response.data;
+
+    if (!data.success) {
+      throw new Error(
+        data.message || "Payment update failed",
+      );
     }
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = "Mark COD Payment Received";
+
+    updatePaymentUI(
+      data.paymentStatus || "Paid",
+    );
+
+    updateCodSection(
+      data.paymentStatus || "Paid",
+      false,
+    );
 
     utils.showToast(
-      err?.response?.data?.message || "Something went wrong",
+      data.message ||
+        "COD payment marked as Paid",
+      "success",
+    );
+  } catch (error) {
+    codBtn.disabled = false;
+    codBtn.textContent =
+      "Mark COD Payment Received";
+
+    utils.showToast(
+      error?.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
       "error",
     );
   }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  const forms = document.querySelectorAll(".status-form");
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    const forms = document.querySelectorAll(
+      ".status-form",
+    );
 
-  forms.forEach((form) => {
-    const updateBtn = form.querySelector(".update-status-btn");
+    forms.forEach((form) => {
+      const updateBtn = form.querySelector(
+        ".update-status-btn",
+      );
 
-    const select = form.querySelector(".status-select");
+      const select = form.querySelector(
+        ".status-select",
+      );
 
-    updateBtn?.addEventListener("click", async () => {
-      const itemCard = form.closest(".item-card");
+      if (!updateBtn || !select) return;
 
-      const orderId = window.ORDER_ID;
+      updateBtn.addEventListener(
+        "click",
+        async () => {
+          const itemRow = form.closest(
+            ".order-item",
+          );
 
-      const itemId = form.dataset.itemId;
+          const orderId = window.ORDER_ID;
+          const itemId = form.dataset.itemId;
+          const status = select.value;
 
-      const status = select.value;
+          try {
+            updateBtn.disabled = true;
+            select.disabled = true;
 
-      try {
-        updateBtn.disabled = true;
-        updateBtn.textContent = "Updating...";
+            updateBtn.textContent = "Updating...";
 
-        const res = await axios.patch("/admin/orders/item-status", {
-          orderId,
-          itemId,
-          status,
-        });
+            const response = await axios.patch(
+              "/admin/orders/item-status",
+              {
+                orderId,
+                itemId,
+                status,
+              },
+            );
 
-        const data = res.data;
+            const data = response.data;
 
-        utils.showToast(data.message || "Status updated", "success");
+            if (!data.success) {
+              throw new Error(
+                data.message ||
+                  "Status update failed",
+              );
+            }
 
-        const currentStatus = data.itemStatus || status;
+            const currentStatus =
+              data.itemStatus || status;
 
-        const badge = itemCard.querySelector(".item-status-badge");
+            updateItemUI(
+              itemRow,
+              currentStatus,
+            );
 
-        if (badge) {
-          badge.textContent = currentStatus;
+            updateStatusSelect(
+              select,
+              currentStatus,
+            );
 
-          badge.className = `status item-status-badge ${currentStatus.toLowerCase().replace(/\s+/g, "-")}`;
-        }
+            updateOverallOrderStatus(
+              data.orderStatus,
+            );
 
-        const dateElement = itemCard.querySelector(".item-status-date");
+            if (data.paymentStatus) {
+              updatePaymentUI(
+                data.paymentStatus,
+              );
+            }
 
-        const now = new Date().toLocaleString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+            updateCodSection(
+              data.paymentStatus,
+              Boolean(data.showCodButton),
+            );
 
-        let prefix = "Updated on";
+            utils.showToast(
+              data.message ||
+                "Status updated successfully",
+              "success",
+            );
+          } catch (error) {
+            console.error(
+              "Status update error:",
+              error,
+            );
 
-        switch (currentStatus) {
-          case "Shipped":
-            prefix = "Shipped on";
-            break;
+            select.disabled = false;
 
-          case "Delivered":
-            prefix = "Delivered on";
-            break;
+            utils.showToast(
+              error?.response?.data?.message ||
+                error.message ||
+                "Update failed",
+              "error",
+            );
+          } finally {
+            if (!select.disabled) {
+              updateBtn.disabled = false;
+            }
 
-          case "Cancelled":
-            prefix = "Cancelled on";
-            break;
-
-          case "Return Requested":
-            prefix = "Return requested on";
-            break;
-
-          case "Return Accepted":
-            prefix = "Return accepted on";
-            break;
-
-          case "Return Rejected":
-            prefix = "Return rejected on";
-            break;
-
-          case "Returned":
-            prefix = "Returned on";
-            break;
-
-          case "Refunded":
-            prefix = "Refunded on";
-            break;
-        }
-
-        if (dateElement) {
-          dateElement.textContent = `${prefix} ${now}`;
-        } else {
-          const statusBlock = itemCard.querySelector(".item-status-block");
-
-          const small = document.createElement("small");
-
-          small.className = "status-date item-status-date";
-
-          small.textContent = `${prefix} ${now}`;
-
-          statusBlock.appendChild(small);
-        }
-
-        updateStatusSelect(select, currentStatus);
-
-        if (select.disabled) {
-          updateBtn.disabled = true;
-        }
-
-        const overallBadge = document.querySelector(".overall-order-status");
-
-        if (overallBadge && data.orderStatus) {
-          overallBadge.textContent = data.orderStatus;
-
-          overallBadge.className = `status overall-order-status ${data.orderStatus.toLowerCase().replace(/\s+/g, "-")}`;
-        }
-
-        const codBtn = document.getElementById("markCodPaidBtn");
-
-        if (codBtn) {
-          if (data.paymentStatus === "Paid") {
-            codBtn.disabled = true;
-            codBtn.textContent = "Payment Received";
-          } else {
-            codBtn.disabled = !data.showCodButton;
-
-            codBtn.textContent = "Mark COD Payment Received";
+            updateBtn.textContent = "Update";
           }
-        }
-      } catch (err) {
-        utils.showToast(
-          err?.response?.data?.message || "Update failed",
-          "error",
-        );
-      } finally {
-        if (!select.disabled) {
-          updateBtn.disabled = false;
-        }
-
-        updateBtn.textContent = "Update";
-      }
+        },
+      );
     });
-  });
-});
+  },
+);

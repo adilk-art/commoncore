@@ -6,32 +6,33 @@ import {
   cancelOrderItemService,
   cancelOrderService,
   downloadInvoiceService,
-  createRazorpayOrderService,
+  createPendingRazorpayOrderService,
   verifyPaymentService,
-  retryPaymentService
+  retryPaymentService,
+  recordRazorpayFailureService,
 } from "../../services/user/order.service.js";
 
-export const loadOrdersPage = async (req, res, next) => {
+export const loadOrdersPage = async (req,res,next) => {
   try {
     const page = Number(req.query.page) || 1;
-
     const search = req.query.search || "";
-
     const data = await getUserOrdersService({
       userId: req.session.userId,
       page,
       search,
     });
-
-    res.render("user/orders", data);
+    res.render("user/orders",data);
   } catch (error) {
     next(error);
   }
 };
 
-export const placeOrder = async (req, res, next) => {
+export const placeOrder = async (req,res,next) => {
   try {
-    const order = await placeOrderService(req.session.userId, req.body);
+    const order = await placeOrderService(
+      req.session.userId,
+      req.body,
+    );
     res.json({
       success: true,
       order,
@@ -41,65 +42,37 @@ export const placeOrder = async (req, res, next) => {
   }
 };
 
-export const loadOrderSuccessPage = async (req, res, next) => {
+export const loadOrderSuccessPage = async (req,res,next) => {
   try {
     const data = await getOrderSuccessService(
       req.params.orderId,
       req.session.userId,
     );
-
-    res.render("user/order-success.ejs", data);
+    res.render("user/order-success.ejs",data);
   } catch (error) {
     next(error);
   }
 };
 
-export const loadOrderDetail = async (req, res, next) => {
+export const loadOrderDetail = async (req,res,next) => {
   try {
-    const {
-      order,
-      originalSubtotal,
-      discountTotal,
-      cancelledAmount,
-      activeSubtotal,
-      activeOriginalSubtotal,
-      activeDiscountTotal,
-      currentValue,
-      gstAmount,
-      fullyCancelled,
-      partiallyCancelled,
-      canCancelAnyItem,
-    } = await getOrderDetailService(
+    const data = await getOrderDetailService(
       req.params.orderId,
       req.session.userId,
     );
 
-    res.render("user/order-detail", {
-      order,
-      originalSubtotal,
-      discountTotal,
-      cancelledAmount,
-      activeSubtotal,
-      activeOriginalSubtotal,
-      activeDiscountTotal,
-      currentValue,
-      gstAmount,
-      fullyCancelled,
-      partiallyCancelled,
-      canCancelAnyItem,
-    });
+    res.render("user/order-detail",data);
   } catch (error) {
     next(error);
   }
 };
 
-export const cancelOrder = async (req, res, next) => {
+export const cancelOrder = async (req,res,next) => {
   try {
     const result = await cancelOrderService({
       userId: req.session.userId,
       orderId: req.params.orderId,
     });
-
     res.json({
       success: true,
       message: "Order cancelled",
@@ -110,16 +83,14 @@ export const cancelOrder = async (req, res, next) => {
   }
 };
 
-export const cancelOrderItem = async (req, res, next) => {
+export const cancelOrderItem = async (req,res,next) => {
   try {
-    const { orderId, itemId } = req.params;
-
+    const { orderId,itemId } = req.params;
     const result = await cancelOrderItemService({
       userId: req.session.userId,
       orderId,
       itemId,
     });
-
     res.json({
       success: true,
       message: "Item cancelled",
@@ -130,7 +101,7 @@ export const cancelOrderItem = async (req, res, next) => {
   }
 };
 
-export const downloadInvoice = async (req, res, next) => {
+export const downloadInvoice = async (req,res,next) => {
   try {
     await downloadInvoiceService({
       userId: req.session.userId,
@@ -142,64 +113,74 @@ export const downloadInvoice = async (req, res, next) => {
   }
 };
 
-export const createRazorpayOrder = async (req, res, next) => {
+export const createRazorpayOrderController = async (req,res,next) => {
   try {
-    req.session.pendingPayment = {
-      shippingAddress: req.body.shippingAddress,
-      paymentMethod: req.body.paymentMethod,
-      isBuyNow: req.body.isBuyNow || false,
-      variantId: req.body.variantId || null,
-      quantity: req.body.quantity || null,
-      createdAt: Date.now(),
-    };
-
-    const data = await createRazorpayOrderService(
-      req.session.userId,
-      req.body
-    );
-    res.json(data);
-  } catch (err) {
-    next(err);
-  }
-};
-
-
-export const verifyPayment = async (req, res, next) => {
-  try {
-    const data = await verifyPaymentService(
+    const result = await createPendingRazorpayOrderService(
       req.session.userId,
       req.body,
-      req.session.pendingPayment
     );
-    delete req.session.pendingPayment;
-    res.json(data);
-  } catch (err) {
-    next(err);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
-
-export const retryPayment = async (req, res, next) => {
+export const verifyPaymentController = async (req,res,next) => {
   try {
-    const data = await retryPaymentService(
+    const result = await verifyPaymentService(
       req.session.userId,
-      req.session.pendingPayment
+      req.body,
     );
-
-    res.json(data);
-  } catch (err) {
-    next(err);
+    res.json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getPaymentFailedPage = async (req, res, next) => {
+export const retryPaymentController = async (req,res,next) => {
   try {
-    if (!req.session.pendingPayment) {
-      return res.redirect("/user/checkout");
-    }
+    const result = await retryPaymentService(
+      req.session.userId,
+      req.params.orderId,
+    );
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    res.render("user/payment-failed");
-  } catch (err) {
-    next(err);
+export const recordPaymentFailureController = async (req,res,next) => {
+  try {
+    const result = await recordRazorpayFailureService(
+      req.session.userId,
+      req.body,
+    );
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPaymentFailedPage = async (req,res,next) => {
+  try {
+    const data = await getOrderDetailService(
+      req.params.orderId,
+      req.session.userId,
+    );
+    const order = data.order;
+    if (
+      order.paymentMethod !== "Razorpay" ||
+      order.paymentStatus === "Paid"
+    ) {
+      return res.redirect(`/user/order/${order._id}`);
+    }
+    res.render("user/payment-failed",{
+      ...data,
+      paymentExpired:
+        Boolean(order.paymentExpiresAt) &&
+        new Date(order.paymentExpiresAt) <= new Date(),
+    });
+  } catch (error) {
+    next(error);
   }
 };

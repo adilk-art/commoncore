@@ -4,17 +4,16 @@ import {
   getOrderStats,
   findOrderDetailById,
   updateOrderPaymentStatus,
-  updateItemStatus
+  updateItemStatus,
 } from "../../repositories/admin/order.repository.js";
 
 import { calculateOrderStatus } from "../../utils/orderStatus.js";
 import { calculateItemGstAmount } from "../../utils/calculateGst.js";
 import { canMarkCodPaid } from "../../utils/orderStatus.js";
 
-
 export const getOrdersPageService = async ({
   page,
- limit,
+  limit,
   skip,
   search,
   status,
@@ -101,78 +100,96 @@ export const getOrderDetailService = async (orderId) => {
 
   const computedOrderStatus = calculateOrderStatus(order.items);
 
-  const activeItems = order.items.filter(
-    (item) => item.status !== "Cancelled",
-  );
+  const activeItems = order.items.filter((item) => item.status !== "Cancelled");
 
   const cancelledItems = order.items.filter(
     (item) => item.status === "Cancelled",
   );
 
-  const originalSubtotal = Number(
-    order.originalSubtotal ??
-      order.subtotal ??
-      0,
-  );
+  const calculateItemAmounts = (item) => {
+    const quantity = Number(item.quantity) || 0;
 
-  const discountTotal = Number(
-    order.discountTotal || 0,
-  );
+    const originalUnitPrice =
+      Number(item.originalUnitPrice) || Number(item.unitPrice) || 0;
 
-  const activeOriginalSubtotal = activeItems.reduce(
-    (sum, item) =>
-      sum +
-      Number(
-        item.originalUnitPrice ??
-          item.unitPrice,
-      ) *
-        Number(item.quantity),
-    0,
-  );
+    const unitPrice = Number(item.unitPrice) || 0;
 
-  const activeSubtotal = activeItems.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.unitPrice) *
-        Number(item.quantity),
-    0,
-  );
+    const originalAmount = originalUnitPrice * quantity;
 
-  const activeDiscountTotal =
-    activeOriginalSubtotal -
-    activeSubtotal;
+    const offerAmount = unitPrice * quantity;
 
-  const cancelledAmount = cancelledItems.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.unitPrice) *
-        Number(item.quantity),
-    0,
-  );
+    const offerDiscount = Math.max(originalAmount - offerAmount, 0);
 
-  const gstAmount = activeItems.reduce(
-    (total, item) =>
-      total + calculateItemGstAmount(item),
-    0,
-  );
+    const couponDiscount = Number(item.couponDiscountAmount) || 0;
 
-  const shippingFee =
-    activeItems.length > 0
-      ? Number(order.shippingFee || 0)
-      : 0;
+    const finalAmount = Math.max(offerAmount - couponDiscount, 0);
 
-  const total =
-    activeSubtotal + shippingFee;
+    const gstRate = Number(item.gstRate) || 0;
+
+    let gstAmount = 0;
+
+    if (finalAmount > 0 && gstRate > 0) {
+      const taxableValue = finalAmount / (1 + gstRate / 100);
+
+      gstAmount = finalAmount - taxableValue;
+    }
+
+    return {
+      originalAmount,
+      offerAmount,
+      offerDiscount,
+      couponDiscount,
+      finalAmount,
+      gstAmount,
+    };
+  };
+
+  const calculateTotals = (items) => {
+    return items.reduce(
+      (totals, item) => {
+        const amounts = calculateItemAmounts(item);
+
+        totals.originalSubtotal += amounts.originalAmount;
+
+        totals.offerDiscountTotal += amounts.offerDiscount;
+
+        totals.subtotal += amounts.offerAmount;
+
+        totals.couponDiscountTotal += amounts.couponDiscount;
+
+        totals.finalSubtotal += amounts.finalAmount;
+
+        totals.gstAmount += amounts.gstAmount;
+
+        return totals;
+      },
+      {
+        originalSubtotal: 0,
+        offerDiscountTotal: 0,
+        subtotal: 0,
+        couponDiscountTotal: 0,
+        finalSubtotal: 0,
+        gstAmount: 0,
+      },
+    );
+  };
+
+  const orderTotals = calculateTotals(order.items);
+
+  const activeTotals = calculateTotals(activeItems);
+
+  const cancelledTotals = calculateTotals(cancelledItems);
 
   const fullyCancelled =
     order.items.length > 0 &&
-    order.items.every(
-      (item) => item.status === "Cancelled",
-    );
+    order.items.every((item) => item.status === "Cancelled");
 
-  const partiallyCancelled =
-    cancelledAmount > 0 &&
-    !fullyCancelled;
+  const partiallyCancelled = cancelledItems.length > 0 && !fullyCancelled;
+
+  const shippingFee =
+    activeItems.length > 0 ? Number(order.shippingFee || 0) : 0;
+
+  const total = activeTotals.finalSubtotal + shippingFee;
 
   const showCodButton =
     order.paymentMethod === "CashOnDelivery" &&
@@ -189,17 +206,41 @@ export const getOrderDetailService = async (orderId) => {
     activeItems,
     cancelledItems,
 
-    originalSubtotal,
-    discountTotal,
+    originalSubtotal: Number(orderTotals.originalSubtotal.toFixed(2)),
 
-    activeOriginalSubtotal,
-    activeDiscountTotal,
-    activeSubtotal,
-    cancelledAmount,
+    offerDiscountTotal: Number(orderTotals.offerDiscountTotal.toFixed(2)),
 
-    gstAmount: Number(gstAmount.toFixed(2)),
-    shippingFee,
-    total,
+    subtotal: Number(orderTotals.subtotal.toFixed(2)),
+
+    couponDiscountTotal: Number(orderTotals.couponDiscountTotal.toFixed(2)),
+
+    discountedSubtotal: Number(orderTotals.finalSubtotal.toFixed(2)),
+
+    activeOriginalSubtotal: Number(activeTotals.originalSubtotal.toFixed(2)),
+
+    activeOfferDiscountTotal: Number(
+      activeTotals.offerDiscountTotal.toFixed(2),
+    ),
+
+    activeSubtotal: Number(activeTotals.subtotal.toFixed(2)),
+
+    activeCouponDiscountTotal: Number(
+      activeTotals.couponDiscountTotal.toFixed(2),
+    ),
+
+    activeDiscountedSubtotal: Number(activeTotals.finalSubtotal.toFixed(2)),
+
+    cancelledOriginalAmount: Number(
+      cancelledTotals.originalSubtotal.toFixed(2),
+    ),
+
+    cancelledAmount: Number(cancelledTotals.finalSubtotal.toFixed(2)),
+
+    gstAmount: Number(activeTotals.gstAmount.toFixed(2)),
+
+    shippingFee: Number(shippingFee.toFixed(2)),
+
+    total: Number(total.toFixed(2)),
 
     fullyCancelled,
     partiallyCancelled,
@@ -212,5 +253,102 @@ export const markCodAsPaidService = async (orderId) => {
 };
 
 export const updateItemStatusService = async ({ orderId, itemId, status }) => {
-  return await updateItemStatus({ orderId, itemId, status });
+  const orderArr = await findOrderDetailById(orderId);
+
+  if (!orderArr || orderArr.length === 0) {
+    const error = new Error("Order not found");
+
+    error.status = 404;
+
+    throw error;
+  }
+
+  const order = orderArr[0];
+
+  const item = order.items.find((item) => String(item._id) === String(itemId));
+
+  if (!item) {
+    const error = new Error("Order item not found");
+
+    error.status = 404;
+
+    throw error;
+  }
+
+  const lockedStatuses = [
+    "Delivered",
+    "Cancelled",
+    "Return Requested",
+    "Return Accepted",
+    "Returned",
+    "Refunded",
+  ];
+
+  if (lockedStatuses.includes(item.status)) {
+    const error = new Error("This item status cannot be changed");
+
+    error.status = 400;
+
+    throw error;
+  }
+
+  const STATUS_RANK = {
+    Placed: 1,
+    Processing: 2,
+    Shipped: 3,
+    Delivered: 4,
+  };
+
+  const currentRank = STATUS_RANK[item.status];
+
+  const nextRank = STATUS_RANK[status];
+
+  if (!currentRank || !nextRank) {
+    const error = new Error("Invalid status update");
+
+    error.status = 400;
+
+    throw error;
+  }
+
+  if (nextRank <= currentRank) {
+    const error = new Error(
+      `Cannot change status from ${item.status} to ${status}`,
+    );
+
+    error.status = 400;
+
+    throw error;
+  }
+
+  await updateItemStatus({
+    orderId,
+    itemId,
+    status,
+  });
+
+  const updatedOrderArr = await findOrderDetailById(orderId);
+
+  const updatedOrder = updatedOrderArr[0];
+
+  const updatedItem = updatedOrder.items.find(
+    (item) => String(item._id) === String(itemId),
+  );
+
+  const orderStatus = calculateOrderStatus(updatedOrder.items);
+
+  const showCodButton =
+    updatedOrder.paymentMethod === "CashOnDelivery" &&
+    updatedOrder.paymentStatus === "Pending" &&
+    canMarkCodPaid(updatedOrder.items);
+
+  return {
+    itemStatus: updatedItem?.status || status,
+
+    orderStatus,
+
+    paymentStatus: updatedOrder.paymentStatus,
+
+    showCodButton,
+  };
 };

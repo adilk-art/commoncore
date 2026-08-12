@@ -12,6 +12,7 @@ import * as checkoutController from "../controllers/user/checkout.controller.js"
 import * as orderController from "../controllers/user/order.controller.js";
 import * as returnController from "../controllers/user/return.controller.js";
 import * as walletController from "../controllers/user/wallet.controller.js";
+import * as couponController from "../controllers/user/coupon.controller.js"
 
 import { isAuthenticated, isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -77,11 +78,11 @@ router.get("/checkout/buy-now", isAuthenticated, checkoutController.getBuyNowChe
 router.get("/orders", isAuthenticated, orderController.loadOrdersPage);
 
 router.post("/order/place", isAuthenticated, orderController.placeOrder);
-router.post("/order/create-razorpay-order", isAuthenticated, orderController.createRazorpayOrder);
-router.post("/order/verify-payment", isAuthenticated, orderController.verifyPayment);
-
-router.get("/order/retry-payment", isAuthenticated, orderController.retryPayment);
-router.get("/order/payment-failed", isAuthenticated, orderController.getPaymentFailedPage);
+router.post("/order/create-razorpay-order",isAuthenticated,orderController.createRazorpayOrderController);
+router.post("/order/verify-payment",isAuthenticated,orderController.verifyPaymentController);
+router.post("/order/payment-failure",isAuthenticated,orderController.recordPaymentFailureController);
+router.post("/order/:orderId/retry-payment",isAuthenticated,orderController.retryPaymentController);
+router.get("/order/payment-failed/:orderId",isAuthenticated, orderController.getPaymentFailedPage);
 
 router.get("/order/success/:orderId", isAuthenticated, orderController.loadOrderSuccessPage);
 router.get("/order/:orderId/invoice", isAuthenticated, orderController.downloadInvoice);
@@ -99,4 +100,8 @@ router.post("/wallet/add-money",isAuthenticated,walletController.createWalletRaz
 router.post("/wallet/verify-payment",isAuthenticated,walletController.verifyWalletPayment);
 router.get("/wallet/payment-failed",isAuthenticated,walletController.getWalletPaymentFailedPage);
 router.post("/wallet/retry-payment",isAuthenticated,walletController.retryWalletPayment);
+
+
+router.post("/coupons/apply",isAuthenticated,couponController.applyCoupon);
+router.post("/coupons/remove",isAuthenticated,couponController.removeCoupon);
 export default router;

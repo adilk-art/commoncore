@@ -2,10 +2,7 @@
 <html lang="en">
 
 <head>
-
-  <title>
-    Return Item — Commoncore
-  </title>
+  <title>Return Item — Commoncore</title>
 
   <%- include("../partials/user-head") %>
 
@@ -13,7 +10,6 @@
     rel="stylesheet"
     href="/css/user/return-request.css"
   >
-
 </head>
 
 <body>
@@ -22,347 +18,572 @@
 
 <main class="return-page">
 
-<div class="return-top">
+  <div class="return-top">
 
-  <a
-    href="/user/order/<%= order._id %>"
-    class="return-back"
-  >
-    ← Back to Order Details
-  </a>
-
-  <h1 class="page-title">
-    Return Item
-  </h1>
-
-</div>
-
-<section class="card card-md return-product-card">
-
-  <h2 class="text-section-title">
-    Product
-  </h2>
-
-  <div class="return-product">
-
-    <img
-      src="<%= item.variantId.images?.[0]?.url %>"
-      alt="<%= item.productName %>"
+    <a
+      href="/user/order/<%= order._id %>"
+      class="return-back"
     >
+      ← Back to Order Details
+    </a>
 
-    <div class="return-product-info">
+    <div class="return-heading">
 
-      <h3>
-        <%= item.productName %>
-      </h3>
+      <span class="return-eyebrow">
+        RETURN REQUEST
+      </span>
 
-      <p>
-        <%= item.color %> /
-        <%= item.size %>
+      <h1 class="page-title">
+        Return Item
+      </h1>
+
+      <p class="return-page-subtitle">
+        Select a reason, confirm the pickup address and submit your return request.
       </p>
-
-      <strong>
-        ₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %>
-      </strong>
-
-      <small>
-
-        Delivered on
-
-        <%= new Date(item.statusUpdatedAt).toLocaleDateString("en-IN",{
-          day:"numeric",
-          month:"long",
-          year:"numeric"
-        }) %>
-
-      </small>
-
-      <small>
-
-        Return available until
-
-        <%= returnLastDate.toLocaleDateString("en-IN",{
-          day:"numeric",
-          month:"long",
-          year:"numeric"
-        }) %>
-
-      </small>
 
     </div>
 
   </div>
 
-</section>
+  <section class="card card-md return-product-card">
 
-<section class="card card-md">
+    <div class="product-card-head">
 
-  <h2 class="text-section-title">
-    Reason for Return
-  </h2>
+      <div>
 
-  <select
-    id="returnReason"
-    class="select-field"
-  >
+        <span class="section-eyebrow">
+          ITEM TO RETURN
+        </span>
 
-    <option value="">
-      Select Reason
-    </option>
+        <h2 class="text-section-title">
+          Product Details
+        </h2>
 
-    <option>
-      Size too small
-    </option>
+      </div>
 
-    <option>
-      Size too large
-    </option>
+      <span class="return-eligible-badge">
+        Return eligible
+      </span>
 
-    <option>
-      Quality not as expected
-    </option>
+    </div>
 
-    <option>
-      Received wrong item
-    </option>
+    <div class="return-product">
 
-    <option>
-      Product damaged
-    </option>
+      <div class="return-product-image">
 
-    <option>
-      Changed my mind
-    </option>
+        <img
+          src="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/no-image.png' %>"
+          alt="<%= item.productName %>"
+        >
 
-    <option>
-      Other
-    </option>
+      </div>
 
-  </select>
+      <div class="return-product-content">
 
-  <span
-    class="error-msg"
-    id="reasonError"
-  ></span>
+        <div class="return-product-top">
 
-</section>
+          <div class="return-product-info">
 
-<section class="card card-md">
+            <h3>
+              <%= item.productName %>
+            </h3>
 
-  <h2 class="text-section-title">
-    Additional Comments
-  </h2>
+            <p class="product-variant">
 
-  <textarea
-    id="returnComments"
-    class="input-field return-comments"
-    placeholder="Additional details (Optional)"
-  ></textarea>
+              <span>
+                <%= item.color %>
+              </span>
 
-</section>
-<section class="card card-md">
+              <span>
+                •
+              </span>
 
-  <div class="pickup-section-head">
+              <span>
+                Size <%= item.size %>
+              </span>
 
-    <h2 class="text-section-title">
-      Pickup Address
-    </h2>
+              <span>
+                •
+              </span>
 
-    <button
-      type="button"
-      class="pickup-change-btn"
-      id="changePickupBtn"
+              <span>
+                Qty <%= item.quantity %>
+              </span>
+
+            </p>
+
+          </div>
+
+          <div class="product-paid">
+
+            <span>
+              Amount Paid
+            </span>
+
+            <strong>
+              ₹<%= Number(paidAmount).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="product-timeline">
+
+          <div class="product-date">
+
+            <span>
+              Delivered
+            </span>
+
+            <strong>
+              <%= new Date(
+                item.statusUpdatedAt
+              ).toLocaleDateString(
+                "en-IN",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                }
+              ) %>
+            </strong>
+
+          </div>
+
+          <span class="timeline-separator"></span>
+
+          <div class="product-date">
+
+            <span>
+              Return available until
+            </span>
+
+            <strong class="return-deadline">
+              <%= returnLastDate.toLocaleDateString(
+                "en-IN",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric"
+                }
+              ) %>
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="card card-md return-section">
+
+    <div class="section-heading">
+
+      <span class="section-eyebrow">
+        RETURN REASON
+      </span>
+
+      <h2 class="text-section-title">
+        Why are you returning this item?
+      </h2>
+
+      <p class="section-description">
+        Choose the reason that best describes your return.
+      </p>
+
+    </div>
+
+    <select
+      id="returnReason"
+      class="select-field"
     >
-      Change Pickup Address
-    </button>
 
-  </div>
+      <option value="">
+        Select Reason
+      </option>
 
-  <div
-    class="checkout-address-grid collapsed"
-    id="pickupSelector"
-  >
+      <option>
+        Size too small
+      </option>
 
-    <label class="checkout-address active" id="defaultPickupCard">
+      <option>
+        Size too large
+      </option>
 
-      <input
-        type="radio"
-        name="pickupAddress"
-        value="delivery"
-        checked
-        class="hidden pickup-address-radio"
+      <option>
+        Quality not as expected
+      </option>
+
+      <option>
+        Received wrong item
+      </option>
+
+      <option>
+        Product damaged
+      </option>
+
+      <option>
+        Changed my mind
+      </option>
+
+      <option>
+        Other
+      </option>
+
+    </select>
+
+    <span
+      class="error-msg"
+      id="reasonError"
+    ></span>
+
+  </section>
+
+  <section class="card card-md return-section">
+
+    <div class="section-heading">
+
+      <span class="section-eyebrow">
+        OPTIONAL
+      </span>
+
+      <h2 class="text-section-title">
+        Additional Comments
+      </h2>
+
+      <p class="section-description">
+        Add any additional details that may help us review the request.
+      </p>
+
+    </div>
+
+    <textarea
+      id="returnComments"
+      class="input-field return-comments"
+      placeholder="Add additional details"
+    ></textarea>
+
+  </section>
+
+  <section class="card card-md return-section pickup-card">
+
+    <div class="pickup-section-head">
+
+      <div class="section-heading section-heading--compact">
+
+        <span class="section-eyebrow">
+          PICKUP
+        </span>
+
+        <h2 class="text-section-title">
+          Pickup Address
+        </h2>
+
+        <p class="section-description">
+          The courier will collect the item from this address.
+        </p>
+
+      </div>
+
+      <button
+        type="button"
+        class="pickup-change-btn"
+        id="changePickupBtn"
+      >
+        Change Address
+      </button>
+
+    </div>
+
+    <div
+      class="checkout-address-grid collapsed"
+      id="pickupSelector"
+    >
+
+      <label
+        class="checkout-address active"
+        id="defaultPickupCard"
       >
 
-      <div class="checkout-address-top">
+        <input
+          type="radio"
+          name="pickupAddress"
+          value="delivery"
+          checked
+          class="hidden pickup-address-radio"
+        >
 
-        <span class="address-badge" id="pickupBadge">
+        <span
+          class="address-badge"
+          id="pickupBadge"
+        >
           Delivery Address
         </span>
 
-      </div>
+        <h3
+          class="address-name"
+          id="pickupName"
+        >
+          <%= pickupAddress.fullName %>
+        </h3>
 
-      <h3 class="address-name" id="pickupName">
-        <%= pickupAddress.fullName %>
-      </h3>
+        <div class="address-body">
 
-      <p class="address-text" id="pickupLine1">
-        <%= pickupAddress.line1 %>
-      </p>
+          <p
+            class="address-text"
+            id="pickupLine1"
+          >
+            <%= pickupAddress.line1 %>
+          </p>
 
-      <% if (pickupAddress.line2) { %>
+          <% if (pickupAddress.line2) { %>
 
-      <p class="address-text" id="pickupLine2">
-        <%= pickupAddress.line2 %>
-      </p>
+            <p
+              class="address-text"
+              id="pickupLine2"
+            >
+              <%= pickupAddress.line2 %>
+            </p>
 
-      <% } %>
+          <% } %>
 
-      <p class="address-text"  id="pickupCityState">
-        <%= pickupAddress.city %>,
-        <%= pickupAddress.state %>
-      </p>
+          <p
+            class="address-text"
+            id="pickupCityState"
+          >
+            <%= pickupAddress.city %>,
+            <%= pickupAddress.state %>
+          </p>
 
-      <p class="address-text" id="pickupPincode">
-        <%= pickupAddress.pincode %>
-      </p>
+          <p
+            class="address-text"
+            id="pickupPincode"
+          >
+            <%= pickupAddress.pincode %>
+          </p>
 
-      <p class="address-phone" id="pickupPhone">
-        +91 <%= pickupAddress.phone %>
-      </p>
+        </div>
 
-    </label>
+        <p
+          class="address-phone"
+          id="pickupPhone"
+        >
+          +91 <%= pickupAddress.phone %>
+        </p>
 
-    <% addresses.forEach(address => { %>
+      </label>
 
-    <label class="checkout-address">
+      <% addresses.forEach(address => { %>
 
-      <input
-        type="radio"
-        name="pickupAddress"
-        value="<%= address._id %>"
-        class="hidden pickup-address-radio"
+        <label class="checkout-address">
+
+          <input
+            type="radio"
+            name="pickupAddress"
+            value="<%= address._id %>"
+            class="hidden pickup-address-radio"
+          >
+
+          <% if (address.isDefault) { %>
+
+            <span class="address-badge">
+              Default
+            </span>
+
+          <% } else { %>
+
+            <span class="address-badge address-badge--muted">
+              Saved Address
+            </span>
+
+          <% } %>
+
+          <h3 class="address-name">
+            <%= address.fullName %>
+          </h3>
+
+          <div class="address-body">
+
+            <p class="address-text">
+              <%= address.line1 %>
+            </p>
+
+            <% if (address.line2) { %>
+
+              <p class="address-text">
+                <%= address.line2 %>
+              </p>
+
+            <% } %>
+
+            <p class="address-text">
+              <%= address.city %>,
+              <%= address.state %>
+            </p>
+
+            <p class="address-text">
+              <%= address.pincode %>
+            </p>
+
+          </div>
+
+          <p class="address-phone">
+            +91 <%= address.phone %>
+          </p>
+
+        </label>
+
+      <% }) %>
+
+      <button
+        type="button"
+        class="add-address-card"
+        id="openPickupAddressModal"
       >
 
-      <div class="checkout-address-top">
-
-        <% if(address.isDefault){ %>
-
-        <span class="address-badge">
-          Default
+        <span class="add-address-icon">
+          +
         </span>
 
-        <% } %>
+        <span>
+          Add New Pickup Address
+        </span>
+
+      </button>
+
+    </div>
+
+  </section>
+
+  <section class="card card-md return-section">
+
+    <div class="section-heading">
+
+      <span class="section-eyebrow">
+        REFUND
+      </span>
+
+      <h2 class="text-section-title">
+        Refund Information
+      </h2>
+
+    </div>
+
+    <div class="refund-info">
+
+      <div class="refund-icon">
+        ✓
+      </div>
+
+      <div class="refund-content">
+
+        <div class="refund-head">
+
+          <span>
+            Refund amount
+          </span>
+
+          <strong>
+            ₹<%= Number(paidAmount).toLocaleString(
+              "en-IN",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            ) %>
+          </strong>
+
+        </div>
+
+        <p>
+          After the returned item passes quality inspection, the refund will be credited to your
+          <strong>Commoncore Wallet</strong>.
+        </p>
 
       </div>
 
-      <h3 class="address-name">
-        <%= address.fullName %>
-      </h3>
+    </div>
 
-      <p class="address-text">
-        <%= address.line1 %>
-      </p>
+  </section>
 
-      <% if(address.line2){ %>
+  <section class="card card-md return-section">
 
-      <p class="address-text">
-        <%= address.line2 %>
-      </p>
+    <div class="section-heading">
 
-      <% } %>
+      <span class="section-eyebrow">
+        RETURN POLICY
+      </span>
 
-      <p class="address-text">
-        <%= address.city %>,
-        <%= address.state %>
-      </p>
+      <h2 class="text-section-title">
+        Before You Continue
+      </h2>
 
-      <p class="address-text">
-        <%= address.pincode %>
-      </p>
+    </div>
 
-      <p class="address-phone">
-        +91 <%= address.phone %>
-      </p>
+    <ul class="return-policy">
 
-    </label>
+      <li>
+        <span>✓</span>
 
-    <% }) %>
+        <p>
+          Returns are accepted within 14 days of delivery.
+        </p>
+      </li>
+
+      <li>
+        <span>✓</span>
+
+        <p>
+          Items must be unused, unwashed and returned with original tags.
+        </p>
+      </li>
+
+      <li>
+        <span>✓</span>
+
+        <p>
+          Refunds are processed after the returned item passes inspection.
+        </p>
+      </li>
+
+    </ul>
+
+  </section>
+
+  <div class="return-actions">
+
+    <a
+      href="/user/order/<%= order._id %>"
+      class="secondary-btn"
+    >
+      Cancel
+    </a>
 
     <button
       type="button"
-      class="add-address-card"
-      id="openPickupAddressModal"
+      class="primary-btn"
+      id="requestReturnBtn"
+      data-order-id="<%= order._id %>"
+      data-item-id="<%= item._id %>"
     >
-      <span>
-        + Add New Pickup Address
-      </span>
+      Request Return
     </button>
 
   </div>
 
-</section>
-<section class="card card-md">
-
-  <h2 class="text-section-title">
-    Refund Information
-  </h2>
-
-  <div class="refund-info">
-
-    <div class="refund-icon">
-      ✓
-    </div>
-
-    <p>
-
-      Refunds for approved returns will be
-      credited to your
-      <strong>Commoncore Wallet</strong>
-      after the returned item passes quality
-      inspection.
-
-    </p>
-
-  </div>
-
-</section>
-<section class="card card-md">
-
-  <h2 class="text-section-title">
-    Return Policy
-  </h2>
-
-  <ul class="return-policy">
-
-    <li>
-      ○ Returns are accepted within 14 days of delivery.
-    </li>
-
-    <li>
-      ○ Items must be unused, unwashed and returned with original tags.
-    </li>
-
-    <li>
-      ○ Refunds are processed after inspection.
-    </li>
-
-  </ul>
-
-</section>
-<div class="return-actions">
-
-  <button
-    class="primary-btn"
-    id="requestReturnBtn"
-    data-order-id="<%= order._id %>"
-    data-item-id="<%= item._id %>"
-  >
-    Request Return
-  </button>
-
-</div>
-
 </main>
+
 <div
   class="checkout-address-modal"
   id="pickupAddressModal"
@@ -370,9 +591,21 @@
 
   <div class="checkout-address-modal-content">
 
-    <h3>
-      Add Pickup Address
-    </h3>
+    <div class="address-modal-head">
+
+      <h3>
+        Add Pickup Address
+      </h3>
+
+      <button
+        type="button"
+        class="modal-close"
+        id="closePickupAddressModal"
+      >
+        ×
+      </button>
+
+    </div>
 
     <form id="pickupAddressForm">
 
@@ -460,7 +693,7 @@
         <button
           type="button"
           class="secondary-btn"
-          id="closePickupAddressModal"
+          id="closePickupAddressModalSecondary"
         >
           Cancel
         </button>
@@ -472,6 +705,7 @@
   </div>
 
 </div>
+
 <input
   type="hidden"
   id="pickupAddressType"
@@ -492,9 +726,14 @@
   id="confirmReturnModal"
   class="cancel-modal hidden"
 >
+
   <div class="cancel-modal-content">
+
     <div class="modal-header">
-      <h2>Confirm Return Request</h2>
+
+      <h2>
+        Confirm Return Request
+      </h2>
 
       <button
         type="button"
@@ -503,25 +742,53 @@
       >
         ×
       </button>
+
     </div>
 
     <div class="cancel-product">
+
       <img
         src="<%= item.variantId?.images?.[0]?.url || item.productImage || '/images/default-product.jpg' %>"
         alt="<%= item.productName %>"
       >
 
       <div>
-        <h3><%= item.productName %></h3>
-        <p><%= item.color %> / <%= item.size %></p>
-        <strong>₹<%= (item.unitPrice * item.quantity).toLocaleString("en-IN") %></strong>
-        <p id="retRequestReason" ></p>
+
+        <h3>
+          <%= item.productName %>
+        </h3>
+
+        <p>
+          <%= item.color %> /
+          <%= item.size %>
+          · Qty <%= item.quantity %>
+        </p>
+
+        <strong>
+          ₹<%= Number(paidAmount).toLocaleString(
+            "en-IN",
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }
+          ) %>
+        </strong>
+
+        <p
+          id="retRequestReason"
+          class="confirm-return-reason"
+        ></p>
+
       </div>
+
     </div>
+
     <p class="cancel-return-note">
       Are you sure you want to submit this return request?
-    </p>    
+    </p>
+
     <div class="cancel-modal-actions">
+
       <button
         type="button"
         id="keepReturnRequestBtn"
@@ -537,25 +804,39 @@
       >
         Confirm Return Request
       </button>
-    </div>
-  </div>
-</div>
 
+    </div>
+
+  </div>
+
+</div>
 
 <div
   id="returnSuccessModal"
   class="cancel-modal hidden"
 >
+
   <div class="cancel-modal-content return-success-modal-content">
-    <div class="modal-header">
-      <h2>Return Request Submitted</h2>
+
+    <div class="return-success-icon">
+      ✓
     </div>
 
-    <p class="cancel-return-note" id="cancelReturnNote">
-      
-    </p>
+    <div class="return-success-heading">
+
+      <h2>
+        Return Request Submitted
+      </h2>
+
+      <p
+        id="cancelReturnNote"
+        class="return-success-message"
+      ></p>
+
+    </div>
 
     <div class="cancel-modal-actions return-success-actions">
+
       <a
         href="#"
         id="viewReturnDetailsBtn"
@@ -570,8 +851,11 @@
       >
         Back to Orders
       </a>
+
     </div>
+
   </div>
+
 </div>
 
 <%- include("../partials/user-scripts") %>
