@@ -3,8 +3,13 @@
 
 <head>
   <title>Order Details — Commoncore</title>
+
   <%- include("../partials/user-head") %>
-  <link rel="stylesheet" href="/css/user/order-detail.css">
+
+  <link
+    rel="stylesheet"
+    href="/css/user/order-detail.css"
+  >
 </head>
 
 <body>
@@ -25,11 +30,16 @@
         .trim()
         .replace(/\s+/g, "-");
 
-    const currentPaymentStatus = paymentExpired
-      ? "Expired"
-      : paymentFailed
+    const isPaymentState =
+      order.orderStatus === "Payment Pending" ||
+      order.orderStatus === "Payment Expired";
+
+    const currentPaymentStatus =
+      paymentExpired
         ? "Failed"
-        : order.paymentStatus;
+        : paymentFailed
+          ? "Failed"
+          : order.paymentStatus;
 
     const paymentStatusClass =
       String(currentPaymentStatus)
@@ -65,7 +75,7 @@
 
       <p class="order-date">
 
-        <%= isRazorpayPending
+        <%= isPaymentState
           ? "Created on"
           : "Placed on" %>
 
@@ -107,7 +117,8 @@
 
   </section>
 
-  <% if (isRazorpayPending) { %>
+
+  <% if (isPaymentState) { %>
 
     <section
       class="
@@ -141,7 +152,7 @@
           <h2>
 
             <% if (paymentExpired) { %>
-              Payment session expired
+              Payment window expired
             <% } else if (paymentFailed) { %>
               Payment was unsuccessful
             <% } else { %>
@@ -154,18 +165,18 @@
 
             <% if (paymentExpired) { %>
 
-              The payment window for this order has expired.
-              This order has not been confirmed.
+              The payment window for this checkout has expired.
+              This order was not confirmed.
 
             <% } else if (paymentFailed) { %>
 
               Your previous payment attempt was unsuccessful.
-              Retry the payment to confirm this order.
+              You can retry before the payment window expires.
 
             <% } else { %>
 
-              Your order has been created, but payment is still pending.
-              Complete the payment to confirm the order.
+              Payment is still pending.
+              Complete the payment to confirm this order.
 
             <% } %>
 
@@ -186,22 +197,46 @@
 
       </div>
 
-      <% if (canRetryPayment) { %>
 
-        <button
-          type="button"
-          id="retryPaymentBtn"
-          class="primary-btn retry-payment-btn"
-          data-order-id="<%= order._id %>"
-        >
-          Retry Payment
-        </button>
+      <% if (canRetryPayment || canReturnToCheckout) { %>
+
+        <div class="payment-pending-actions">
+
+          <% if (canRetryPayment) { %>
+
+            <button
+              type="button"
+              id="retryPaymentBtn"
+              class="primary-btn retry-payment-btn"
+              data-order-id="<%= order._id %>"
+            >
+              Retry Payment
+            </button>
+
+          <% } %>
+
+
+          <% if (canReturnToCheckout) { %>
+
+            <a
+              href="/user/checkout"
+              class="<%= canRetryPayment
+                ? 'secondary-btn'
+                : 'primary-btn' %>"
+            >
+              Back to Checkout
+            </a>
+
+          <% } %>
+
+        </div>
 
       <% } %>
 
     </section>
 
   <% } %>
+
 
   <section class="info-grid">
 
@@ -225,6 +260,7 @@
 
         </div>
 
+
         <div class="shipping-field">
 
           <span>
@@ -236,6 +272,7 @@
           </strong>
 
         </div>
+
 
         <div class="shipping-field shipping-field--wide">
 
@@ -271,6 +308,7 @@
 
     </div>
 
+
     <div class="card card-md info-card">
 
       <h3 class="info-title">
@@ -291,6 +329,7 @@
 
         </div>
 
+
         <div class="info-row">
 
           <span>
@@ -302,6 +341,7 @@
           </strong>
 
         </div>
+
 
         <div class="info-row">
 
@@ -317,17 +357,21 @@
 
         </div>
 
+
         <div class="info-row">
 
           <span>
             Order Status
           </span>
 
-          <strong class="order-status-text">
+          <strong
+            class="order-status-text order-status-<%= displayStatusClass %>"
+          >
             <%= currentDisplayStatus %>
           </strong>
 
         </div>
+
 
         <% if (
           order.paymentMethod === "Razorpay" &&
@@ -354,6 +398,7 @@
 
   </section>
 
+
   <section class="card card-md summary-card">
 
     <div class="summary-header">
@@ -370,6 +415,7 @@
       </span>
 
     </div>
+
 
     <div class="summary-items">
 
@@ -395,29 +441,37 @@
               item.couponDiscountAmount || 0,
             );
 
-          const itemFinalAmount = Math.max(
-            itemOfferAmount -
-            itemCouponDiscount,
-            0,
-          );
+          const itemFinalAmount =
+            Math.max(
+              itemOfferAmount -
+              itemCouponDiscount,
+              0,
+            );
 
-          const itemOfferDiscount = Math.max(
-            itemOriginalAmount -
-            itemOfferAmount,
-            0,
-          );
+          const itemOfferDiscount =
+            Math.max(
+              itemOriginalAmount -
+              itemOfferAmount,
+              0,
+            );
 
           const itemStatusClass =
-            String(item.status || "Placed")
+            String(
+              item.status || "Placed",
+            )
               .toLowerCase()
               .replace(/\s+/g, "-");
         %>
+
 
         <div
           class="
             summary-item
             <%= item.status === "Cancelled"
               ? "summary-item--cancelled"
+              : "" %>
+            <%= paymentExpired
+              ? "summary-item--payment-expired"
               : "" %>
           "
         >
@@ -428,6 +482,7 @@
             class="summary-item-image"
           >
 
+
           <div class="summary-item-content">
 
             <div class="item-title-row">
@@ -436,7 +491,8 @@
                 <%= item.productName %>
               </h4>
 
-              <% if (isRazorpayPending) { %>
+
+              <% if (isPaymentState) { %>
 
                 <span
                   class="item-status-text status-<%= displayStatusClass %>"
@@ -456,6 +512,7 @@
 
             </div>
 
+
             <p class="item-variant">
               <%= item.color %>
               /
@@ -463,15 +520,16 @@
               · Qty <%= item.quantity %>
             </p>
 
-            <% if (isRazorpayPending) { %>
+
+            <% if (isPaymentState) { %>
 
               <p class="item-meta-text">
 
                 <%= paymentExpired
-                  ? "Payment expired"
+                  ? "Payment window expired · Item was not confirmed"
                   : paymentFailed
-                    ? "Payment failed"
-                    : "Awaiting payment" %>
+                    ? "Payment failed · Awaiting successful payment"
+                    : "Awaiting payment confirmation" %>
 
               </p>
 
@@ -483,18 +541,16 @@
 
             <% } %>
 
+
             <% if (item.canReturn) { %>
 
               <p class="item-return-text">
 
                 Return available ·
-
                 <%= item.returnDaysLeft %>
-
                 day<%= item.returnDaysLeft !== 1
                   ? "s"
                   : "" %>
-
                 left
 
               </p>
@@ -502,6 +558,7 @@
             <% } %>
 
           </div>
+
 
           <div class="summary-item-side">
 
@@ -520,6 +577,7 @@
                   ₹<%= money(itemFinalAmount) %>
                 </strong>
 
+
                 <% if (
                   itemOriginalAmount >
                   itemFinalAmount
@@ -532,6 +590,7 @@
                 <% } %>
 
               </div>
+
 
               <% if (
                 itemOfferDiscount > 0 ||
@@ -549,6 +608,7 @@
 
                   <% } %>
 
+
                   <% if (itemCouponDiscount > 0) { %>
 
                     <span class="discount-tag">
@@ -564,39 +624,46 @@
 
             </div>
 
-            <% if (item.canCancel) { %>
 
-              <button
-                type="button"
-                class="secondary-btn cancel-item-btn"
-                data-item-id="<%= item._id %>"
-                data-order-id="<%= order._id %>"
-                data-name="<%= item.productName %>"
-                data-image="<%= item.productImage || '/images/no-image.png' %>"
-                data-size="<%= item.size %>"
-                data-color="<%= item.color %>"
-                data-price="<%= itemFinalAmount %>"
-              >
-                Cancel Item
-              </button>
+            <% if (!isPaymentState) { %>
 
-            <% } else if (item.canReturn) { %>
+              <% if (item.canCancel) { %>
 
-              <a
-                href="/user/returns/request/<%= order._id %>/<%= item._id %>"
-                class="secondary-btn return-item-btn"
-              >
-                Return Item
-              </a>
+                <button
+                  type="button"
+                  class="secondary-btn cancel-item-btn"
+                  data-item-id="<%= item._id %>"
+                  data-order-id="<%= order._id %>"
+                  data-name="<%= item.productName %>"
+                  data-image="<%= item.productImage || '/images/no-image.png' %>"
+                  data-size="<%= item.size %>"
+                  data-color="<%= item.color %>"
+                  data-price="<%= itemFinalAmount %>"
+                >
+                  Cancel Item
+                </button>
 
-            <% } else if (item.showReturnStatusBtn) { %>
 
-              <a
-                href="/user/returns/<%= order._id %>/<%= item._id %>"
-                class="secondary-btn return-status-btn"
-              >
-                View Return Status
-              </a>
+              <% } else if (item.canReturn) { %>
+
+                <a
+                  href="/user/returns/request/<%= order._id %>/<%= item._id %>"
+                  class="secondary-btn return-item-btn"
+                >
+                  Return Item
+                </a>
+
+
+              <% } else if (item.showReturnStatusBtn) { %>
+
+                <a
+                  href="/user/returns/<%= order._id %>/<%= item._id %>"
+                  class="secondary-btn return-status-btn"
+                >
+                  View Return Status
+                </a>
+
+              <% } %>
 
             <% } %>
 
@@ -608,39 +675,32 @@
 
     </div>
 
+
     <div class="summary-divider"></div>
 
+
     <div class="order-price-summary">
+
 
       <% if (fullyCancelled) { %>
 
         <div class="summary-row">
-
-          <span>
-            Original subtotal
-          </span>
-
-          <span>
-            ₹<%= money(originalSubtotal) %>
-          </span>
-
+          <span>Original subtotal</span>
+          <span>₹<%= money(originalSubtotal) %></span>
         </div>
+
 
         <% if (offerDiscountTotal > 0) { %>
 
           <div class="summary-row summary-discount">
-
-            <span>
-              Offer discount
-            </span>
-
+            <span>Offer discount</span>
             <span>
               −₹<%= money(offerDiscountTotal) %>
             </span>
-
           </div>
 
         <% } %>
+
 
         <% if (couponDiscountTotal > 0) { %>
 
@@ -664,6 +724,7 @@
 
         <% } %>
 
+
         <div class="summary-row">
 
           <span>
@@ -671,18 +732,16 @@
           </span>
 
           <span>
-
             <%= Number(originalShippingFee) === 0
               ? "Free"
-              : `₹${money(
-                  originalShippingFee,
-                )}` %>
-
+              : `₹${money(originalShippingFee)}` %>
           </span>
 
         </div>
 
+
         <div class="summary-divider"></div>
+
 
         <div class="summary-row total-row">
 
@@ -696,11 +755,13 @@
 
         </div>
 
+
         <div class="cancellation-summary">
 
           <h3 class="cancellation-summary-title">
             Cancellation
           </h3>
+
 
           <div class="summary-row summary-cancelled">
 
@@ -713,6 +774,7 @@
             </span>
 
           </div>
+
 
           <% if (refundRequired) { %>
 
@@ -728,6 +790,7 @@
 
             </div>
 
+
             <div class="summary-row cancellation-refund-row">
 
               <span>
@@ -735,12 +798,11 @@
               </span>
 
               <strong>
-                ₹<%= money(
-                  cancellationRefundAmount,
-                ) %>
+                ₹<%= money(cancellationRefundAmount) %>
               </strong>
 
             </div>
+
 
           <% } else { %>
 
@@ -755,6 +817,7 @@
               </span>
 
             </div>
+
 
             <div class="summary-row">
 
@@ -772,6 +835,7 @@
 
         </div>
 
+
       <% } else if (partiallyCancelled) { %>
 
         <div class="summary-row">
@@ -786,6 +850,7 @@
 
         </div>
 
+
         <div class="summary-row summary-cancelled">
 
           <span>
@@ -793,12 +858,11 @@
           </span>
 
           <span>
-            −₹<%= money(
-              cancelledOriginalAmount,
-            ) %>
+            −₹<%= money(cancelledOriginalAmount) %>
           </span>
 
         </div>
+
 
         <div class="summary-row">
 
@@ -807,16 +871,13 @@
           </span>
 
           <span>
-            ₹<%= money(
-              activeOriginalSubtotal,
-            ) %>
+            ₹<%= money(activeOriginalSubtotal) %>
           </span>
 
         </div>
 
-        <% if (
-          activeOfferDiscountTotal > 0
-        ) { %>
+
+        <% if (activeOfferDiscountTotal > 0) { %>
 
           <div class="summary-row summary-discount">
 
@@ -825,18 +886,15 @@
             </span>
 
             <span>
-              −₹<%= money(
-                activeOfferDiscountTotal,
-              ) %>
+              −₹<%= money(activeOfferDiscountTotal) %>
             </span>
 
           </div>
 
         <% } %>
 
-        <% if (
-          activeCouponDiscountTotal > 0
-        ) { %>
+
+        <% if (activeCouponDiscountTotal > 0) { %>
 
           <div class="summary-row summary-discount">
 
@@ -851,14 +909,13 @@
             </span>
 
             <span>
-              −₹<%= money(
-                activeCouponDiscountTotal,
-              ) %>
+              −₹<%= money(activeCouponDiscountTotal) %>
             </span>
 
           </div>
 
         <% } %>
+
 
         <div class="summary-row">
 
@@ -867,12 +924,11 @@
           </span>
 
           <span>
-            ₹<%= money(
-              activeDiscountedSubtotal,
-            ) %>
+            ₹<%= money(activeDiscountedSubtotal) %>
           </span>
 
         </div>
+
 
         <div class="summary-row">
 
@@ -881,14 +937,13 @@
           </span>
 
           <span>
-
             <%= Number(shippingFee) === 0
               ? "Free"
               : `₹${money(shippingFee)}` %>
-
           </span>
 
         </div>
+
 
         <div class="summary-row summary-gst">
 
@@ -902,7 +957,9 @@
 
         </div>
 
+
         <div class="summary-divider"></div>
+
 
         <div class="summary-row total-row">
 
@@ -915,6 +972,7 @@
           </span>
 
         </div>
+
 
       <% } else { %>
 
@@ -929,6 +987,7 @@
           </span>
 
         </div>
+
 
         <% if (offerDiscountTotal > 0) { %>
 
@@ -946,6 +1005,7 @@
 
         <% } %>
 
+
         <% if (couponDiscountTotal > 0) { %>
 
           <div class="summary-row summary-discount">
@@ -961,14 +1021,13 @@
             </span>
 
             <span>
-              −₹<%= money(
-                couponDiscountTotal,
-              ) %>
+              −₹<%= money(couponDiscountTotal) %>
             </span>
 
           </div>
 
         <% } %>
+
 
         <div class="summary-row">
 
@@ -977,14 +1036,13 @@
           </span>
 
           <span>
-
             <%= Number(shippingFee) === 0
               ? "Free"
               : `₹${money(shippingFee)}` %>
-
           </span>
 
         </div>
+
 
         <div class="summary-row summary-gst">
 
@@ -998,12 +1056,16 @@
 
         </div>
 
+
         <div class="summary-divider"></div>
+
 
         <div class="summary-row total-row">
 
           <span>
-            Order total
+            <%= isPaymentState
+              ? "Checkout total"
+              : "Order total" %>
           </span>
 
           <span>
@@ -1012,7 +1074,8 @@
 
         </div>
 
-        <% if (isRazorpayPending) { %>
+
+        <% if (isPaymentState) { %>
 
           <p
             class="
@@ -1026,9 +1089,9 @@
           >
 
             <%= paymentExpired
-              ? "The payment session has expired. This order was not confirmed."
+              ? "This checkout expired before payment was completed. No order was confirmed."
               : paymentFailed
-                ? "The payment attempt failed. Retry payment to confirm this order."
+                ? "The payment attempt failed. Retry payment before the payment window expires."
                 : "Payment is required before this order can be confirmed." %>
 
           </p>
@@ -1041,7 +1104,9 @@
 
   </section>
 
+
   <div class="order-actions">
+
 
     <% if (canCancelAnyItem) { %>
 
@@ -1054,6 +1119,7 @@
       </button>
 
     <% } %>
+
 
     <% if (canRetryPayment) { %>
 
@@ -1068,16 +1134,35 @@
 
     <% } %>
 
-    <a
-      href="/user/shop"
-      class="<%= canRetryPayment
-        ? 'secondary-btn'
-        : 'primary-btn' %> continue-shopping-btn"
-    >
-      Continue Shopping
-    </a>
+
+    <% if (canReturnToCheckout) { %>
+
+      <a
+        href="/user/checkout"
+        class="<%= canRetryPayment
+          ? 'secondary-btn'
+          : 'primary-btn' %> checkout-again-btn"
+      >
+        Back to Checkout
+      </a>
+
+    <% } %>
+
+
+    <% if (!canReturnToCheckout) { %>
+
+      <a
+        href="/user/shop"
+        class="primary-btn continue-shopping-btn"
+      >
+        Continue Shopping
+      </a>
+
+    <% } %>
+
 
   </div>
+
 
   <div
     id="cancelItemModal"
@@ -1103,6 +1188,7 @@
 
       </div>
 
+
       <div class="cancel-product">
 
         <img
@@ -1124,6 +1210,7 @@
         </div>
 
       </div>
+
 
       <div class="modal-field">
 
@@ -1160,6 +1247,7 @@
 
       </div>
 
+
       <div class="modal-field">
 
         <label for="cancelComment">
@@ -1173,6 +1261,7 @@
         ></textarea>
 
       </div>
+
 
       <div class="cancel-modal-actions">
 
@@ -1199,6 +1288,7 @@
   </div>
 
 </main>
+
 
 <%- include("../partials/user-scripts") %>
 

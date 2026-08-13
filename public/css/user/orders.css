@@ -240,7 +240,11 @@
   background: #fef2f2;
   border-color: #fca5a5;
 }
-
+.status-payment-expired {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
 /* Mixed item status summary */
 
 .status-summary-list {

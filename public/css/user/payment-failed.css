@@ -154,7 +154,142 @@
 
   margin-top:30px;
 }
+.success-hero--expired {
+  border-color: #e5e7eb;
+}
 
+
+.failed-icon--expired {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #6b7280;
+}
+
+
+.meta-status {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 28px;
+
+  padding: 4px 10px;
+
+  border-radius: 999px;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+
+.meta-status--pending {
+  color: #92400e !important;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+}
+
+
+.meta-status--expired {
+  color: #6b7280 !important;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+}
+
+
+.payment-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin-bottom: 13px;
+}
+
+
+.payment-info-row:last-child {
+  margin-bottom: 0;
+}
+
+
+.payment-info-row p {
+  margin: 0;
+
+  color: #666;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+
+.payment-info-icon {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+
+  border-radius: 50%;
+
+  color: #6b7280;
+  background: #f3f4f6;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+.payment-failure-box {
+  margin-top: 18px;
+
+  padding: 14px 16px;
+
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+
+  background: #fef2f2;
+}
+
+
+.payment-failure-box span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #991b1b;
+
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+
+.payment-failure-box p {
+  margin: 0;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+.delivery-value--active {
+  color: #15803d !important;
+}
+
+
+.delivery-value--failed {
+  color: #b91c1c !important;
+}
+
+
+.delivery-value--expired {
+  color: #6b7280 !important;
+}
 /* RESPONSIVE */
 
 @media(max-width:768px){

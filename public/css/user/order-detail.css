@@ -513,6 +513,38 @@
   background: #ecfeff;
   border-color: #a5f3fc;
 }
+
+.order-status-payment-pending {
+  color: #92400e !important;
+}
+
+.order-status-payment-failed {
+  color: #b91c1c !important;
+}
+
+.order-status-payment-expired {
+  color: #6b7280 !important;
+}
+
+.summary-item--payment-expired {
+  opacity: 0.78;
+}
+
+.summary-item--payment-expired .summary-item-image {
+  filter: grayscale(0.12);
+}
+
+.summary-item--payment-expired .item-final-price {
+  color: #4b5563;
+}
+
+.summary-item--payment-expired .item-meta-text {
+  color: #6b7280;
+}
+
+.checkout-again-btn {
+  min-width: 180px;
+}
 .item-variant{
   margin:0;
   color:#6b7280;

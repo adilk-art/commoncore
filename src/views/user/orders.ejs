@@ -46,6 +46,7 @@
 
       </div>
 
+
       <form
         class="search-bar"
         method="GET"
@@ -71,6 +72,7 @@
         </button>
 
       </form>
+
 
       <% if (!orders || orders.length === 0) { %>
 
@@ -110,6 +112,7 @@
 
       <% } else { %>
 
+
         <div class="orders-list">
 
           <% orders.forEach((order) => { %>
@@ -126,16 +129,25 @@
                   }, 0)
                 : 0;
 
+              const isPaymentPending =
+                order.orderStatus === "Payment Pending";
+
+              const isPaymentExpired =
+                order.orderStatus === "Payment Expired";
+
               const statusValue =
-                order.itemsSingleStatus ||
-                order.displayStatus ||
-                "Placed";
+                isPaymentPending || isPaymentExpired
+                  ? order.orderStatus
+                  : order.itemsSingleStatus ||
+                    order.orderStatus ||
+                    "Placed";
 
               const statusClass = String(statusValue)
                 .toLowerCase()
                 .trim()
                 .replace(/\s+/g, "-");
             %>
+
 
             <div class="order-row">
 
@@ -148,6 +160,7 @@
 
               </div>
 
+
               <div>
 
                 <span class="column-title">
@@ -159,6 +172,7 @@
                 </h4>
 
               </div>
+
 
               <div>
 
@@ -182,6 +196,7 @@
 
               </div>
 
+
               <div>
 
                 <span class="column-title">
@@ -195,6 +210,7 @@
 
               </div>
 
+
               <div>
 
                 <span class="column-title">
@@ -207,6 +223,7 @@
 
               </div>
 
+
               <div>
 
                 <span class="column-title">
@@ -214,10 +231,13 @@
                 </span>
 
                 <p>
-                  <%= new Date(order.createdAt).toLocaleDateString("en-IN") %>
+                  <%= new Date(
+                    order.createdAt
+                  ).toLocaleDateString("en-IN") %>
                 </p>
 
               </div>
+
 
               <div class="order-status-cell">
 
@@ -225,17 +245,15 @@
                   STATUS
                 </span>
 
-                <% if (order.isPaymentPending) { %>
+
+                <% if (isPaymentPending || isPaymentExpired) { %>
 
                   <div
-                    class="status-text <%= order.paymentExpired
-                      ? 'status-payment-expired'
-                      : order.paymentFailed
-                        ? 'status-payment-failed'
-                        : 'status-payment-pending' %>"
+                    class="status-text status-<%= statusClass %>"
                   >
-                    <%= order.displayStatus %>
+                    <%= statusValue %>
                   </div>
+
 
                 <% } else if (!order.itemsStatusMixed) { %>
 
@@ -244,6 +262,7 @@
                   >
                     <%= statusValue %>
                   </div>
+
 
                 <% } else { %>
 
@@ -263,17 +282,23 @@
 
               </div>
 
+
               <div>
 
                 <a
                   href="/user/order/<%= order._id %>"
-                  class="view-btn <%= order.isPaymentPending && order.canRetryPayment
-                    ? 'view-btn--payment'
-                    : '' %>"
+                  class="
+                    view-btn
+                    <%= isPaymentPending
+                      ? 'view-btn--payment'
+                      : '' %>
+                  "
                 >
-                  <%= order.isPaymentPending && order.canRetryPayment
+
+                  <%= isPaymentPending
                     ? "Continue / Pay"
                     : "View Details" %>
+
                 </a>
 
               </div>
@@ -285,6 +310,7 @@
         </div>
 
       <% } %>
+
 
       <% if (totalPages > 1) { %>
 
@@ -308,6 +334,7 @@
     </div>
 
   </div>
+
 
   <script src="/js/user/logout.js"></script>
   <script src="/js/utils/toast.js"></script>

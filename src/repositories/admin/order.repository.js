@@ -64,22 +64,36 @@ export const countOrders = async (filter) => {
 };
 
 export const getOrderStats = async () => {
-  const [totalOrders, processingOrders, shippedOrders, deliveredOrders] =
-    await Promise.all([
-      Order.countDocuments(),
+  const [
+    totalOrders,
+    processingOrders,
+    shippedOrders,
+    deliveredOrders,
+  ] = await Promise.all([
+    Order.countDocuments({
+      orderStatus: {
+        $nin: [
+          "Payment Pending",
+          "Payment Expired",
+        ],
+      },
+    }),
 
-      Order.countDocuments({
-        orderStatus: "Processing",
-      }),
+    Order.countDocuments({
+      orderStatus:
+        "Processing",
+    }),
 
-      Order.countDocuments({
-        orderStatus: "Shipped",
-      }),
+    Order.countDocuments({
+      orderStatus:
+        "Shipped",
+    }),
 
-      Order.countDocuments({
-        orderStatus: "Delivered",
-      }),
-    ]);
+    Order.countDocuments({
+      orderStatus:
+        "Delivered",
+    }),
+  ]);
 
   return {
     totalOrders,

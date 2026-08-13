@@ -13,6 +13,8 @@ import {
   markRazorpayOrderPaidRepo,
   recordPaymentFailureRepo,
   deleteIncompletePendingOrderRepo,
+  expirePendingRazorpayOrdersRepo,
+  expireOtherPendingRazorpayOrdersRepo,
 } from "../../repositories/order.repository.js";
 import {
   reduceVariantStock,
@@ -39,7 +41,21 @@ import {
 import { validateCouponService } from "./coupon.service.js";
 import { incrementCouponUsage } from "../../repositories/coupon.repository.js";
 
+export const expirePendingRazorpayOrdersService = async () => {
+  return await expirePendingRazorpayOrdersRepo();
+};
+export const expireOtherPendingRazorpayOrdersService = async ({
+  userId,
+  excludeOrderId = null,
+}) => {
+  return await expireOtherPendingRazorpayOrdersRepo({
+    userId,
+    excludeOrderId,
+  });
+};
 export const getUserOrdersService = async ({ userId, search, page }) => {
+  await expirePendingRazorpayOrdersService();
+
   const limit = 5;
 
   const { orders, totalOrders } = await findOrdersByUser({
@@ -53,51 +69,22 @@ export const getUserOrdersService = async ({ userId, search, page }) => {
     const orderObject =
       typeof order.toObject === "function" ? order.toObject() : order;
 
-    const isPendingRazorpay =
+    const isRazorpayPending =
       orderObject.paymentMethod === "Razorpay" &&
-      orderObject.paymentStatus === "Pending" &&
-      orderObject.orderStatus === "Payment Pending";
+      orderObject.orderStatus === "Payment Pending" &&
+      orderObject.paymentStatus !== "Paid";
 
     const paymentExpired =
-      isPendingRazorpay &&
-      Boolean(orderObject.paymentExpiresAt) &&
-      new Date(orderObject.paymentExpiresAt).getTime() <= Date.now();
+      orderObject.paymentMethod === "Razorpay" &&
+      orderObject.orderStatus === "Payment Expired";
 
     const paymentFailed =
-      isPendingRazorpay &&
+      isRazorpayPending &&
       Boolean(
         orderObject.paymentFailure?.code ||
         orderObject.paymentFailure?.description ||
         orderObject.paymentFailure?.reason,
       );
-
-    if (isPendingRazorpay) {
-      const displayStatus = paymentExpired
-        ? "Payment Expired"
-        : paymentFailed
-          ? "Payment Failed"
-          : "Payment Pending";
-
-      return {
-        ...orderObject,
-
-        displayStatus,
-
-        itemsStatusMixed: false,
-
-        itemsSingleStatus: displayStatus,
-
-        itemsStatusSummaryLines: [],
-
-        isPaymentPending: true,
-
-        paymentExpired,
-
-        paymentFailed,
-
-        canRetryPayment: !paymentExpired,
-      };
-    }
 
     const statusCounts = {};
 
@@ -113,28 +100,35 @@ export const getUserOrdersService = async ({ userId, search, page }) => {
 
     const itemsSingleStatus = entries.length === 1 ? entries[0][0] : null;
 
-    const itemsStatusSummaryLines = entries.map(([status, quantity]) => {
-      return `${quantity} ${status}`;
-    });
+    const itemsStatusSummaryLines = entries.map(
+      ([status, quantity]) => `${quantity} ${status}`,
+    );
+
+    const displayStatus = paymentFailed
+      ? "Payment Failed"
+      : orderObject.orderStatus || itemsSingleStatus || "Placed";
 
     return {
       ...orderObject,
 
-      displayStatus: orderObject.orderStatus || itemsSingleStatus || "Placed",
+      displayStatus,
 
-      itemsStatusMixed,
+      itemsStatusMixed:
+        isRazorpayPending || paymentExpired ? false : itemsStatusMixed,
 
-      itemsSingleStatus,
+      itemsSingleStatus:
+        isRazorpayPending || paymentExpired ? displayStatus : itemsSingleStatus,
 
-      itemsStatusSummaryLines,
+      itemsStatusSummaryLines:
+        isRazorpayPending || paymentExpired ? [] : itemsStatusSummaryLines,
 
-      isPaymentPending: false,
+      isPaymentPending: isRazorpayPending,
 
-      paymentExpired: false,
+      paymentExpired,
 
-      paymentFailed: false,
+      paymentFailed,
 
-      canRetryPayment: false,
+      canRetryPayment: isRazorpayPending,
     };
   });
 
@@ -382,25 +376,31 @@ export const placeOrderService = async (userId, payload) => {
     quantity,
     couponCode,
   } = payload;
+
   if (!shippingAddress) {
     const error = new Error("Please select address");
     error.status = 400;
     throw error;
   }
+
   if (!paymentMethod) {
     const error = new Error("Please select payment method");
     error.status = 400;
     throw error;
   }
+
   if (paymentMethod === "Razorpay") {
     return createPendingRazorpayOrderService(userId, payload);
   }
+
   const address = await getUserAddressById(shippingAddress, userId);
+
   if (!address) {
     const error = new Error("Address not found");
     error.status = 404;
     throw error;
   }
+
   const { items, coupon, total, shippingFee } = await buildOrderPricing({
     userId,
     isBuyNow,
@@ -408,66 +408,107 @@ export const placeOrderService = async (userId, payload) => {
     quantity,
     couponCode,
   });
+
   if (paymentMethod === "Wallet") {
     const wallet = await findWalletByUserId(userId);
+
     if (!wallet) {
       const error = new Error("Wallet not found");
       error.status = 400;
       throw error;
     }
+
     if (Number(wallet.balance) < Number(total)) {
       const error = new Error("Insufficient wallet balance");
+
       error.status = 400;
       error.code = "INSUFFICIENT_WALLET_BALANCE";
+
       throw error;
     }
   }
+
   const estimatedDeliveryDate = new Date();
+
   estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+
   const order = await createOrderRepo({
     orderNumber: generateOrderNumber(),
+
     userId,
+
     items,
+
+    isBuyNow,
+
     paymentMethod,
+
     estimatedDeliveryDate,
+
     shippingAddress: {
       fullName: address.fullName,
+
       phone: address.phone,
+
       line1: address.line1,
+
       line2: address.line2 || "",
+
       city: address.city,
+
       state: address.state,
+
       pincode: address.pincode,
     },
+
     coupon: coupon || undefined,
+
     shippingFee,
+
     total,
+
     paymentStatus: paymentMethod === "Wallet" ? "Paid" : "Pending",
+
     orderStatus: "Placed",
   });
+
   if (paymentMethod === "Wallet") {
     await debitWalletService(userId, {
       amount: total,
+
       category: "OrderPayment",
+
       description: `Payment for Order ${order.orderNumber}`,
+
       reference: order.orderNumber,
     });
   }
+
   for (const item of items) {
     await reduceVariantStock(item.variantId, item.quantity);
   }
+
   if (coupon?.couponId) {
     const updatedCoupon = await incrementCouponUsage(coupon.couponId);
+
     if (!updatedCoupon) {
       const error = new Error("This coupon is no longer available");
+
       error.status = 400;
       error.code = "INVALID_COUPON";
+
       throw error;
     }
   }
+
+  await expireOtherPendingRazorpayOrdersService({
+    userId,
+  });
+
   if (!isBuyNow) {
     await clearCart(userId);
   }
+
   return order;
 };
 
@@ -538,14 +579,18 @@ export const getOrderSuccessService = async (orderId, userId) => {
 };
 
 export const getOrderDetailService = async (orderId, userId) => {
+  await expirePendingRazorpayOrdersService();
+
   const order = await findUserOrderById(orderId, userId);
 
   if (!order) {
     const error = new Error("Order not found");
+
     error.status = 404;
+
     throw error;
   }
-
+  const cart = await getCartService(userId);
   const returnRequests = await Return.find({
     orderId: order._id,
     userId,
@@ -557,48 +602,46 @@ export const getOrderDetailService = async (orderId, userId) => {
 
   const isRazorpayPending =
     order.paymentMethod === "Razorpay" &&
-    order.paymentStatus === "Pending" &&
-    order.orderStatus === "Payment Pending";
-
-  const paymentExpiresAt = order.paymentExpiresAt
-    ? new Date(order.paymentExpiresAt)
-    : null;
+    order.orderStatus === "Payment Pending" &&
+    order.paymentStatus !== "Paid";
 
   const paymentExpired =
-    isRazorpayPending &&
-    paymentExpiresAt &&
-    !Number.isNaN(paymentExpiresAt.getTime()) &&
-    paymentExpiresAt.getTime() <= Date.now();
+    order.paymentMethod === "Razorpay" &&
+    order.orderStatus === "Payment Expired";
 
   const paymentFailed =
     isRazorpayPending &&
-    !paymentExpired &&
     Boolean(
       order.paymentFailure?.code ||
       order.paymentFailure?.description ||
       order.paymentFailure?.reason,
     );
 
-  const paymentDisplayStatus = paymentExpired
-    ? "Payment Expired"
-    : paymentFailed
-      ? "Payment Failed"
-      : isRazorpayPending
-        ? "Payment Pending"
-        : null;
+  const isPaymentState = isRazorpayPending || paymentExpired;
 
-  if (!isRazorpayPending) {
+  if (!isPaymentState) {
     order.orderStatus = calculateOrderStatus(order.items);
   }
 
-  const displayStatus = paymentDisplayStatus || order.orderStatus || "Placed";
+  const displayStatus = paymentFailed ? "Payment Failed" : order.orderStatus;
 
-  const canRetryPayment = isRazorpayPending && !paymentExpired;
+  const canRetryPayment = isRazorpayPending;
+
+  const hasCartItems =
+    cart && Array.isArray(cart.items) && cart.items.length > 0;
+
+  const canReturnToCheckout =
+    order.paymentMethod === "Razorpay" &&
+    order.paymentStatus !== "Paid" &&
+    ["Payment Pending", "Payment Expired"].includes(order.orderStatus) &&
+    hasCartItems;
 
   const RETURN_WINDOW_DAYS = 14;
 
   const formatReturnDate = (date) => {
-    if (!date) return "";
+    if (!date) {
+      return "";
+    }
 
     const parsedDate = new Date(date);
 
@@ -615,7 +658,7 @@ export const getOrderDetailService = async (orderId, userId) => {
 
   order.items.forEach((item) => {
     item.canCancel =
-      !isRazorpayPending && ["Placed", "Processing"].includes(item.status);
+      !isPaymentState && ["Placed", "Processing"].includes(item.status);
 
     item.canReturn = false;
     item.returnDaysLeft = 0;
@@ -640,7 +683,7 @@ export const getOrderDetailService = async (orderId, userId) => {
     }
 
     const canRequestReturn =
-      !isRazorpayPending &&
+      !isPaymentState &&
       item.status === "Delivered" &&
       diffDays !== null &&
       diffDays >= 0 &&
@@ -649,6 +692,7 @@ export const getOrderDetailService = async (orderId, userId) => {
     if (itemReturn) {
       if (itemReturn.status === "Cancelled") {
         item.canReturn = canRequestReturn;
+
         return;
       }
 
@@ -658,18 +702,23 @@ export const getOrderDetailService = async (orderId, userId) => {
         Requested: `Return requested on ${formatReturnDate(
           itemReturn.requestedAt || itemReturn.createdAt,
         )}`,
+
         Approved: `Return approved on ${formatReturnDate(
           itemReturn.approvedAt || itemReturn.updatedAt,
         )}`,
+
         "Picked Up": `Item picked up on ${formatReturnDate(
           itemReturn.pickedUpAt || itemReturn.updatedAt,
         )}`,
+
         Received: `Returned item received on ${formatReturnDate(
           itemReturn.receivedAt || itemReturn.updatedAt,
         )}`,
+
         Refunded: `Refund processed on ${formatReturnDate(
           itemReturn.refundedAt || itemReturn.updatedAt,
         )}`,
+
         Rejected: `Return rejected on ${formatReturnDate(
           itemReturn.rejectedAt || itemReturn.updatedAt,
         )}`,
@@ -789,16 +838,18 @@ export const getOrderDetailService = async (orderId, userId) => {
   const refundRequired = fullyCancelled && order.paymentStatus === "Paid";
 
   const canCancelAnyItem =
-    !isRazorpayPending &&
+    !isPaymentState &&
     order.items.some(
       (item) => item.status === "Placed" || item.status === "Processing",
     );
 
   const canDownloadInvoice =
-    order.paymentStatus === "Paid" || order.paymentMethod === "CashOnDelivery";
+    !isPaymentState &&
+    (order.paymentStatus === "Paid" ||
+      order.paymentMethod === "CashOnDelivery");
 
   const showEstimatedDelivery =
-    !isRazorpayPending &&
+    !isPaymentState &&
     !fullyCancelled &&
     activeItems.some((item) =>
       ["Placed", "Processing", "Shipped"].includes(item.status),
@@ -806,39 +857,66 @@ export const getOrderDetailService = async (orderId, userId) => {
 
   return {
     order,
+
     displayStatus,
-    paymentDisplayStatus,
+
+    paymentDisplayStatus: paymentFailed ? "Payment Failed" : null,
+
     originalSubtotal: Number(orderTotals.originalSubtotal.toFixed(2)),
+
     offerDiscountTotal: Number(offerDiscountTotal.toFixed(2)),
+
     subtotal: Number(orderTotals.subtotal.toFixed(2)),
+
     couponDiscountTotal: Number(orderTotals.couponDiscountTotal.toFixed(2)),
+
     discountedSubtotal: Number(orderTotals.finalSubtotal.toFixed(2)),
+
     cancelledAmount: Number(cancelledAmount.toFixed(2)),
+
     cancelledOriginalAmount: Number(cancelledOriginalAmount.toFixed(2)),
+
     activeOriginalSubtotal: Number(activeTotals.originalSubtotal.toFixed(2)),
+
     activeOfferDiscountTotal: Number(activeOfferDiscountTotal.toFixed(2)),
+
     activeSubtotal: Number(activeTotals.subtotal.toFixed(2)),
+
     activeCouponDiscountTotal: Number(
       activeTotals.couponDiscountTotal.toFixed(2),
     ),
+
     activeDiscountedSubtotal: Number(activeTotals.finalSubtotal.toFixed(2)),
+
     originalShippingFee: Number(originalShippingFee.toFixed(2)),
+
     shippingFee: Number(shippingFee.toFixed(2)),
+
     currentValue: Number(currentValue.toFixed(2)),
+
     originalOrderTotal: Number(originalOrderTotal.toFixed(2)),
+
     paymentCollected: Number(paymentCollected.toFixed(2)),
+
     cancellationRefundAmount: Number(cancellationRefundAmount.toFixed(2)),
+
     gstAmount: Number(activeTotals.gstAmount.toFixed(2)),
+
     fullyCancelled,
     partiallyCancelled,
     refundRequired,
     canCancelAnyItem,
     canDownloadInvoice,
     showEstimatedDelivery,
+
     isRazorpayPending,
-    paymentExpired: Boolean(paymentExpired),
-    paymentFailed: Boolean(paymentFailed),
+
+    paymentExpired,
+
+    paymentFailed,
+
     canRetryPayment,
+    canReturnToCheckout,
   };
 };
 
@@ -1109,17 +1187,25 @@ export const createPendingRazorpayOrderService = async (userId, payload) => {
     variantId,
     quantity,
   } = payload;
+
   if (!shippingAddress) {
     const error = new Error("Please select address");
+
     error.status = 400;
+
     throw error;
   }
+
   const address = await getUserAddressById(shippingAddress, userId);
+
   if (!address) {
     const error = new Error("Shipping address not found");
+
     error.status = 404;
+
     throw error;
   }
+
   const pricing = await buildOrderPricing({
     userId,
     couponCode,
@@ -1127,59 +1213,91 @@ export const createPendingRazorpayOrderService = async (userId, payload) => {
     variantId,
     quantity,
   });
+
   const paymentExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
   const estimatedDeliveryDate = new Date();
+
   estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+
   const order = await createOrderRepo({
     orderNumber: generateOrderNumber(),
+
     userId,
+
     items: pricing.items,
+    isBuyNow,
+
     paymentMethod: "Razorpay",
+
     paymentStatus: "Pending",
+
     orderStatus: "Payment Pending",
+
     paymentExpiresAt,
+
     estimatedDeliveryDate,
+
     shippingAddress: {
       fullName: address.fullName,
+
       phone: address.phone,
+
       line1: address.line1,
+
       line2: address.line2 || "",
+
       city: address.city,
+
       state: address.state,
+
       pincode: address.pincode,
     },
+
     coupon: pricing.coupon || undefined,
+
     shippingFee: pricing.shippingFee,
+
     total: pricing.total,
   });
+
   try {
     const razorpayOrder = await razorpay.orders.create({
       amount: Math.round(Number(order.total) * 100),
+
       currency: "INR",
+
       receipt: order.orderNumber,
+
       notes: {
         databaseOrderId: String(order._id),
+
         userId: String(userId),
       },
     });
-    await updateRazorpayOrderIdRepo(order._id, razorpayOrder.id);
 
-    if (!isBuyNow) {
-      await clearCart(userId);
-    }
+    await updateRazorpayOrderIdRepo(order._id, razorpayOrder.id);
 
     return {
       success: true,
+
       key: process.env.RAZORPAY_KEY,
+
       databaseOrderId: order._id,
+
       orderNumber: order.orderNumber,
+
       order: razorpayOrder,
+
       paymentExpiresAt,
     };
   } catch (error) {
     await deleteIncompletePendingOrderRepo(order._id, userId);
+
     const serviceError = new Error("Unable to initialize Razorpay payment");
+
     serviceError.status = 500;
+
     throw serviceError;
   }
 };
@@ -1216,58 +1334,86 @@ export const verifyPaymentService = async (userId, paymentData) => {
     razorpay_payment_id,
     razorpay_signature,
   } = paymentData;
+
   if (!databaseOrderId) {
     const error = new Error("Database order ID is required");
+
     error.status = 400;
+
     throw error;
   }
+
+  await expirePendingRazorpayOrdersService();
+
   const order = await findPendingRazorpayOrderRepo(databaseOrderId, userId);
+
   if (!order) {
-    const error = new Error("Pending payment order not found");
-    error.status = 404;
-    throw error;
-  }
-  if (
-    order.paymentExpiresAt &&
-    new Date(order.paymentExpiresAt) <= new Date()
-  ) {
-    const error = new Error("Payment time expired");
+    const error = new Error(
+      "Payment time expired or order is no longer pending",
+    );
+
     error.status = 400;
     error.code = "PAYMENT_EXPIRED";
+
     throw error;
   }
+
   if (order.razorpayOrderId !== razorpay_order_id) {
     const error = new Error("Razorpay order does not match");
+
     error.status = 400;
+
     throw error;
   }
+
   verifyRazorpaySignature({
     razorpay_order_id,
     razorpay_payment_id,
     razorpay_signature,
   });
+
   for (const item of order.items) {
     await reduceVariantStock(item.variantId, item.quantity);
   }
+
   const paidOrder = await markRazorpayOrderPaidRepo({
     orderId: order._id,
+
     userId,
+
     razorpayPaymentId: razorpay_payment_id,
+
     razorpaySignature: razorpay_signature,
   });
+
   if (!paidOrder) {
     const error = new Error("Unable to update payment status");
+
     error.status = 400;
+
     throw error;
   }
+
   if (paidOrder.coupon?.couponId) {
     const updatedCoupon = await incrementCouponUsage(paidOrder.coupon.couponId);
+
     if (!updatedCoupon) {
       const error = new Error("Coupon usage could not be updated");
+
       error.status = 400;
       error.code = "INVALID_COUPON";
+
       throw error;
     }
+  }
+
+  await expireOtherPendingRazorpayOrdersService({
+    userId,
+    excludeOrderId: paidOrder._id,
+  });
+
+  if (!order.isBuyNow) {
+    await clearCart(userId);
   }
 
   return {
@@ -1277,37 +1423,46 @@ export const verifyPaymentService = async (userId, paymentData) => {
 };
 
 export const retryPaymentService = async (userId, orderId) => {
+  await expirePendingRazorpayOrdersService();
+
   const order = await findPendingRazorpayOrderRepo(orderId, userId);
+
   if (!order) {
-    const error = new Error("Pending payment order not found");
-    error.status = 404;
-    throw error;
-  }
-  if (
-    order.paymentExpiresAt &&
-    new Date(order.paymentExpiresAt) <= new Date()
-  ) {
-    const error = new Error("Payment time expired");
+    const error = new Error("Payment is no longer available for this order");
+
     error.status = 400;
     error.code = "PAYMENT_EXPIRED";
+
     throw error;
   }
+
   const razorpayOrder = await razorpay.orders.create({
     amount: Math.round(Number(order.total) * 100),
+
     currency: "INR",
+
     receipt: `${order.orderNumber}-${Date.now()}`,
+
     notes: {
       databaseOrderId: String(order._id),
+
       userId: String(userId),
+
       retry: "true",
     },
   });
+
   await updateRazorpayOrderIdRepo(order._id, razorpayOrder.id);
+
   return {
     success: true,
+
     key: process.env.RAZORPAY_KEY,
+
     databaseOrderId: order._id,
+
     order: razorpayOrder,
+
     paymentExpiresAt: order.paymentExpiresAt,
   };
 };

@@ -118,6 +118,10 @@ const orderSchema = new Schema(
       enum: ["CashOnDelivery", "Razorpay", "Wallet"],
       required: true,
     },
+    isBuyNow: {
+    type: Boolean,
+    default: false,
+  },
 
     paymentStatus: {
       type: String,
@@ -225,6 +229,7 @@ const orderSchema = new Schema(
       type: String,
       enum: [
         "Payment Pending",
+        "Payment Expired",
         "Placed",
         "Processing",
         "Shipped",

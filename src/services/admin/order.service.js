@@ -10,6 +10,9 @@ import {
 import { calculateOrderStatus } from "../../utils/orderStatus.js";
 import { calculateItemGstAmount } from "../../utils/calculateGst.js";
 import { canMarkCodPaid } from "../../utils/orderStatus.js";
+import {
+  expirePendingRazorpayOrdersService,
+} from "../user/order.service.js";
 
 export const getOrdersPageService = async ({
   page,
@@ -20,7 +23,16 @@ export const getOrdersPageService = async ({
   payment,
   sort,
 }) => {
-  const filter = {};
+  await expirePendingRazorpayOrdersService();
+
+  const filter = {
+    orderStatus: {
+      $nin: [
+        "Payment Pending",
+        "Payment Expired",
+      ],
+    },
+  };
 
   if (status) {
     filter.orderStatus = status;
@@ -37,53 +49,107 @@ export const getOrdersPageService = async ({
     };
   }
 
-  let sortOrder = { createdAt: -1 };
+  let sortOrder = {
+    createdAt: -1,
+  };
 
   if (sort === "oldest") {
-    sortOrder = { createdAt: 1 };
+    sortOrder = {
+      createdAt: 1,
+    };
   }
 
-  const [orders, stats] = await Promise.all([
-    findOrders(limit, skip, filter, sortOrder),
-    getOrderStats(),
-  ]);
+  const [orders, stats] =
+    await Promise.all([
+      findOrders(
+        limit,
+        skip,
+        filter,
+        sortOrder,
+      ),
 
-  const preparedOrders = orders.map((order) => {
-    const statusCounts = {};
+      getOrderStats(),
+    ]);
 
-    order.items.forEach((item) => {
-      statusCounts[item.status] =
-        (statusCounts[item.status] || 0) + item.quantity;
+  const preparedOrders =
+    orders.map((order) => {
+      const statusCounts = {};
+
+      order.items.forEach(
+        (item) => {
+          statusCounts[item.status] =
+            (
+              statusCounts[
+                item.status
+              ] || 0
+            ) +
+            item.quantity;
+        },
+      );
+
+      const entries =
+        Object.entries(
+          statusCounts,
+        );
+
+      const itemsStatusMixed =
+        entries.length > 1;
+
+      const itemsSingleStatus =
+        entries.length === 1
+          ? entries[0][0]
+          : null;
+
+      const itemsStatusSummaryLines =
+        entries.map(
+          ([status, qty]) =>
+            `${qty} ${status}`,
+        );
+
+      return {
+        ...order,
+
+        itemsStatusMixed,
+
+        itemsSingleStatus,
+
+        itemsStatusSummaryLines,
+      };
     });
 
-    const entries = Object.entries(statusCounts);
-
-    const itemsStatusMixed = entries.length > 1;
-    const itemsSingleStatus = entries.length === 1 ? entries[0][0] : null;
-
-    const itemsStatusSummaryLines = entries.map(
-      ([status, qty]) => `${qty} ${status}`,
+  const orderCount =
+    await countOrders(
+      filter,
     );
 
-    return {
-      ...order,
-      itemsStatusMixed,
-      itemsSingleStatus,
-      itemsStatusSummaryLines,
-    };
-  });
-
-  const orderCount = await countOrders(filter);
-  const totalPages = Math.max(1, Math.ceil(orderCount / limit));
+  const totalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        orderCount /
+          limit,
+      ),
+    );
 
   return {
-    orders: preparedOrders,
+    orders:
+      preparedOrders,
+
     orderCount,
+
     totalPages,
-    totalOrders: stats.totalOrders,
-    processingOrders: stats.processingOrders,
-    shippedOrders: stats.shippedOrders,
-    deliveredOrders: stats.deliveredOrders,
+
+    totalOrders:
+      stats.totalOrders,
+
+    processingOrders:
+      stats.processingOrders,
+
+    shippedOrders:
+      stats.shippedOrders,
+
+    deliveredOrders:
+      stats.deliveredOrders,
   };
 };
 
@@ -98,7 +164,11 @@ export const getOrderDetailService = async (orderId) => {
 
   const order = orderArr[0];
 
-  const computedOrderStatus = calculateOrderStatus(order.items);
+  const computedOrderStatus =
+  order.orderStatus === "Payment Pending" ||
+  order.orderStatus === "Payment Expired"
+    ? order.orderStatus
+    : calculateOrderStatus(order.items);
 
   const activeItems = order.items.filter((item) => item.status !== "Cancelled");
 
