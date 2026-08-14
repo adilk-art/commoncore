@@ -78,10 +78,9 @@ router.get("/checkout/buy-now", isAuthenticated, checkoutController.getBuyNowChe
 router.get("/orders", isAuthenticated, orderController.loadOrdersPage);
 
 router.post("/order/place", isAuthenticated, orderController.placeOrder);
-router.post("/order/create-razorpay-order",isAuthenticated,orderController.createRazorpayOrderController);
+router.post("/order/create-razorpay-order",isAuthenticated,orderController.createRazorpayOrder);
 router.post("/order/verify-payment",isAuthenticated,orderController.verifyPaymentController);
 router.post("/order/payment-failure",isAuthenticated,orderController.recordPaymentFailureController);
-router.post("/order/:orderId/retry-payment",isAuthenticated,orderController.retryPaymentController);
 router.get("/order/payment-failed/:orderId",isAuthenticated, orderController.getPaymentFailedPage);
 
 router.get("/order/success/:orderId", isAuthenticated, orderController.loadOrderSuccessPage);
@@ -89,6 +88,10 @@ router.get("/order/:orderId/invoice", isAuthenticated, orderController.downloadI
 router.patch("/order/:orderId/items/:itemId/cancel", isAuthenticated, orderController.cancelOrderItem);
 router.patch("/order/:orderId/cancel", isAuthenticated, orderController.cancelOrder);
 router.get("/order/:orderId", isAuthenticated, orderController.loadOrderDetail);
+router.post("/order/:orderId/checkout-again",isAuthenticated,orderController.prepareCheckoutAgain);
+router.delete("/order/checkout-again/item/:variantId",isAuthenticated,checkoutController.removeCheckoutAgainItem);
+router.patch("/order/checkout-again/item/:variantId/quantity",isAuthenticated,orderController.updateCheckoutAgainItemQuantity);
+router.post("/order/checkout-again/exit",isAuthenticated, orderController.exitCheckoutAgain);
 
 router.get("/returns/request/:orderId/:itemId", isAuthenticated, returnController.loadReturnRequestPage);
 router.post("/returns/request", isAuthenticated, returnController.requestReturn);

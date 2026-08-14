@@ -2,12 +2,24 @@ import {
   getCheckoutPageService,
   validateBuyNowService,
   getBuyNowCheckoutService,
+  getCheckoutAgainPageService,
 } from "../../services/user/checkout.service.js";
 
-export const loadCheckout = async (req, res, next) => {
+export const loadCheckout = async (req,res,next) => {
   try {
-    const data = await getCheckoutPageService(req.session.userId);
-    res.render("user/checkout", data);
+    let data;
+  if (req.session.checkoutAgain?.orderId) {
+  data = await getCheckoutAgainPageService(
+    req.session.userId,
+    req.session.checkoutAgain,
+  );
+} else {
+      data = await getCheckoutPageService(
+        req.session.userId,
+      );
+    }
+
+    res.render("user/checkout",data);
   } catch (error) {
     next(error);
   }
@@ -53,5 +65,44 @@ export const getBuyNowCheckoutPage = async (req, res) => {
     res.render("user/checkout.ejs", data);
   } catch (error) {
     res.redirect("/user/shop");
+  }
+};
+
+export const removeCheckoutAgainItem = async (req,res,next) => {
+  try {
+    const checkoutAgain = req.session.checkoutAgain;
+
+    if (!checkoutAgain?.orderId || !Array.isArray(checkoutAgain.items)) {
+      const error = new Error("Checkout session not found");
+      error.status = 400;
+      throw error;
+    }
+
+    const variantId = req.params.variantId;
+
+    checkoutAgain.items = checkoutAgain.items.filter(
+      (item) => String(item.variantId) !== String(variantId),
+    );
+
+    if (checkoutAgain.items.length === 0) {
+      const orderId = checkoutAgain.orderId;
+
+      delete req.session.checkoutAgain;
+
+      return res.json({
+        success: true,
+        empty: true,
+        redirectUrl: `/user/order/${orderId}`,
+      });
+    }
+
+    req.session.checkoutAgain = checkoutAgain;
+
+    return res.json({
+      success: true,
+      empty: false,
+    });
+  } catch (error) {
+    next(error);
   }
 };

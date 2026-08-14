@@ -10,7 +10,7 @@ const closeCancelModalBtn = document.getElementById("closeCancelModal");
 const keepItemBtn = document.getElementById("keepItemBtn");
 const confirmCancelItemBtn = document.getElementById("confirmCancelItem");
 const cancelOrderBtn = document.querySelector(".cancel-order-btn");
-const retryPaymentBtn = document.getElementById("retryPaymentBtn");
+const checkoutAgainBtn = document.querySelector(".checkout-again-btn");
 
 let selectedOrderId = null;
 let selectedItemId = null;
@@ -51,7 +51,7 @@ cancelOrderBtn?.addEventListener("click",() => {
   modal?.classList.remove("hidden");
 });
 
-document.querySelectorAll(".cancel-item-btn").forEach(btn => {
+document.querySelectorAll(".cancel-item-btn").forEach((btn) => {
   btn.addEventListener("click",() => {
     isOrderCancellation = false;
     selectedOrderId = btn.dataset.orderId;
@@ -110,7 +110,7 @@ keepItemBtn?.addEventListener(
   closeCancellationModal,
 );
 
-modal?.addEventListener("click",event => {
+modal?.addEventListener("click",(event) => {
   if (event.target === modal) {
     closeCancellationModal();
   }
@@ -153,7 +153,9 @@ confirmCancelItemBtn?.addEventListener("click",async () => {
       );
     } else {
       if (!selectedItemId) {
-        throw new Error("Order item information is missing");
+        throw new Error(
+          "Order item information is missing",
+        );
       }
 
       response = await axios.patch(
@@ -167,7 +169,8 @@ confirmCancelItemBtn?.addEventListener("click",async () => {
 
     if (!response.data.success) {
       throw new Error(
-        response.data.message || "Cancellation failed",
+        response.data.message ||
+        "Cancellation failed",
       );
     }
 
@@ -181,7 +184,8 @@ confirmCancelItemBtn?.addEventListener("click",async () => {
       window.location.reload();
     },700);
 
-    confirmCancelItemBtn.innerHTML = originalText;
+    confirmCancelItemBtn.innerHTML =
+      originalText;
   } catch (error) {
     confirmCancelItemBtn.disabled = false;
     confirmCancelItemBtn.innerHTML =
@@ -195,19 +199,8 @@ confirmCancelItemBtn?.addEventListener("click",async () => {
   }
 });
 
-const originalRetryButtonText =
-  retryPaymentBtn?.innerHTML || "Retry Payment";
-
-const resetRetryPaymentButton = () => {
-  if (!retryPaymentBtn) return;
-
-  retryPaymentBtn.disabled = false;
-  retryPaymentBtn.innerHTML =
-    originalRetryButtonText;
-};
-
-retryPaymentBtn?.addEventListener("click",async () => {
-  const orderId = retryPaymentBtn.dataset.orderId;
+checkoutAgainBtn?.addEventListener("click",async () => {
+  const orderId = checkoutAgainBtn.dataset.orderId;
 
   if (!orderId) {
     userToast("Order ID is missing");
@@ -215,141 +208,38 @@ retryPaymentBtn?.addEventListener("click",async () => {
   }
 
   try {
-    retryPaymentBtn.disabled = true;
+    checkoutAgainBtn.disabled = true;
 
-    retryPaymentBtn.innerHTML = `
+    checkoutAgainBtn.innerHTML = `
       <span class="btn-spinner"></span>
-      <span>Opening Payment...</span>
+      <span>Preparing Checkout...</span>
     `;
 
     const { data } = await axios.post(
-      `/user/order/${orderId}/retry-payment`,
+      `/user/order/${orderId}/checkout-again`,
     );
 
     if (
       !data.success ||
-      !data.databaseOrderId ||
-      !data.order?.id
+      !data.redirectUrl
     ) {
       throw new Error(
-        data.message || "Unable to retry payment",
+        data.message ||
+        "Unable to prepare checkout",
       );
     }
 
-    const databaseOrderId =
-      data.databaseOrderId;
-
-    const options = {
-      key: data.key,
-      amount: data.order.amount,
-      currency: data.order.currency,
-      name: "Commoncore",
-      description: `Payment for ${data.orderNumber || "order"}`,
-      order_id: data.order.id,
-      retry: {
-        enabled: true,
-        max_count: 3,
-      },
-      handler: async response => {
-        try {
-          const verifyResponse = await axios.post(
-            "/user/order/verify-payment",
-            {
-              databaseOrderId,
-              razorpay_order_id:
-                response.razorpay_order_id,
-              razorpay_payment_id:
-                response.razorpay_payment_id,
-              razorpay_signature:
-                response.razorpay_signature,
-            },
-          );
-
-          const result = verifyResponse.data;
-
-          if (!result.success || !result.orderId) {
-            throw new Error(
-              result.message ||
-              "Payment verification failed",
-            );
-          }
-
-          window.location.href =
-            `/user/order/success/${result.orderId}`;
-        } catch (error) {
-          resetRetryPaymentButton();
-
-          userToast(
-            error.response?.data?.message ||
-            error.message ||
-            "Payment verification failed",
-          );
-        }
-      },
-      modal: {
-        ondismiss: () => {
-          resetRetryPaymentButton();
-        },
-      },
-      theme: {
-        color: "#000000",
-      },
-    };
-
-    const razorpayCheckout =
-      new Razorpay(options);
-
-    razorpayCheckout.on(
-      "payment.failed",
-      async response => {
-        try {
-          await axios.post(
-            "/user/order/payment-failure",
-            {
-              databaseOrderId,
-              error: {
-                code: response.error?.code,
-                description:
-                  response.error?.description,
-                reason:
-                  response.error?.reason,
-                source:
-                  response.error?.source,
-                step:
-                  response.error?.step,
-              },
-            },
-          );
-        } catch (error) {
-          console.error(
-            "Unable to record payment failure",
-            error.response?.data?.message ||
-            error.message,
-          );
-        }
-
-        resetRetryPaymentButton();
-        userToast("Payment failed. Please try again.");
-      },
-    );
-
-    razorpayCheckout.open();
+    window.location.href =
+      data.redirectUrl;
   } catch (error) {
-    resetRetryPaymentButton();
+    checkoutAgainBtn.disabled = false;
+    checkoutAgainBtn.textContent =
+      "Checkout Again";
 
     userToast(
       error.response?.data?.message ||
       error.message ||
-      "Unable to retry payment",
+      "Unable to prepare checkout",
     );
-
-    if (
-      error.response?.data?.code ===
-      "PAYMENT_EXPIRED"
-    ) {
-      setTimeout(() => {
-        window.location.reload();
-      },500);
-    }
   }
 });

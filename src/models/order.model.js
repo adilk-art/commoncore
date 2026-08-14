@@ -122,6 +122,10 @@ const orderSchema = new Schema(
     type: Boolean,
     default: false,
   },
+  isCheckoutAgain: {
+  type: Boolean,
+  default: false,
+},
 
     paymentStatus: {
       type: String,

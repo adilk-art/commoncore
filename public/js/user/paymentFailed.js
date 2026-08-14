@@ -1,18 +1,19 @@
-const retryBtn = document.getElementById("retryPaymentBtn");
+const checkoutAgainBtn = document.getElementById("checkoutAgainBtn");
 
-const originalRetryText = retryBtn?.innerHTML || "Retry Payment";
+const originalCheckoutAgainText =
+  checkoutAgainBtn?.innerHTML || "Checkout Again";
 
-const resetRetryButton = () => {
-  if (!retryBtn) {
+const resetCheckoutAgainButton = () => {
+  if (!checkoutAgainBtn) {
     return;
   }
 
-  retryBtn.disabled = false;
-  retryBtn.innerHTML = originalRetryText;
+  checkoutAgainBtn.disabled = false;
+  checkoutAgainBtn.innerHTML = originalCheckoutAgainText;
 };
 
-retryBtn?.addEventListener("click", async () => {
-  const orderId = retryBtn.dataset.orderId;
+checkoutAgainBtn?.addEventListener("click",async () => {
+  const orderId = checkoutAgainBtn.dataset.orderId;
 
   if (!orderId) {
     userToast("Order ID is missing");
@@ -20,125 +21,32 @@ retryBtn?.addEventListener("click", async () => {
   }
 
   try {
-    retryBtn.disabled = true;
+    checkoutAgainBtn.disabled = true;
 
-    retryBtn.innerHTML = `
+    checkoutAgainBtn.innerHTML = `
       <span class="btn-spinner"></span>
-      <span>Opening Payment...</span>
+      <span>Preparing Checkout...</span>
     `;
 
-    const { data } = await axios.post(`/user/order/${orderId}/retry-payment`);
+    const { data } = await axios.post(
+      `/user/order/${orderId}/checkout-again`,
+    );
 
-    if (!data.success || !data.databaseOrderId || !data.order?.id) {
-      throw new Error(data.message || "Unable to retry payment");
+    if (!data.success || !data.redirectUrl) {
+      throw new Error(
+        data.message ||
+        "Unable to prepare checkout",
+      );
     }
 
-    const databaseOrderId = data.databaseOrderId;
-
-    const options = {
-      key: data.key,
-      amount: data.order.amount,
-      currency: data.order.currency,
-      order_id: data.order.id,
-      name: "Commoncore",
-      description: "Order Payment",
-
-      retry: {
-        enabled: true,
-        max_count: 3,
-      },
-
-      handler: async (response) => {
-        try {
-          const verifyResponse = await axios.post(
-            "/user/order/verify-payment",
-            {
-              databaseOrderId,
-
-              razorpay_order_id: response.razorpay_order_id,
-
-              razorpay_payment_id: response.razorpay_payment_id,
-
-              razorpay_signature: response.razorpay_signature,
-            },
-          );
-
-          const result = verifyResponse.data;
-
-          if (!result.success || !result.orderId) {
-            throw new Error(result.message || "Payment verification failed");
-          }
-
-          window.location.href = `/user/order/success/${result.orderId}`;
-        } catch (error) {
-          resetRetryButton();
-
-          userToast(
-            error.response?.data?.message ||
-              error.message ||
-              "Payment verification failed",
-          );
-        }
-      },
-
-      modal: {
-        ondismiss: () => {
-          resetRetryButton();
-        },
-      },
-
-      theme: {
-        color: "#000000",
-      },
-    };
-
-    const razorpayCheckout = new Razorpay(options);
-
-    razorpayCheckout.on("payment.failed", async (response) => {
-      try {
-        await axios.post("/user/order/payment-failure", {
-          databaseOrderId,
-
-          error: {
-            code: response.error?.code,
-
-            description: response.error?.description,
-
-            reason: response.error?.reason,
-
-            source: response.error?.source,
-
-            step: response.error?.step,
-          },
-        });
-      } catch (error) {
-        console.error(
-          "Unable to record payment failure:",
-          error.response?.data?.message || error.message,
-        );
-      }
-
-      resetRetryButton();
-
-      userToast(
-        response.error?.description || "Payment failed. Please try again.",
-      );
-    });
-
-    razorpayCheckout.open();
+    window.location.href = data.redirectUrl;
   } catch (error) {
-    resetRetryButton();
+    resetCheckoutAgainButton();
 
     userToast(
       error.response?.data?.message ||
-        error.message ||
-        "Unable to retry payment",
+      error.message ||
+      "Unable to checkout again",
     );
-
-    if (error.response?.data?.code === "PAYMENT_EXPIRED") {
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    }
   }
 });

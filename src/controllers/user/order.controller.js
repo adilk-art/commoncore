@@ -6,10 +6,10 @@ import {
   cancelOrderItemService,
   cancelOrderService,
   downloadInvoiceService,
-  createPendingRazorpayOrderService,
+  createRazorpayOrderService,
   verifyPaymentService,
-  retryPaymentService,
   recordRazorpayFailureService,
+  prepareCheckoutAgainService
 } from "../../services/user/order.service.js";
 
 export const loadOrdersPage = async (req,res,next) => {
@@ -29,10 +29,23 @@ export const loadOrdersPage = async (req,res,next) => {
 
 export const placeOrder = async (req,res,next) => {
   try {
+    const payload = {
+      ...req.body,
+      checkoutAgain: req.session.checkoutAgain || null,
+    };
+
     const order = await placeOrderService(
       req.session.userId,
-      req.body,
+      payload,
     );
+
+    if (
+      req.session.checkoutAgain &&
+      String(req.session.checkoutAgain.orderId) === String(order._id)
+    ) {
+      delete req.session.checkoutAgain;
+    }
+
     res.json({
       success: true,
       order,
@@ -113,12 +126,18 @@ export const downloadInvoice = async (req,res,next) => {
   }
 };
 
-export const createRazorpayOrderController = async (req,res,next) => {
+export const createRazorpayOrder = async (req,res,next) => {
   try {
-    const result = await createPendingRazorpayOrderService(
+    const payload = {
+      ...req.body,
+      checkoutAgain: req.session.checkoutAgain || null,
+    };
+
+    const result = await createRazorpayOrderService(
       req.session.userId,
-      req.body,
+      payload,
     );
+
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -131,23 +150,21 @@ export const verifyPaymentController = async (req,res,next) => {
       req.session.userId,
       req.body,
     );
+
+    if (
+      req.session.checkoutAgain &&
+      String(req.session.checkoutAgain.orderId) === String(result.orderId)
+    ) {
+      delete req.session.checkoutAgain;
+    }
+
     res.json(result);
   } catch (error) {
     next(error);
   }
 };
 
-export const retryPaymentController = async (req,res,next) => {
-  try {
-    const result = await retryPaymentService(
-      req.session.userId,
-      req.params.orderId,
-    );
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-};
+
 
 export const recordPaymentFailureController = async (req,res,next) => {
   try {
@@ -179,6 +196,81 @@ export const getPaymentFailedPage = async (req,res,next) => {
       paymentExpired:
         Boolean(order.paymentExpiresAt) &&
         new Date(order.paymentExpiresAt) <= new Date(),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const prepareCheckoutAgain = async (req,res,next) => {
+  try {
+    const result = await prepareCheckoutAgainService(
+      req.params.orderId,
+      req.session.userId,
+    );
+
+    req.session.checkoutAgain = {
+      orderId: result.orderId,
+      items: result.items,
+    };
+
+    res.json({
+      success: true,
+      redirectUrl: "/user/checkout",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCheckoutAgainItemQuantity = async (req,res,next) => {
+  try {
+    const checkoutAgain = req.session.checkoutAgain;
+
+    if (!checkoutAgain?.orderId || !Array.isArray(checkoutAgain.items)) {
+      const error = new Error("Checkout session not found");
+      error.status = 400;
+      throw error;
+    }
+
+    const variantId = req.params.variantId;
+    const quantity = Number(req.body.quantity);
+
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
+      const error = new Error("Invalid quantity");
+      error.status = 400;
+      throw error;
+    }
+
+    const item = checkoutAgain.items.find(
+      (item) => String(item.variantId) === String(variantId),
+    );
+
+    if (!item) {
+      const error = new Error("Checkout item not found");
+      error.status = 404;
+      throw error;
+    }
+
+    item.quantity = quantity;
+
+    req.session.checkoutAgain = checkoutAgain;
+
+    return res.json({
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const exitCheckoutAgain = async (req,res,next) => {
+  try {
+    delete req.session.checkoutAgain;
+
+    res.json({
+      success: true,
+      redirectUrl: "/user/cart",
     });
   } catch (error) {
     next(error);

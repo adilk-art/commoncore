@@ -3,7 +3,7 @@ import {
   findAvailableCouponsForCheckout,
 } from "../../repositories/coupon.repository.js";
 
-import { hasUserUsedCoupon } from "../../repositories/order.repository.js";
+import { hasUserUsedCoupon,findUserOrderById } from "../../repositories/order.repository.js";
 
 import { findActiveVariant } from "../../repositories/checkout.repository.js";
 import { getCartService } from "./cart.service.js";
@@ -208,14 +208,97 @@ const buildBuyNowCheckoutPricing = async (variantId, quantity) => {
   };
 };
 
+const buildCheckoutAgainPricing = async (userId,orderId) => {
+  const order = await findUserOrderById(orderId,userId);
+
+  if (!order) {
+    const error = new Error("Order not found");
+    error.status = 404;
+    throw error;
+  }
+
+  if (!["Payment Pending","Payment Expired"].includes(order.orderStatus)) {
+    const error = new Error("This order cannot be checked out again");
+    error.status = 400;
+    throw error;
+  }
+
+  const offerLookup = await buildActiveOfferLookup();
+  const items = [];
+
+  for (const oldItem of order.items) {
+    const variant = await findActiveVariant(oldItem.variantId);
+
+    if (!variant) {
+      const error = new Error(`${oldItem.productName} is no longer available`);
+      error.status = 400;
+      error.code = "INVALID_CHECKOUT_ITEM";
+      throw error;
+    }
+
+    const product = variant.productId;
+    const quantity = Number(oldItem.quantity) || 0;
+
+    if (
+      !variant.isActive ||
+      !product?.isActive ||
+      !product?.categoryId?.isActive
+    ) {
+      const error = new Error(`${oldItem.productName} is no longer available`);
+      error.status = 400;
+      error.code = "INVALID_CHECKOUT_ITEM";
+      throw error;
+    }
+
+    if (quantity < 1 || Number(variant.stock) < quantity) {
+      const error = new Error(`${oldItem.productName} does not have enough stock`);
+      error.status = 400;
+      error.code = "INSUFFICIENT_STOCK";
+      throw error;
+    }
+
+    const pricing = getBestOfferPricing(product,variant,offerLookup);
+    const unitPrice = Number(pricing.finalPrice);
+    const amount = roundMoney(unitPrice * quantity);
+
+    items.push({
+      variantId: variant._id,
+      quantity,
+      unitPrice,
+      amount,
+      gstRate: Number(product.gstRate) || 0,
+    });
+  }
+
+  const subtotal = roundMoney(
+    items.reduce((total,item) => total + item.amount,0),
+  );
+
+  return {
+    subtotal,
+    items,
+  };
+};
+
 const buildCheckoutPricing = async ({
   userId,
   isBuyNow,
   variantId,
   quantity,
+  checkoutAgainOrderId,
 }) => {
+  if (checkoutAgainOrderId) {
+    return buildCheckoutAgainPricing(
+      userId,
+      checkoutAgainOrderId,
+    );
+  }
+
   if (isBuyNow) {
-    return buildBuyNowCheckoutPricing(variantId, quantity);
+    return buildBuyNowCheckoutPricing(
+      variantId,
+      quantity,
+    );
   }
 
   return buildCartCheckoutPricing(userId);
@@ -483,16 +566,24 @@ export const validateCouponService = async ({ userId, code, subtotal }) => {
   };
 };
 
-export const applyCouponService = async (userId, payload) => {
-  const { code, variantId, quantity } = payload;
+export const applyCouponService = async (userId,payload) => {
+  const {
+    code,
+    variantId,
+    quantity,
+    checkoutAgainOrderId,
+  } = payload;
 
-  const isBuyNow = payload.isBuyNow === true || payload.isBuyNow === "true";
+  const isBuyNow =
+    payload.isBuyNow === true ||
+    payload.isBuyNow === "true";
 
   const checkoutPricing = await buildCheckoutPricing({
     userId,
     isBuyNow,
     variantId,
     quantity,
+    checkoutAgainOrderId,
   });
 
   const coupon = await validateCouponService({
@@ -501,62 +592,61 @@ export const applyCouponService = async (userId, payload) => {
     subtotal: checkoutPricing.subtotal,
   });
 
-  const pricing = buildPricingResponse(checkoutPricing, coupon.discountAmount);
+  const pricing = buildPricingResponse(
+    checkoutPricing,
+    coupon.discountAmount,
+  );
 
   return {
     coupon: {
       id: coupon.couponId,
       code: coupon.code,
       name: coupon.name,
-
       discountType: coupon.discountType,
-
       discountValue: coupon.discountValue,
-
       discountAmount: coupon.discountAmount,
     },
-
     pricing: {
       subtotal: pricing.subtotal,
-
       couponDiscount: pricing.couponDiscount,
-
       discountedSubtotal: pricing.discountedSubtotal,
-
       gstAmount: pricing.gstAmount,
-
       shippingFee: pricing.shippingFee,
-
       total: pricing.total,
     },
   };
 };
 
-export const removeCouponService = async (userId, payload) => {
-  const { variantId, quantity } = payload;
+export const removeCouponService = async (userId,payload) => {
+  const {
+    variantId,
+    quantity,
+    checkoutAgainOrderId,
+  } = payload;
 
-  const isBuyNow = payload.isBuyNow === true || payload.isBuyNow === "true";
+  const isBuyNow =
+    payload.isBuyNow === true ||
+    payload.isBuyNow === "true";
 
   const checkoutPricing = await buildCheckoutPricing({
     userId,
     isBuyNow,
     variantId,
     quantity,
+    checkoutAgainOrderId,
   });
 
-  const pricing = buildPricingResponse(checkoutPricing, 0);
+  const pricing = buildPricingResponse(
+    checkoutPricing,
+    0,
+  );
 
   return {
     subtotal: pricing.subtotal,
-
     couponDiscount: 0,
-
     discountedSubtotal: pricing.subtotal,
-
     gstAmount: pricing.gstAmount,
-
     shippingFee: pricing.shippingFee,
-
     total: pricing.total,
   };
 };

@@ -131,101 +131,66 @@
   border-color:#d1d5db;
 }
 
-.payment-pending-card{
+.payment-recovery-card{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:24px;
+  gap:22px;
   margin-bottom:22px;
   padding:20px 22px;
-  border:1px solid #fde68a;
-  border-left:4px solid #f59e0b;
-  background:#fffbeb;
+  border:1px solid #fecaca;
+  border-left:4px solid #dc2626;
+  background:#fffafa;
 }
 
-.payment-pending-content{
+.payment-recovery-content{
   display:flex;
   align-items:center;
-  gap:15px;
+  gap:14px;
   flex:1;
   min-width:0;
 }
 
-.payment-pending-icon{
-  width:44px;
-  height:44px;
+.payment-recovery-icon{
+  width:42px;
+  height:42px;
   flex-shrink:0;
-  border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:#fef3c7;
-  color:#92400e;
-  font-size:18px;
-  font-weight:700;
+  border-radius:50%;
+  background:#fee2e2;
+  color:#dc2626;
+  font-size:16px;
 }
 
-.payment-pending-text h2{
+.payment-recovery-text{
+  min-width:0;
+}
+
+.payment-recovery-text h2{
   margin:0 0 5px;
-  color:#92400e;
+  color:#b91c1c;
   font-size:17px;
   font-weight:600;
 }
 
-.payment-pending-text p{
+.payment-recovery-text p{
   margin:0;
-  color:#78350f;
-  font-size:14px;
+  color:#7f1d1d;
+  font-size:13px;
   line-height:1.5;
 }
 
 .payment-failure-reason{
   margin-top:6px!important;
-  color:#b91c1c!important;
-  font-size:13px!important;
+  color:#991b1b!important;
+  font-size:12px!important;
 }
 
-.retry-payment-btn{
-  min-width:145px;
-  height:40px;
-}
-
-.payment-pending-card--failed{
-  background:#fef2f2;
-  border-color:#fecaca;
-  border-left-color:#dc2626;
-}
-
-.payment-pending-card--failed .payment-pending-icon{
-  background:#fee2e2;
-  color:#dc2626;
-}
-
-.payment-pending-card--failed .payment-pending-text h2{
-  color:#b91c1c;
-}
-
-.payment-pending-card--failed .payment-pending-text p{
-  color:#7f1d1d;
-}
-
-.payment-pending-card--expired{
-  background:#f9fafb;
-  border-color:#d1d5db;
-  border-left-color:#6b7280;
-}
-
-.payment-pending-card--expired .payment-pending-icon{
-  background:#e5e7eb;
-  color:#374151;
-}
-
-.payment-pending-card--expired .payment-pending-text h2{
-  color:#374151;
-}
-
-.payment-pending-card--expired .payment-pending-text p{
-  color:#6b7280;
+.checkout-again-btn{
+  flex-shrink:0;
+  min-width:160px;
 }
 
 .info-grid{
@@ -249,54 +214,58 @@
   text-transform:uppercase;
 }
 
-.shipping-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:0;
-  border:1px solid #edf0f4;
-  border-radius:11px;
-  overflow:hidden;
-}
-
-.shipping-field{
-  min-height:66px;
-  padding:13px 15px;
+.shipping-details{
   display:flex;
   flex-direction:column;
+  gap:18px;
+}
+
+.shipping-person{
+  margin-top: 26px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.shipping-avatar{
+  width:40px;
+  height:40px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
   justify-content:center;
-  gap:5px;
+  border-radius:50%;
+  background:#f3f4f6;
+  color:#4b5563;
+  font-size:14px;
 }
 
-.shipping-field:first-child{
-  border-right:1px solid #edf0f4;
-}
-
-.shipping-field--wide{
-  grid-column:1 / -1;
-  min-height:auto;
-  border-top:1px solid #edf0f4;
-}
-
-.shipping-field > span{
-  color:#9ca3af;
-  font-size:11px;
-  font-weight:500;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-}
-
-.shipping-field > strong,
-.shipping-address strong{
+.shipping-name{
+  display:block;
   color:#111827;
   font-size:14px;
   font-weight:600;
 }
 
-.shipping-address p{
-  margin:2px 0 0;
+.shipping-phone{
+  margin:3px 0 0;
   color:#6b7280;
   font-size:13px;
-  line-height:1.5;
+}
+
+.shipping-address{
+  padding-left:52px;
+}
+
+.shipping-address p{
+  margin:0 0 3px;
+  color:#6b7280;
+  font-size:13px;
+  line-height:1.55;
+}
+
+.shipping-address p:last-child{
+  margin-bottom:0;
 }
 
 .order-info-box{
@@ -347,10 +316,6 @@
   color:#dc2626;
 }
 
-.payment-status.expired{
-  color:#6b7280;
-}
-
 .payment-status.refunded{
   color:#7c3aed;
 }
@@ -359,6 +324,18 @@
   max-width:270px;
   overflow-wrap:anywhere;
   font-size:12px!important;
+}
+
+.order-status-payment-pending{
+  color:#92400e!important;
+}
+
+.order-status-payment-failed{
+  color:#b91c1c!important;
+}
+
+.order-status-payment-expired{
+  color:#6b7280!important;
 }
 
 .summary-card{
@@ -490,61 +467,31 @@
   color:#0f766e;
   background:#ecfeff;
 }
-.status-return-requested {
-  color: #b45309;
-  background: #fef3c7;
-  border-color: #fde68a;
+
+.status-return-requested{
+  color:#b45309;
+  background:#fef3c7;
+  border-color:#fde68a;
 }
 
-.status-return-accepted {
-  color: #6d28d9;
-  background: #f5f3ff;
-  border-color: #ddd6fe;
+.status-return-accepted{
+  color:#6d28d9;
+  background:#f5f3ff;
+  border-color:#ddd6fe;
 }
 
-.status-returned {
-  color: #374151;
-  background: #f3f4f6;
-  border-color: #d1d5db;
+.status-returned{
+  color:#374151;
+  background:#f3f4f6;
+  border-color:#d1d5db;
 }
 
-.status-refunded {
-  color: #0f766e;
-  background: #ecfeff;
-  border-color: #a5f3fc;
+.status-refunded{
+  color:#0f766e;
+  background:#ecfeff;
+  border-color:#a5f3fc;
 }
 
-.order-status-payment-pending {
-  color: #92400e !important;
-}
-
-.order-status-payment-failed {
-  color: #b91c1c !important;
-}
-
-.order-status-payment-expired {
-  color: #6b7280 !important;
-}
-
-.summary-item--payment-expired {
-  opacity: 0.78;
-}
-
-.summary-item--payment-expired .summary-item-image {
-  filter: grayscale(0.12);
-}
-
-.summary-item--payment-expired .item-final-price {
-  color: #4b5563;
-}
-
-.summary-item--payment-expired .item-meta-text {
-  color: #6b7280;
-}
-
-.checkout-again-btn {
-  min-width: 180px;
-}
 .item-variant{
   margin:0;
   color:#6b7280;
@@ -722,26 +669,6 @@
   color:#15803d;
 }
 
-.summary-payment-note{
-  margin:15px 0 0;
-  padding:10px 12px;
-  border-radius:8px;
-  background:#fffbeb;
-  color:#92400e;
-  font-size:13px;
-  line-height:1.45;
-}
-
-.summary-payment-note--failed{
-  color:#b91c1c;
-  background:#fef2f2;
-}
-
-.summary-payment-note--expired{
-  color:#4b5563;
-  background:#f3f4f6;
-}
-
 .order-actions{
   display:flex;
   justify-content:flex-end;
@@ -849,7 +776,6 @@
 }
 
 @media(max-width:900px){
-
   .info-grid{
     grid-template-columns:1fr;
   }
@@ -857,10 +783,17 @@
   .summary-item{
     grid-template-columns:64px minmax(0,1fr) 190px;
   }
-
 }
 
 @media(max-width:700px){
+  .payment-recovery-card{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .checkout-again-btn{
+    width:100%;
+  }
 
   .summary-item{
     grid-template-columns:60px minmax(0,1fr);
@@ -885,11 +818,9 @@
   .item-discount-tags{
     justify-content:flex-start;
   }
-
 }
 
 @media(max-width:640px){
-
   .order-detail-page{
     padding:20px 18px 50px;
   }
@@ -908,26 +839,8 @@
     font-size:23px;
   }
 
-  .payment-pending-card{
-    flex-direction:column;
-    align-items:stretch;
-  }
-
-  .retry-payment-btn{
-    width:100%;
-  }
-
-  .shipping-grid{
-    grid-template-columns:1fr;
-  }
-
-  .shipping-field:first-child{
-    border-right:none;
-    border-bottom:1px solid #edf0f4;
-  }
-
-  .shipping-field--wide{
-    grid-column:auto;
+  .shipping-address{
+    padding-left:0;
   }
 
   .item-title{
@@ -958,11 +871,9 @@
   .cancel-modal-actions button{
     width:100%;
   }
-
 }
 
 @media(max-width:480px){
-
   .order-detail-page{
     padding:16px 14px 44px;
   }
@@ -1040,5 +951,4 @@
   .total-row span:last-child{
     font-size:18px;
   }
-
 }

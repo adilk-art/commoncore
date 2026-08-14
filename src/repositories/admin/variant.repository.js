@@ -76,3 +76,15 @@ export const increaseVariantStock = (
   );
 
 };
+
+export const findActiveVariant = async (variantId) => {
+  return await Variant.findOne({
+    _id: variantId,
+    isActive: true,
+  }).populate({
+    path: "productId",
+    populate: {
+      path: "categoryId",
+    },
+  });
+};

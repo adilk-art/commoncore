@@ -3,9 +3,7 @@
 
 <head>
   <title>Checkout — Commoncore</title>
-
   <%- include('../partials/user-head') %>
-
   <link rel="stylesheet" href="/css/user/checkout.css">
 </head>
 
@@ -15,21 +13,54 @@
 
 <main class="checkout-page">
 
-  <% if (invalidCart) { %>
-    <div class="checkout-warning card card-md">
-      <div>
-        <h2 class="text-section-title">
-          Some items in your cart are unavailable
-        </h2>
-
-        <p class="text-body">
-          <%= message %>
-        </p>
+  <% if (
+    typeof isCheckoutAgain !== "undefined" &&
+    isCheckoutAgain
+  ) { %>
+    <div class="checkout-again-bar">
+      <div class="checkout-again-icon">
+        <i class="fa-solid fa-circle-info"></i>
       </div>
 
-      <a href="/user/cart" class="primary-btn">
-        Review Cart
-      </a>
+      <div class="checkout-again-content">
+        <strong>Checking out a previous order</strong>
+        <p>
+          These items are separate from your cart. Current stock,
+          prices, offers and coupon eligibility are checked again
+          before the order is placed.
+        </p>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (invalidCart) { %>
+    <div class="checkout-warning card card-md">
+      <div class="checkout-warning-content">
+        <div class="checkout-warning-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <div>
+          <h2 class="text-section-title">
+            <%= typeof isCheckoutAgain !== "undefined" && isCheckoutAgain
+              ? "Some items need your attention"
+              : "Some items in your cart are unavailable" %>
+          </h2>
+
+          <p class="text-body">
+            <%= message %>
+          </p>
+        </div>
+      </div>
+
+      <% if (
+        typeof isCheckoutAgain === "undefined" ||
+        !isCheckoutAgain
+      ) { %>
+        <a href="/user/cart" class="primary-btn">
+          Review Cart
+        </a>
+      <% } %>
     </div>
   <% } %>
 
@@ -59,7 +90,9 @@
 
               <div class="checkout-address-top">
                 <% if (address.isDefault) { %>
-                  <span class="address-badge">Default</span>
+                  <span class="address-badge">
+                    Default
+                  </span>
                 <% } %>
 
                 <button
@@ -83,17 +116,23 @@
                 <%= address.fullName %>
               </h3>
 
-              <p class="address-text"><%= address.line1 %></p>
+              <p class="address-text">
+                <%= address.line1 %>
+              </p>
 
               <% if (address.line2) { %>
-                <p class="address-text"><%= address.line2 %></p>
+                <p class="address-text">
+                  <%= address.line2 %>
+                </p>
               <% } %>
 
               <p class="address-text">
                 <%= address.city %>, <%= address.state %>
               </p>
 
-              <p class="address-text"><%= address.pincode %></p>
+              <p class="address-text">
+                <%= address.pincode %>
+              </p>
 
               <p class="address-phone">
                 +91 <%= address.phone %>
@@ -121,6 +160,7 @@
         </div>
 
         <div class="payment-options">
+
           <label class="payment-option active">
             <input
               type="radio"
@@ -131,8 +171,13 @@
             >
 
             <div>
-              <h3 class="payment-title">Pay Now (Razorpay)</h3>
-              <p class="text-muted">UPI, Cards</p>
+              <h3 class="payment-title">
+                Pay Now (Razorpay)
+              </h3>
+
+              <p class="text-muted">
+                UPI, Cards
+              </p>
             </div>
           </label>
 
@@ -146,11 +191,15 @@
             >
 
             <div class="payment-info">
-              <h3 class="payment-title">Wallet</h3>
+              <h3 class="payment-title">
+                Wallet
+              </h3>
 
               <p class="text-muted">
                 Balance:
-                <strong>₹<%= wallet.balance.toFixed(2) %></strong>
+                <strong>
+                  ₹<%= wallet.balance.toFixed(2) %>
+                </strong>
               </p>
 
               <% if (!canUseWallet) { %>
@@ -170,61 +219,165 @@
             >
 
             <div>
-              <h3 class="payment-title">Cash on Delivery</h3>
-              <p class="text-muted">Pay after delivery</p>
+              <h3 class="payment-title">
+                Cash on Delivery
+              </h3>
+
+              <p class="text-muted">
+                Pay after delivery
+              </p>
             </div>
           </label>
+
         </div>
       </section>
+
     </section>
 
     <aside class="checkout-summary card card-md">
-      <h2 class="text-section-title">Order Summary</h2>
+
+      <h2 class="text-section-title">
+        Order Summary
+      </h2>
 
       <div class="summary-products">
+
         <% cart.items.forEach(item => { %>
-          <div class="summary-product">
+
+          <div
+            class="summary-product <%= item.status !== 'active'
+              ? 'summary-product--invalid'
+              : '' %>"
+          >
+
             <img
               src="<%= item.variant.images?.[0]?.url || '/images/no-image.png' %>"
               alt="<%= item.product.name %>"
             >
 
             <div class="summary-product-info">
-              <h4><%= item.product.name %></h4>
-              <p>Qty: <%= item.quantity %></p>
+
+              <h4>
+                <%= item.product.name %>
+              </h4>
+
+              <p class="summary-product-qty">
+                Qty: <%= item.quantity %>
+              </p>
 
               <% if (item.hasOffer) { %>
                 <span class="checkout-offer-badge">
-                  <% if (item.discountType === 'PERCENTAGE') { %>
+                  <% if (item.discountType === "PERCENTAGE") { %>
                     <%= Number(item.discountValue) %>% OFF
                   <% } else { %>
-                    ₹<%= Number(item.discountValue).toLocaleString('en-IN') %> OFF
+                    ₹<%= Number(item.discountValue).toLocaleString("en-IN") %> OFF
                   <% } %>
                 </span>
               <% } %>
+
+              <% if (
+                typeof isCheckoutAgain !== "undefined" &&
+                isCheckoutAgain &&
+                item.status !== "active"
+              ) { %>
+
+                <div class="checkout-item-error">
+                  <span class="checkout-item-error-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                  </span>
+
+                  <span>
+                    <%= item.unavailableReason %>
+                  </span>
+                </div>
+
+                <div class="checkout-item-actions">
+
+                  <% if (
+                    item.status === "stock" &&
+                    Number(item.availableStock) > 0
+                  ) { %>
+
+                    <button
+                      type="button"
+                      class="checkout-adjust-qty-btn"
+                      data-variant-id="<%= item.variant._id %>"
+                      data-quantity="<%= item.availableStock %>"
+                    >
+                      <i class="fa-regular fa-pen-to-square"></i>
+
+                      <span>
+                        Change to <%= item.availableStock %>
+                      </span>
+                    </button>
+
+                  <% } %>
+
+                  <button
+                    type="button"
+                    class="checkout-remove-item-btn"
+                    data-variant-id="<%= item.variant._id %>"
+                  >
+                    <i class="fa-regular fa-trash-can"></i>
+
+                    <span>
+                      Remove Item
+                    </span>
+                  </button>
+
+                </div>
+
+              <% } %>
+
             </div>
 
             <div class="summary-product-price">
+
               <span class="summary-product-current">
-                ₹<%= Number(item.lineTotal).toLocaleString('en-IN') %>
+                ₹<%= Number(item.lineTotal).toLocaleString("en-IN") %>
               </span>
 
               <% if (item.hasOffer) { %>
                 <span class="summary-product-old">
-                  ₹<%= Number(item.lineOriginalTotal).toLocaleString('en-IN') %>
+                  ₹<%= Number(item.lineOriginalTotal).toLocaleString("en-IN") %>
                 </span>
               <% } %>
+
             </div>
+
           </div>
+
         <% }) %>
+
       </div>
 
+      <% if (
+        typeof isCheckoutAgain !== "undefined" &&
+        isCheckoutAgain
+      ) { %>
+        <div class="checkout-revalidation-note">
+          <i class="fa-solid fa-circle-info"></i>
+
+          <span>
+            Prices, offers and availability are checked again
+            before placing the order.
+          </span>
+        </div>
+      <% } %>
+
       <% if (qualifiedCoupons.length > 0) { %>
+
         <div class="checkout-coupon">
+
           <div class="checkout-coupon-head">
             <div>
-              <h3>Apply Coupon</h3>
-              <p>Select or enter an eligible coupon code</p>
+              <h3>
+                Apply Coupon
+              </h3>
+
+              <p>
+                Select or enter an eligible coupon code
+              </p>
             </div>
 
             <i class="fa-solid fa-ticket"></i>
@@ -238,23 +391,39 @@
               autocomplete="off"
             >
 
-            <button type="button" id="applyCouponBtn">
+            <button
+              type="button"
+              id="applyCouponBtn"
+            >
               Apply
             </button>
           </div>
 
-          <p class="coupon-error" id="couponError"></p>
+          <p
+            class="coupon-error"
+            id="couponError"
+          ></p>
 
-          <div class="qualified-coupons" id="qualifiedCoupons">
+          <div
+            class="qualified-coupons"
+            id="qualifiedCoupons"
+          >
+
             <% qualifiedCoupons.forEach(coupon => { %>
+
               <button
                 type="button"
-                class="qualified-coupon <%= !coupon.eligible ? 'qualified-coupon--disabled' : '' %>"
+                class="qualified-coupon <%= !coupon.eligible
+                  ? 'qualified-coupon--disabled'
+                  : '' %>"
                 data-code="<%= coupon.code %>"
                 <%= !coupon.eligible ? 'disabled' : '' %>
               >
+
                 <div class="qualified-coupon-content">
+
                   <div class="qualified-coupon-top">
+
                     <span class="qualified-coupon-code">
                       <%= coupon.code %>
                     </span>
@@ -266,13 +435,19 @@
                         ₹<%= Number(coupon.discountValue).toLocaleString('en-IN') %> OFF
                       <% } %>
                     </span>
+
                   </div>
 
                   <div class="qualified-coupon-info">
-                    <strong><%= coupon.name %></strong>
+
+                    <strong>
+                      <%= coupon.name %>
+                    </strong>
 
                     <% if (coupon.description) { %>
-                      <p><%= coupon.description %></p>
+                      <p>
+                        <%= coupon.description %>
+                      </p>
                     <% } %>
 
                     <% if (
@@ -288,11 +463,16 @@
 
                     <small>
                       Valid until
-                      <%= new Date(coupon.validUntil).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      }) %>
+                      <%= new Date(
+                        coupon.validUntil,
+                      ).toLocaleDateString(
+                        'en-IN',
+                        {
+                          day:'2-digit',
+                          month:'short',
+                          year:'numeric',
+                        },
+                      ) %>
                     </small>
 
                     <% if (!coupon.eligible) { %>
@@ -300,18 +480,30 @@
                         <%= coupon.unavailableReason %>
                       </small>
                     <% } %>
+
                   </div>
+
                 </div>
 
                 <span class="qualified-coupon-select">
-                  <%= coupon.eligible ? 'Select' : 'Locked' %>
+                  <%= coupon.eligible
+                    ? 'Select'
+                    : 'Locked' %>
                 </span>
+
               </button>
+
             <% }) %>
+
           </div>
 
-          <div class="applied-coupon hidden" id="appliedCoupon">
+          <div
+            class="applied-coupon hidden"
+            id="appliedCoupon"
+          >
+
             <div>
+
               <span class="applied-coupon-icon">
                 <i class="fa-solid fa-check"></i>
               </span>
@@ -320,21 +512,33 @@
                 <strong id="appliedCouponCode"></strong>
                 <p id="appliedCouponMessage"></p>
               </div>
+
             </div>
 
-            <button type="button" id="removeCouponBtn">
+            <button
+              type="button"
+              id="removeCouponBtn"
+            >
               Remove
             </button>
+
           </div>
+
         </div>
+
       <% } %>
 
       <div class="summary-divider"></div>
 
       <div class="summary-row">
-        <span>Original subtotal</span>
+        <span>
+          Original subtotal
+        </span>
+
         <span id="checkoutOriginalSubtotal">
-          ₹<%= Number(cart.originalSubtotal).toLocaleString('en-IN') %>
+          ₹<%= Number(
+            cart.originalSubtotal,
+          ).toLocaleString('en-IN') %>
         </span>
       </div>
 
@@ -342,16 +546,26 @@
         class="summary-row summary-row--discount"
         <%= cart.totalDiscount <= 0 ? 'hidden' : '' %>
       >
-        <span>Offer discount</span>
+        <span>
+          Offer discount
+        </span>
+
         <span id="checkoutDiscount">
-          −₹<%= Number(cart.totalDiscount).toLocaleString('en-IN') %>
+          −₹<%= Number(
+            cart.totalDiscount,
+          ).toLocaleString('en-IN') %>
         </span>
       </div>
 
       <div class="summary-row">
-        <span>Subtotal</span>
+        <span>
+          Subtotal
+        </span>
+
         <span id="checkoutSubtotal">
-          ₹<%= Number(cart.subtotal).toLocaleString('en-IN') %>
+          ₹<%= Number(
+            cart.subtotal,
+          ).toLocaleString('en-IN') %>
         </span>
       </div>
 
@@ -359,37 +573,55 @@
         class="summary-row summary-row--discount hidden"
         id="couponDiscountRow"
       >
-        <span>Coupon discount</span>
-        <span id="checkoutCouponDiscount">−₹0</span>
+        <span>
+          Coupon discount
+        </span>
+
+        <span id="checkoutCouponDiscount">
+          −₹0
+        </span>
       </div>
 
       <div class="summary-row">
-        <span>GST Included</span>
+        <span>
+          GST Included
+        </span>
+
         <span id="checkoutGst">
           ₹<%= Number(gstAmount).toFixed(2) %>
         </span>
       </div>
 
       <div class="summary-row">
-        <span>Shipping</span>
+        <span>
+          Shipping
+        </span>
+
         <span id="checkoutShipping">
           <%= shipping === 0
             ? 'Free'
-            : `₹${Number(shipping).toLocaleString('en-IN')}` %>
+            : `₹${Number(
+                shipping,
+              ).toLocaleString('en-IN')}` %>
         </span>
       </div>
 
       <div class="summary-divider"></div>
 
       <div class="summary-row summary-total">
+
         <span>
           Total
-          <span class="text-muted gst-note">Inclusive of GST</span>
+
+          <span class="text-muted gst-note">
+            Inclusive of GST
+          </span>
         </span>
 
         <span id="checkoutTotal">
           ₹<%= Number(total).toLocaleString('en-IN') %>
         </span>
+
       </div>
 
       <button
@@ -399,6 +631,7 @@
       >
         Place Order
       </button>
+
     </aside>
 
     <input
@@ -407,10 +640,28 @@
       value="<%= isBuyNow ? 'true' : 'false' %>"
     >
 
-    <input type="hidden" id="appliedCouponId" value="">
-    <input type="hidden" id="appliedCouponCodeValue" value="">
+    <input
+      type="hidden"
+      id="checkoutAgainOrderId"
+      value="<%= typeof checkoutAgainOrderId !== 'undefined'
+        ? checkoutAgainOrderId
+        : '' %>"
+    >
+
+    <input
+      type="hidden"
+      id="appliedCouponId"
+      value=""
+    >
+
+    <input
+      type="hidden"
+      id="appliedCouponCodeValue"
+      value=""
+    >
 
     <% if (isBuyNow) { %>
+
       <input
         type="hidden"
         id="buyNowVariantId"
@@ -422,44 +673,118 @@
         id="buyNowQuantity"
         value="<%= buyNow.quantity %>"
       >
+
     <% } %>
+
   </div>
+
 </main>
 
-<div class="checkout-address-modal" id="addressModal">
+<div
+  class="checkout-address-modal"
+  id="addressModal"
+>
+
   <div class="checkout-address-modal-content">
-    <h3 id="addressFormTitle">Add New Address</h3>
+
+    <h3 id="addressFormTitle">
+      Add New Address
+    </h3>
 
     <form id="addressForm">
-      <input type="hidden" name="addressId" id="addressId">
 
-      <input type="text" name="fullName" placeholder="Full Name">
-      <span class="error-msg" id="fullNameError"></span>
+      <input
+        type="hidden"
+        name="addressId"
+        id="addressId"
+      >
 
-      <input type="text" name="phone" placeholder="Phone Number">
-      <span class="error-msg" id="phoneError"></span>
+      <input
+        type="text"
+        name="fullName"
+        placeholder="Full Name"
+      >
 
-      <input type="text" name="line1" placeholder="House / Street / Area">
-      <span class="error-msg" id="line1Error"></span>
+      <span
+        class="error-msg"
+        id="fullNameError"
+      ></span>
 
-      <input type="text" name="line2" placeholder="Landmark (Optional)">
+      <input
+        type="text"
+        name="phone"
+        placeholder="Phone Number"
+      >
 
-      <input type="text" name="city" placeholder="City">
-      <span class="error-msg" id="cityError"></span>
+      <span
+        class="error-msg"
+        id="phoneError"
+      ></span>
 
-      <input type="text" name="state" placeholder="State">
-      <span class="error-msg" id="stateError"></span>
+      <input
+        type="text"
+        name="line1"
+        placeholder="House / Street / Area"
+      >
 
-      <input type="text" name="pincode" placeholder="Pincode">
-      <span class="error-msg" id="pincodeError"></span>
+      <span
+        class="error-msg"
+        id="line1Error"
+      ></span>
+
+      <input
+        type="text"
+        name="line2"
+        placeholder="Landmark (Optional)"
+      >
+
+      <input
+        type="text"
+        name="city"
+        placeholder="City"
+      >
+
+      <span
+        class="error-msg"
+        id="cityError"
+      ></span>
+
+      <input
+        type="text"
+        name="state"
+        placeholder="State"
+      >
+
+      <span
+        class="error-msg"
+        id="stateError"
+      ></span>
+
+      <input
+        type="text"
+        name="pincode"
+        placeholder="Pincode"
+      >
+
+      <span
+        class="error-msg"
+        id="pincodeError"
+      ></span>
 
       <label class="checkout-default-checkbox">
-        <input type="checkbox" name="isDefault">
+        <input
+          type="checkbox"
+          name="isDefault"
+        >
         Set as Default Address
       </label>
 
       <div class="checkout-address-form-actions">
-        <button type="submit" class="primary-btn">
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
           Save Address
         </button>
 
@@ -470,9 +795,13 @@
         >
           Cancel
         </button>
+
       </div>
+
     </form>
+
   </div>
+
 </div>
 
 <%- include('../partials/user-scripts') %>

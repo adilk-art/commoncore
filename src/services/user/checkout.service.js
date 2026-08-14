@@ -7,6 +7,7 @@ import {
   getBestOfferPricing,
 } from "../shared/pricing.service.js";
 import { getQualifiedCouponsService } from "./coupon.service.js";
+import { findUserOrderById } from "../../repositories/order.repository.js";
 const MAX_QTY = 5;
 
 const createServiceError = (message, status = 400) => {
@@ -210,5 +211,258 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
       variantId: String(variant._id),
       quantity: qty,
     },
+  };
+};
+
+export const getCheckoutAgainPageService = async (
+  userId,
+  checkoutAgain,
+) => {
+  const order = await findUserOrderById(
+    checkoutAgain.orderId,
+    userId,
+  );
+
+  if (!order) {
+    const error = new Error("Order not found");
+    error.status = 404;
+    throw error;
+  }
+
+  if (!["Payment Pending","Payment Expired"].includes(order.orderStatus)) {
+    const error = new Error("This order cannot be checked out again");
+    error.status = 400;
+    throw error;
+  }
+
+  if (order.paymentStatus === "Paid") {
+    const error = new Error("This order is already paid");
+    error.status = 400;
+    throw error;
+  }
+
+  if (
+    !Array.isArray(checkoutAgain.items) ||
+    checkoutAgain.items.length === 0
+  ) {
+    const error = new Error("No items available for checkout");
+    error.status = 400;
+    error.code = "EMPTY_CHECKOUT_AGAIN";
+    throw error;
+  }
+
+  const addresses = await getAddressesService(userId);
+  const wallet = await findWalletByUserId(userId);
+  const offerLookup = await buildActiveOfferLookup();
+  const items = [];
+
+  for (const selectedItem of checkoutAgain.items) {
+    const oldItem = order.items.find(
+      (item) =>
+        String(item.variantId?._id || item.variantId) ===
+        String(selectedItem.variantId),
+    );
+
+    if (!oldItem) {
+      continue;
+    }
+
+    const variant = await findActiveVariant(
+      selectedItem.variantId,
+    );
+
+    if (!variant) {
+      items.push({
+        product: {
+          _id: oldItem.productId,
+          name: oldItem.productName,
+          gstRate: oldItem.gstRate,
+        },
+        variant: {
+          _id: oldItem.variantId?._id || oldItem.variantId,
+          images: oldItem.productImage
+            ? [{ url: oldItem.productImage }]
+            : [],
+          size: oldItem.size,
+          color: {
+            name: oldItem.color,
+          },
+        },
+        quantity: Number(selectedItem.quantity),
+        originalPrice: Number(
+          oldItem.originalUnitPrice ||
+          oldItem.unitPrice ||
+          0,
+        ),
+        finalPrice: Number(oldItem.unitPrice || 0),
+        lineOriginalTotal:
+          Number(
+            oldItem.originalUnitPrice ||
+            oldItem.unitPrice ||
+            0,
+          ) * Number(selectedItem.quantity),
+        lineTotal:
+          Number(oldItem.unitPrice || 0) *
+          Number(selectedItem.quantity),
+        hasOffer: false,
+        discountType: null,
+        discountValue: null,
+        status: "unavailable",
+        unavailableReason: "This product variant is no longer available",
+      });
+
+      continue;
+    }
+
+    const product = variant.productId;
+    const quantity = Number(selectedItem.quantity);
+
+    let status = "active";
+    let unavailableReason = "";
+
+    if (!variant.isActive) {
+      status = "unavailable";
+      unavailableReason = "This variant is currently unavailable";
+    } else if (!product?.isActive) {
+      status = "unavailable";
+      unavailableReason = "This product is currently unavailable";
+    } else if (!product?.categoryId?.isActive) {
+      status = "unavailable";
+      unavailableReason = "This product category is currently unavailable";
+    } else if (!Number.isInteger(quantity) || quantity < 1) {
+      status = "unavailable";
+      unavailableReason = "Invalid product quantity";
+    } else if (Number(variant.stock) < quantity) {
+      status = "stock";
+      unavailableReason =
+        Number(variant.stock) > 0
+          ? `Only ${variant.stock} available`
+          : "Out of stock";
+    }
+
+    const pricing = getBestOfferPricing(
+      product,
+      variant,
+      offerLookup,
+    );
+
+    const originalPrice = Number(
+      pricing.originalPrice ?? variant.price ?? 0,
+    );
+
+    const finalPrice = Number(
+      pricing.finalPrice ?? variant.price ?? 0,
+    );
+
+    items.push({
+      product,
+      variant,
+      quantity,
+      originalPrice,
+      finalPrice,
+      lineOriginalTotal: originalPrice * quantity,
+      lineTotal: finalPrice * quantity,
+      discountAmount: Number(pricing.discountAmount || 0),
+      hasOffer: Boolean(pricing.hasOffer),
+      offerId: pricing.offerId || null,
+      offerTitle: pricing.offerTitle || null,
+      offerType: pricing.offerType || null,
+      discountType: pricing.discountType || null,
+      discountValue: pricing.discountValue ?? null,
+      status,
+      unavailableReason,
+      availableStock: Number(variant.stock) || 0,
+    });
+  }
+
+  const activeItems = items.filter(
+    (item) => item.status === "active",
+  );
+
+  const originalSubtotal = activeItems.reduce(
+    (total,item) =>
+      total + Number(item.lineOriginalTotal || 0),
+    0,
+  );
+
+  const subtotal = activeItems.reduce(
+    (total,item) =>
+      total + Number(item.lineTotal || 0),
+    0,
+  );
+
+  const totalDiscount = Math.max(
+    originalSubtotal - subtotal,
+    0,
+  );
+
+  const gstAmount = activeItems.reduce(
+    (total,item) => {
+      const amount = Number(item.lineTotal || 0);
+      const gstRate = Number(item.product?.gstRate || 0);
+
+      if (amount <= 0 || gstRate <= 0) {
+        return total;
+      }
+
+      const taxableValue =
+        amount / (1 + gstRate / 100);
+
+      return total + (amount - taxableValue);
+    },
+    0,
+  );
+
+  const shipping =
+    subtotal >= 999
+      ? 0
+      : subtotal > 0
+        ? 99
+        : 0;
+
+  const total = subtotal + shipping;
+
+  const invalidCart = items.some(
+    (item) => item.status !== "active",
+  );
+
+  const canUseWallet =
+    wallet &&
+    Number(wallet.balance) >= Number(total);
+
+  const qualifiedCoupons =
+    subtotal > 0
+      ? await getQualifiedCouponsService({
+          userId,
+          subtotal,
+        })
+      : [];
+
+  return {
+    order,
+    cart: {
+      items,
+      originalSubtotal: Number(originalSubtotal.toFixed(2)),
+      subtotal: Number(subtotal.toFixed(2)),
+      totalDiscount: Number(totalDiscount.toFixed(2)),
+      invalid: invalidCart,
+    },
+    addresses,
+    wallet,
+    canUseWallet,
+    qualifiedCoupons,
+    originalSubtotal: Number(originalSubtotal.toFixed(2)),
+    subtotal: Number(subtotal.toFixed(2)),
+    totalDiscount: Number(totalDiscount.toFixed(2)),
+    gstAmount: Number(gstAmount.toFixed(2)),
+    shipping: Number(shipping.toFixed(2)),
+    total: Number(total.toFixed(2)),
+    invalidCart,
+    message: invalidCart
+      ? "Some items from this order need your attention before checkout."
+      : null,
+    isBuyNow: false,
+    isCheckoutAgain: true,
+    checkoutAgainOrderId: order._id,
   };
 };

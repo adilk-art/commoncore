@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
   <title>
     <%= paymentExpired ? "Payment Expired" : "Payment Failed" %>
     — Commoncore
@@ -14,16 +13,13 @@
     rel="stylesheet"
     href="/css/user/payment-failed.css"
   >
-
 </head>
 
 <body>
 
 <%- include("../partials/user-header") %>
 
-
 <main class="success-page">
-
 
   <section
     class="
@@ -44,47 +40,30 @@
           : '' %>
       "
     >
-
-      <%= paymentExpired
-        ? "⌛"
-        : "✕" %>
-
+      <%= paymentExpired ? "⌛" : "✕" %>
     </div>
 
-
     <h1 class="success-title">
-
       <%= paymentExpired
         ? "Payment Window Expired"
         : "Payment Unsuccessful" %>
-
     </h1>
 
-
     <p class="success-text">
-
       <% if (paymentExpired) { %>
-
-        The payment window for this payment attempt has expired.
-        You can return to checkout and place a fresh order using
-        any available payment method.
-
+        This payment attempt has expired.
+        You can checkout again with current stock,
+        pricing, offers and coupon eligibility.
       <% } else { %>
-
         We couldn't complete your payment.
-        You can retry Razorpay before the payment window expires,
-        or return to checkout and choose another payment method.
-
+        You can checkout again and choose any available
+        payment method after fresh validation.
       <% } %>
-
     </p>
-
 
     <div class="success-meta">
 
-
       <div class="success-meta-item">
-
         <span>
           Order Number
         </span>
@@ -92,12 +71,9 @@
         <strong>
           <%= order.orderNumber %>
         </strong>
-
       </div>
 
-
       <div class="success-meta-item">
-
         <span>
           Payment Status
         </span>
@@ -110,18 +86,13 @@
               : 'meta-status--pending' %>
           "
         >
-
           <%= paymentExpired
             ? "Failed"
             : order.paymentStatus %>
-
         </strong>
-
       </div>
 
-
       <div class="success-meta-item">
-
         <span>
           Order Status
         </span>
@@ -134,22 +105,16 @@
               : 'meta-status--pending' %>
           "
         >
-
           <%= order.orderStatus %>
-
         </strong>
-
       </div>
 
-
       <div class="success-meta-item">
-
         <span>
           Date
         </span>
 
         <strong>
-
           <%= new Date(
             order.createdAt
           ).toLocaleDateString(
@@ -160,44 +125,30 @@
               year: "numeric",
             }
           ) %>
-
         </strong>
-
       </div>
-
 
     </div>
 
   </section>
 
-
   <div class="success-top-grid">
-
 
     <section class="success-card card card-md">
 
-
       <div class="success-card-head">
-
         <h3 class="text-card-title">
-
           <%= paymentExpired
             ? "What happened?"
             : "Payment Information" %>
-
         </h3>
-
       </div>
-
 
       <div class="success-address">
 
-
         <% if (paymentExpired) { %>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
@@ -205,12 +156,9 @@
             <p>
               The payment window for this Razorpay attempt has ended.
             </p>
-
           </div>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
@@ -218,12 +166,9 @@
             <p>
               This payment attempt was not converted into a confirmed order.
             </p>
-
           </div>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
@@ -231,136 +176,94 @@
             <p>
               Stock was not deducted because the payment was not completed.
             </p>
-
           </div>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
 
             <p>
-              Your cart can be reviewed again through checkout with fresh validation.
+              Checkout Again will rebuild the items using current
+              stock, pricing, offers and coupon eligibility.
             </p>
-
           </div>
-
 
         <% } else { %>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               !
             </span>
 
             <p>
-              Your previous Razorpay payment attempt was unsuccessful.
+              Your Razorpay payment attempt was unsuccessful.
             </p>
-
           </div>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
 
             <p>
-              You can retry Razorpay while the current payment window is active.
+              No stock has been deducted because the payment is not confirmed.
             </p>
-
           </div>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
 
             <p>
-              You can also return to checkout and choose another payment method.
+              Checkout Again will validate the products and prices again.
             </p>
-
           </div>
 
-
           <div class="payment-info-row">
-
             <span class="payment-info-icon">
               ✓
             </span>
 
             <p>
-              Stock has not been deducted because the payment is not confirmed.
+              You can then choose Razorpay, Wallet or Cash on Delivery.
             </p>
-
           </div>
 
         <% } %>
-
 
       </div>
 
     </section>
 
-
     <section class="success-card card card-md">
 
-
       <div class="success-card-head">
-
         <h3 class="text-card-title">
           Next Steps
         </h3>
-
       </div>
-
 
       <div class="delivery-info">
 
-
         <div class="delivery-row">
-
-          <span>
-            Retry Razorpay
-          </span>
-
-          <strong
-            class="<%= canRetryPayment
-              ? 'delivery-value--active'
-              : 'delivery-value--expired' %>"
-          >
-
-            <%= canRetryPayment
-              ? "Available"
-              : "Expired" %>
-
-          </strong>
-
-        </div>
-
-
-        <div class="delivery-row">
-
           <span>
             Checkout Again
           </span>
 
-          <strong class="delivery-value--active">
-            Available
+          <strong
+            class="<%= canReturnToCheckout
+              ? 'delivery-value--active'
+              : 'delivery-value--expired' %>"
+          >
+            <%= canReturnToCheckout
+              ? "Available"
+              : "Unavailable" %>
           </strong>
-
         </div>
 
-
         <div class="delivery-row">
-
           <span>
             Payment Session
           </span>
@@ -370,18 +273,13 @@
               ? 'delivery-value--expired'
               : 'delivery-value--active' %>"
           >
-
             <%= paymentExpired
               ? "Expired"
               : "Active" %>
-
           </strong>
-
         </div>
 
-
         <div class="delivery-row">
-
           <span>
             Order Confirmation
           </span>
@@ -389,44 +287,26 @@
           <strong class="delivery-value--failed">
             Not Confirmed
           </strong>
-
         </div>
-
 
       </div>
 
     </section>
 
-
   </div>
-
 
   <div class="success-actions">
 
-
-    <% if (canRetryPayment) { %>
-
+    <% if (canReturnToCheckout) { %>
       <button
         type="button"
-        class="primary-btn"
-        id="retryPaymentBtn"
+        id="checkoutAgainBtn"
         data-order-id="<%= order._id %>"
+        class="primary-btn"
       >
-        Retry Payment
+        Checkout Again
       </button>
-
     <% } %>
-
-
-    <a
-      href="/user/checkout"
-      class="<%= canRetryPayment
-        ? 'secondary-btn'
-        : 'primary-btn' %>"
-    >
-      Back to Checkout
-    </a>
-
 
     <a
       href="/user/order/<%= order._id %>"
@@ -435,7 +315,6 @@
       View Order Details
     </a>
 
-
     <a
       href="/user/orders"
       class="secondary-btn"
@@ -443,25 +322,13 @@
       My Orders
     </a>
 
-
   </div>
-
 
 </main>
 
-
 <%- include("../partials/user-scripts") %>
 
-
-<% if (canRetryPayment) { %>
-
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-  <script src="/js/user/paymentFailed.js"></script>
-
-<% } %>
-
+<script src="/js/user/paymentFailed.js"></script>
 
 </body>
-
 </html>

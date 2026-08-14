@@ -283,25 +283,23 @@
               </div>
 
 
-              <div>
+<div>
 
-                <a
-                  href="/user/order/<%= order._id %>"
-                  class="
-                    view-btn
-                    <%= isPaymentPending
-                      ? 'view-btn--payment'
-                      : '' %>
-                  "
-                >
+  <a
+    href="/user/order/<%= order._id %>"
+    class="
+      view-btn
+      <%= isPaymentPending || isPaymentExpired
+        ? 'view-btn--payment'
+        : '' %>
+    "
+  >
+    <%= isPaymentPending || isPaymentExpired
+      ? "Checkout Again"
+      : "View Details" %>
+  </a>
 
-                  <%= isPaymentPending
-                    ? "Continue / Pay"
-                    : "View Details" %>
-
-                </a>
-
-              </div>
+</div>
 
             </div>
 
