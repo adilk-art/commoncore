@@ -78,9 +78,29 @@
             </div>
 
             <div class="form-group">
-              <label>Referral Code (Optional)</label>
-              <input type="text" placeholder="EX: CORE123" />
-            </div>
+
+  <label>
+    Referral Code
+    <span class="optional-text">
+      (Optional)
+    </span>
+  </label>
+
+  <input
+    type="text"
+    name="referralCode"
+    id="referralCode"
+    placeholder="EX: CORE123"
+    autocomplete="off"
+    maxlength="20"
+  >
+
+  <span
+    class="error-msg"
+    id="referralCodeError"
+  ></span>
+
+</div>
              <p class="error-msg" id="serverError" style="display:block"></p>
             <button class="create-btn">Create Account</button>
            

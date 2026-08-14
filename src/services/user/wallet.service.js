@@ -10,13 +10,18 @@ import crypto from "crypto";
 import { verifyRazorpaySignature } from "../../utils/razorpayVerification.js";
 const limit = 5;
 
-export const getWalletPageService = async (userId, page = 1) => {
-  const wallet = await findWalletByUserId(userId);
+export const createUserWalletService = async (userId) => {
+  const existingWallet = await findWalletByUserId(userId);
 
-  if (!wallet) {
-    await createWallet(userId);
+  if (existingWallet) {
+    return existingWallet;
   }
 
+  return await createWallet(userId);
+};
+
+export const getWalletPageService = async (userId, page = 1) => {
+  const wallet = await findWalletByUserId(userId);
   const transactions = [...wallet.transactions].sort(
     (a, b) => b.createdAt - a.createdAt,
   );

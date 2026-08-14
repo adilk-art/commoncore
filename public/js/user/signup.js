@@ -12,6 +12,8 @@ const passwordError = document.getElementById("passwordError");
 const confirmPasswordError = document.getElementById("confirmPasswordError");
 const passwordEye = document.getElementById("passwordEye");
 const confirmPasswordEye = document.getElementById("confirmPassEye");
+const referralCode = document.getElementById("referralCode");
+const referralCodeError = document.getElementById("referralCodeError");
 
 passwordEye.addEventListener("click", () => {
   const isPassword = password.type === "password";
@@ -114,6 +116,13 @@ function validateConfirmPassword() {
   clearError(confirmPasswordError);
   return true;
 }
+referralCode?.addEventListener("input",() => {
+  referralCode.value =
+    referralCode.value.toUpperCase();
+
+  clearError(referralCodeError);
+  clearServerError();
+});
 
 name.addEventListener("input", () => clearError(nameError));
 email.addEventListener("input", () => clearError(emailError));
@@ -151,12 +160,19 @@ form.addEventListener("submit", async (event) => {
   if (!isFormValid) return;
 
   try {
-    const res = await axios.post("/user/signup/initiate", {
-      name: name.value,
-      email: email.value,
-      password: password.value,
-      confirmPassword: confirmPassword.value,
-    });
+   const res = await axios.post(
+  "/user/signup/initiate",
+  {
+    name:name.value,
+    email:email.value,
+    password:password.value,
+    confirmPassword:
+      confirmPassword.value,
+
+    referralCode:
+      referralCode?.value.trim() || "",
+  },
+);
 
     if (res.data.success) {
       openOtpModal("signup", email.value);
