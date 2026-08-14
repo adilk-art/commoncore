@@ -25,7 +25,7 @@ const userSchema = new Schema(
     },
     phone:{
       type:String,
-    }
+    },
   },
   {
     timestamps: true, //second argument to the schema which creates createdAt and updatedAt and manages it automatically.
