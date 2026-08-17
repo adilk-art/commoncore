@@ -25,8 +25,18 @@ import {
   updateEmailService,
   changePasswordService,
 } from "../../services/user/user.service.js";
-import {getFeaturedProductsService} from "../../services/user/home.service.js"
+import { getFeaturedProductsService } from "../../services/user/home.service.js";
 import generateOtp from "../../utils/generateOtp.js";
+import { validateReferralCodeService } from "../../services/user/referral.service.js";
+import {
+  createUniqueReferralCodeService,
+  createReferralService,
+} from "../../services/user/referral.service.js";
+
+import { createUserWalletService } from "../../services/user/wallet.service.js";
+import {
+  getProfileReferralService,
+} from "../../services/user/referral.service.js";
 
 const googleCallback = (req, res, next) => {
   if (!req.user.isBlocked) {
@@ -34,7 +44,7 @@ const googleCallback = (req, res, next) => {
     return res.redirect("/");
   }
 
-  req.logout(err => {
+  req.logout((err) => {
     if (err) {
       return next(err);
     }
@@ -42,15 +52,13 @@ const googleCallback = (req, res, next) => {
     return res.render("user/login", {
       error: "Your account has been Blocked by admin",
       successMessage: null,
-      formData: null
+      formData: null,
     });
   });
 };
 
 const loadHomePage = async (req, res, next) => {
   try {
-  
- 
     res.render("user/home.ejs");
   } catch (error) {
     next(error);
@@ -77,9 +85,9 @@ const loadLoginPage = (req, res) => {
 };
 
 const initialSignup = async (req, res) => {
-  //passwordhashing and validation
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword, referralCode } = req.body;
+
     const userData = await prepareSignup({
       name,
       email,
@@ -87,18 +95,46 @@ const initialSignup = async (req, res) => {
       confirmPassword,
     });
 
-    req.session.tempUser = userData; //email,password,hashedPassword
+    let referrer = null;
+
+    if (referralCode?.trim()) {
+      try {
+        referrer = await validateReferralCodeService(referralCode);
+      } catch (error) {
+        return res.status(400).json({
+          errors: {
+            referralCode: error.message,
+          },
+        });
+      }
+    }
+
+    req.session.tempUser = {
+      ...userData,
+      referralCode: referralCode?.trim()
+        ? referralCode.trim().toUpperCase()
+        : null,
+      referrerId: referrer?._id || null,
+    };
     req.session.signupEmail = email;
 
-    await createAndSendOtp({ email, purpose: "signup", session: req.session });
-    return res.json({ success: true });
+    await createAndSendOtp({
+      email,
+      purpose: "signup",
+      session: req.session,
+    });
+
+    return res.json({
+      success: true,
+    });
   } catch (error) {
     return res.status(400).json({
-      errors: error.errors || { general: error.message },
+      errors: error.errors || {
+        general: error.message,
+      },
     });
   }
 };
-
 const resendOtp = async (req, res, next) => {
   try {
     const { purpose, email } = req.body;
@@ -152,18 +188,44 @@ const verifyOtp = async (req, res) => {
       const tempUser = req.session.tempUser;
 
       if (!tempUser) {
-        throw { general: "Session expired. Please signup again." };
+        throw new Error("Session expired. Please signup again.");
       }
+
+      const userReferralCode = await createUniqueReferralCodeService(
+        tempUser.name,
+      );
 
       const newUser = await createUser({
         name: tempUser.name,
         email: tempUser.email,
         password: tempUser.password,
+
+        referralCode: userReferralCode,
+
+        referredBy: tempUser.referrerId || null,
       });
 
-      req.session.tempUser = null;
+      await createUserWalletService(newUser._id);
+
+      if (tempUser.referrerId && tempUser.referralCode) {
+        await createReferralService({
+          referrerId: tempUser.referrerId,
+
+          referredUserId: newUser._id,
+
+          referralCode: tempUser.referralCode,
+        });
+      }
+
+      delete req.session.tempUser;
+      delete req.session.signupEmail;
+
       req.session.userId = newUser._id;
-      return res.json({ success: true, redirect: "/" });
+
+      return res.json({
+        success: true,
+        redirect: "/",
+      });
     }
 
     if (purpose === "forgot-password") {
@@ -272,8 +334,19 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const loadProfilePage = (req, res, next) => {
-  res.render("user/profile.ejs");
+const loadProfilePage = async (req,res,next) => {
+  try {
+    const referral =
+      await getProfileReferralService(
+        req.session.userId,
+      );
+
+    res.render("user/profile.ejs",{
+      referral,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const loadEditProfile = async (req, res) => {

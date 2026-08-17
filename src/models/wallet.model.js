@@ -16,7 +16,8 @@ const transactionSchema = new mongoose.Schema({
       "OrderRefund",
       "ReturnRefund",
       "AdminCredit",
-      "AdminDebit"
+      "AdminDebit",
+      "ReferralReward"
     ],
     required: true
   },

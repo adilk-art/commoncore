@@ -138,6 +138,138 @@
         </div>
 
       </div>
+      <div class="referral-card">
+
+  <div class="referral-header">
+
+    <div>
+      <span class="referral-eyebrow">
+        Refer & Earn
+      </span>
+
+      <h3>
+        Invite friends. Earn rewards.
+      </h3>
+
+      <p>
+        Share your referral code with friends.
+        You'll receive ₹<%= referral.referrerReward %>
+        and they'll receive ₹<%= referral.friendReward %>
+        in wallet credit after their first successful order.
+      </p>
+    </div>
+
+    <div class="referral-reward-badge">
+      Earn ₹<%= referral.referrerReward %>
+    </div>
+
+  </div>
+
+  <div class="referral-main">
+
+    <div class="referral-code-section">
+
+      <span class="referral-label">
+        Your Referral Code
+      </span>
+
+      <div class="referral-code-box">
+
+        <strong id="referralCode">
+          <%= referral.referralCode %>
+        </strong>
+
+        <button
+          type="button"
+          class="copy-referral-btn"
+          id="copyReferralBtn"
+          data-code="<%= referral.referralCode %>"
+        >
+          <i class="fa-regular fa-copy"></i>
+          <span>Copy</span>
+        </button>
+
+      </div>
+
+      <p class="referral-note">
+        Your friend must sign up using this code.
+      </p>
+
+    </div>
+
+    <div class="referral-benefits">
+
+      <div class="referral-benefit">
+
+        <span>
+          You Earn
+        </span>
+
+        <strong>
+          ₹<%= referral.referrerReward %>
+        </strong>
+
+      </div>
+
+      <div class="referral-benefit">
+
+        <span>
+          Friend Gets
+        </span>
+
+        <strong>
+          ₹<%= referral.friendReward %>
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="referral-stats">
+
+    <div class="referral-stat">
+
+      <span>
+        Successful Referrals
+      </span>
+
+      <strong>
+        <%= referral.successfulReferrals %>
+      </strong>
+
+    </div>
+
+    <div class="referral-stat">
+
+      <span>
+        Pending Referrals
+      </span>
+
+      <strong>
+        <%= referral.pendingReferrals %>
+      </strong>
+
+    </div>
+
+    <div class="referral-stat">
+
+      <span>
+        Total Earned
+      </span>
+
+      <strong>
+        ₹<%= Number(
+          referral.totalEarnings,
+        ).toLocaleString("en-IN") %>
+      </strong>
+
+    </div>
+
+  </div>
+
+</div>
 
     </div>
 
@@ -145,6 +277,7 @@
 
   <script src="/js/user/logout.js"></script>
   <script src="/js/utils/toast.js"></script>
+  <script src="/js/user/profile.js"></script>
 
 </body>
 

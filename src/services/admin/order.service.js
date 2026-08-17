@@ -10,9 +10,7 @@ import {
 import { calculateOrderStatus } from "../../utils/orderStatus.js";
 import { calculateItemGstAmount } from "../../utils/calculateGst.js";
 import { canMarkCodPaid } from "../../utils/orderStatus.js";
-import {
-  expirePendingRazorpayOrdersService,
-} from "../user/order.service.js";
+import { rewardReferralService } from "../user/referral.service.js";
 
 export const getOrdersPageService = async ({
   page,
@@ -319,7 +317,28 @@ export const getOrderDetailService = async (orderId) => {
 };
 
 export const markCodAsPaidService = async (orderId) => {
-  return await updateOrderPaymentStatus(orderId, "Paid");
+  await updateOrderPaymentStatus(orderId, "Paid");
+
+  const orderArr = await findOrderDetailById(orderId);
+
+  if (!orderArr || orderArr.length === 0) {
+    const error = new Error("Order not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const order = orderArr[0];
+
+  const orderStatus = calculateOrderStatus(order.items);
+
+  await rewardReferralService({
+    userId: order.userId,
+    orderId: order._id,
+    orderStatus,
+    paymentStatus: "Paid",
+  });
+
+  return order;
 };
 
 export const updateItemStatusService = async ({ orderId, itemId, status }) => {
@@ -398,14 +417,18 @@ export const updateItemStatusService = async ({ orderId, itemId, status }) => {
   });
 
   const updatedOrderArr = await findOrderDetailById(orderId);
-
   const updatedOrder = updatedOrderArr[0];
-
   const updatedItem = updatedOrder.items.find(
     (item) => String(item._id) === String(itemId),
   );
 
   const orderStatus = calculateOrderStatus(updatedOrder.items);
+  await rewardReferralService({
+    userId: updatedOrder.userId,
+    orderId: updatedOrder._id,
+    orderStatus,
+    paymentStatus: updatedOrder.paymentStatus,
+  });
 
   const showCodButton =
     updatedOrder.paymentMethod === "CashOnDelivery" &&

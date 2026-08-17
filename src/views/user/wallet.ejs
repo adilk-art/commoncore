@@ -59,7 +59,7 @@
           </p>
 
           <h1 class="wallet-balance">
-            ₹<%= wallet.balance.toFixed(2) %>
+            ₹<%= Number(wallet.balance || 0).toFixed(2) %>
           </h1>
 
           <p class="wallet-subtitle">
@@ -76,37 +76,46 @@
 
       </div>
 
+
       <div class="wallet-stats">
 
         <div class="stat-box">
 
-          <span>Money Added</span>
+          <span>
+            Money Added
+          </span>
 
-          <%= stats.moneyAdded.toFixed(2) %>
-
-        </div>
-
-        <div class="stat-box">
-
-          <span>Spent</span>
-
-          <%= stats.moneySpent.toFixed(2) %>
+          <%= Number(stats.moneyAdded || 0).toFixed(2) %>
 
         </div>
 
         <div class="stat-box">
 
-          <span>Refunds</span>
+          <span>
+            Spent
+          </span>
 
-          <%= stats.refunds.toFixed(2) %>
+          <%= Number(stats.moneySpent || 0).toFixed(2) %>
 
         </div>
 
         <div class="stat-box">
 
-          <span>Transactions</span>
+          <span>
+            Refunds
+          </span>
 
-          <%= stats.transactionCount %>
+          <%= Number(stats.refunds || 0).toFixed(2) %>
+
+        </div>
+
+        <div class="stat-box">
+
+          <span>
+            Transactions
+          </span>
+
+          <%= stats.transactionCount || 0 %>
 
         </div>
 
@@ -115,175 +124,231 @@
     </div>
 
 
-   <div class="transaction-card">
+    <div class="transaction-card">
 
-  <div class="section-header">
-
-    <h3>
-      Recent Transactions
-    </h3>
-
-  </div>
-
-  <div class="transaction-list">
-
-    <% if (transactions.length) { %>
-
-      <% transactions.forEach(transaction => { %>
-
-        <div class="transaction-item">
-
-          <div class="transaction-left">
-
-            <div class="transaction-icon <%= transaction.type === 'Credit' ? 'credit' : 'debit' %>">
-
-              <i class="fa-solid <%= transaction.type === 'Credit' ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
-
-            </div>
-
-            <div>
-
-              <h4>
-
-                <%= {
-
-                    AddMoney: "Added Money",
-
-                    OrderPayment: "Order Payment",
-
-                    OrderRefund: "Order Refund",
-
-                    ReturnRefund: "Return Refund",
-
-                    AdminCredit: "Admin Credit",
-
-                    AdminDebit: "Admin Debit"
-
-                }[transaction.category] || transaction.category %>
-
-                </h4>
-
-              <p>
-
-              <%= transaction.description %>
-
-              <% if (transaction.reference) { %>
-
-                <br>
-
-                <small>
-
-                  <%= transaction.category === "AddMoney"
-                    ? "Razorpay ID"
-                    : "Reference" %>:
-                  <%= transaction.reference %>
-
-                </small>
-
-              <% } %>
-
-              <br>
-
-              <small>
-
-                <%= new Date(transaction.createdAt).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric"
-                }) %>
-
-              </small>
-
-            </p>
-
-            </div>
-
-          </div>
-
-          <div class="transaction-right">
-
-            <span class="<%= transaction.type === 'Credit' ? 'credit-text' : 'debit-text' %>">
-
-              <%= transaction.type === "Credit" ? "+" : "-" %>₹<%= transaction.amount.toFixed(2) %>
-
-            </span>
-
-            <small>
-              <%= transaction.status %>
-            </small>
-
-          </div>
-
-        </div>
-
-      <% }) %>
-
-    <% } else { %>
-
-      <div class="empty-transactions">
-
-        <i class="fa-solid fa-wallet"></i>
+      <div class="section-header">
 
         <h3>
-          No Transactions Yet
+          Recent Transactions
         </h3>
-
-        <p>
-          Your wallet transactions will appear here.
-        </p>
 
       </div>
 
-    <% } %>
 
-  </div>
+      <div class="transaction-list">
 
-  <% if (pagination.totalPages > 1) { %>
+        <% if (transactions.length) { %>
 
-    <div class="pagination">
+          <% transactions.forEach(transaction => { %>
 
-      <% if (pagination.hasPrev) { %>
+            <%
+              const transactionTitle = {
+                AddMoney: "Added Money",
+                OrderPayment: "Order Payment",
+                OrderRefund: "Order Refund",
+                ReturnRefund: "Return Refund",
+                AdminCredit: "Admin Credit",
+                AdminDebit: "Admin Debit",
+                ReferralReward: "Referral Reward",
+              }[transaction.category] || transaction.category;
 
-        <a
-          href="/user/wallet?page=<%= pagination.currentPage - 1 %>"
-          class="page-btn"
-        >
-          <i class="fa-solid fa-angle-left"></i>
-        </a>
+              const isReferralReward =
+                transaction.category === "ReferralReward";
 
-      <% } %>
+              const isAddMoney =
+                transaction.category === "AddMoney";
 
-      <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+              const referenceLabel =
+                isAddMoney
+                  ? "Razorpay ID"
+                  : isReferralReward
+                    ? "Qualifying Order"
+                    : "Reference";
+            %>
 
-        <a
-          href="/user/wallet?page=<%= i %>"
-          class="page-btn <%= pagination.currentPage === i ? 'active' : '' %>"
-        >
-          <%= i %>
-        </a>
 
-      <% } %>
+            <div class="transaction-item">
 
-      <% if (pagination.hasNext) { %>
+              <div class="transaction-left">
 
-        <a
-          href="/user/wallet?page=<%= pagination.currentPage + 1 %>"
-          class="page-btn"
-        >
-          <i class="fa-solid fa-angle-right"></i>
-        </a>
+                <div
+                  class="
+                    transaction-icon
+                    <%= transaction.type === 'Credit'
+                      ? 'credit'
+                      : 'debit' %>
+                  "
+                >
+
+                  <i
+                    class="
+                      fa-solid
+                      <%= transaction.type === 'Credit'
+                        ? 'fa-arrow-down'
+                        : 'fa-arrow-up' %>
+                    "
+                  ></i>
+
+                </div>
+
+
+                <div>
+
+                  <h4>
+                    <%= transactionTitle %>
+                  </h4>
+
+
+                  <p>
+
+                    <%= transaction.description %>
+
+
+                    <% if (transaction.reference) { %>
+
+                      <br>
+
+                      <small>
+
+                        <%= referenceLabel %>:
+                        <%= transaction.reference %>
+
+                      </small>
+
+                    <% } %>
+
+
+                    <br>
+
+                    <small>
+
+                      <%= new Date(
+                        transaction.createdAt,
+                      ).toLocaleDateString(
+                        "en-IN",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      ) %>
+
+                    </small>
+
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div class="transaction-right">
+
+                <span
+                  class="
+                    <%= transaction.type === 'Credit'
+                      ? 'credit-text'
+                      : 'debit-text' %>
+                  "
+                >
+
+                  <%= transaction.type === "Credit"
+                    ? "+"
+                    : "-" %>₹<%= Number(
+                      transaction.amount || 0,
+                    ).toFixed(2) %>
+
+                </span>
+
+                <small>
+                  <%= transaction.status %>
+                </small>
+
+              </div>
+
+            </div>
+
+          <% }) %>
+
+        <% } else { %>
+
+          <div class="empty-transactions">
+
+            <i class="fa-solid fa-wallet"></i>
+
+            <h3>
+              No Transactions Yet
+            </h3>
+
+            <p>
+              Your wallet transactions will appear here.
+            </p>
+
+          </div>
+
+        <% } %>
+
+      </div>
+
+
+      <% if (pagination.totalPages > 1) { %>
+
+        <div class="pagination">
+
+          <% if (pagination.hasPrev) { %>
+
+            <a
+              href="/user/wallet?page=<%= pagination.currentPage - 1 %>"
+              class="page-btn"
+            >
+              <i class="fa-solid fa-angle-left"></i>
+            </a>
+
+          <% } %>
+
+
+          <% for (
+            let i = 1;
+            i <= pagination.totalPages;
+            i++
+          ) { %>
+
+            <a
+              href="/user/wallet?page=<%= i %>"
+              class="
+                page-btn
+                <%= pagination.currentPage === i
+                  ? 'active'
+                  : '' %>
+              "
+            >
+              <%= i %>
+            </a>
+
+          <% } %>
+
+
+          <% if (pagination.hasNext) { %>
+
+            <a
+              href="/user/wallet?page=<%= pagination.currentPage + 1 %>"
+              class="page-btn"
+            >
+              <i class="fa-solid fa-angle-right"></i>
+            </a>
+
+          <% } %>
+
+        </div>
 
       <% } %>
 
     </div>
 
-  <% } %>
-
-</div>
-
   </div>
 
 </div>
+
 
 <div
   class="modal-overlay hidden"
@@ -300,9 +365,11 @@
       Add funds securely using Razorpay.
     </p>
 
+
     <label class="wallet-label">
       Quick Amount
     </label>
+
 
     <div class="amount-options">
 
@@ -340,9 +407,11 @@
 
     </div>
 
+
     <label class="wallet-label">
       Amount
     </label>
+
 
     <input
       type="number"
@@ -352,14 +421,17 @@
       min="100"
     >
 
+
     <span
       class="error"
       id="walletAmountError"
     ></span>
 
+
     <small class="wallet-note">
       Minimum amount ₹100
     </small>
+
 
     <div class="modal-actions">
 
@@ -383,7 +455,11 @@
 
 </div>
 
-<div id="walletSuccessModal" class="modal-overlay hidden">
+
+<div
+  id="walletSuccessModal"
+  class="modal-overlay hidden"
+>
 
   <div class="result-modal">
 
@@ -393,19 +469,24 @@
 
     </div>
 
+
     <h2>
       Payment Successful
     </h2>
+
 
     <p class="result-description">
       Your wallet has been credited successfully.
     </p>
 
+
     <div class="result-details">
 
       <div class="result-row">
 
-        <span>Amount Added</span>
+        <span>
+          Amount Added
+        </span>
 
         <strong id="successAmount">
           ₹0.00
@@ -413,9 +494,12 @@
 
       </div>
 
+
       <div class="result-row">
 
-        <span>Wallet Balance</span>
+        <span>
+          Wallet Balance
+        </span>
 
         <strong id="successBalance">
           ₹0.00
@@ -423,9 +507,12 @@
 
       </div>
 
+
       <div class="result-row">
 
-        <span>Transaction ID</span>
+        <span>
+          Transaction ID
+        </span>
 
         <strong id="successTransaction">
           —
@@ -434,6 +521,7 @@
       </div>
 
     </div>
+
 
     <button
       id="walletSuccessBtn"
@@ -445,11 +533,18 @@
   </div>
 
 </div>
+
+
 <% if (paymentSuccess) { %>
+
 <script>
-window.walletPaymentSuccess = <%- JSON.stringify(paymentSuccess) %>;
+  window.walletPaymentSuccess =
+    <%- JSON.stringify(paymentSuccess) %>;
 </script>
+
 <% } %>
+
+
 <script src="/js/user/wallet.js"></script>
 <script src="/js/user/logout.js"></script>
 <script src="/js/utils/toast.js"></script>

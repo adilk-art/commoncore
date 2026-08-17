@@ -20,11 +20,24 @@ const userSchema = new Schema(
       type: String,
       default: "/images/default.png",
     },
-    profileImageId:{
+    profileImageId: {
       type: String,
     },
-    phone:{
-      type:String,
+    phone: {
+      type: String,
+    },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      uppercase: true,
+      trim: true,
+    },
+
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
   },
   {
