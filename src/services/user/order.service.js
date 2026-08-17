@@ -752,10 +752,6 @@ export const getOrderDetailService = async (orderId, userId) => {
 
   const isPaymentState = isRazorpayPending || paymentExpired;
 
-  if (!isPaymentState) {
-    order.orderStatus = calculateOrderStatus(order.items);
-  }
-
   const displayStatus = paymentFailed ? "Payment Failed" : order.orderStatus;
 
   const canReturnToCheckout =
@@ -1185,6 +1181,15 @@ export const cancelOrderItemService = async ({
     calculateOrderStatus(order.items);
 
   await saveOrder(order);
+
+  if (
+    order.orderStatus === "Refunded" &&
+    order.coupon?.couponId
+  ) {
+    await decrementCouponUsage(
+      order.coupon.couponId,
+    );
+  }
 
   return {
     orderStatus: order.orderStatus,

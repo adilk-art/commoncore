@@ -9,29 +9,58 @@ export const calculateOrderStatus = (items = []) => {
     return "Cancelled";
   }
 
-  const activeStatuses = statuses.filter((status) => status !== "Cancelled");
+  const activeStatuses = statuses.filter(
+    (status) => status !== "Cancelled",
+  );
 
   if (activeStatuses.length === 0) {
     return "Cancelled";
   }
 
-  if (activeStatuses.some((status) => status === "Refunded")) {
+  if (activeStatuses.every((status) => status === "Refunded")) {
     return "Refunded";
   }
 
-  if (activeStatuses.some((status) => status === "Returned")) {
+  if (
+    activeStatuses.every((status) =>
+      ["Returned", "Refunded"].includes(status),
+    )
+  ) {
     return "Returned";
   }
 
-  if (activeStatuses.some((status) => status === "Return Accepted")) {
+  if (
+    activeStatuses.every((status) =>
+      ["Return Accepted", "Returned", "Refunded"].includes(status),
+    )
+  ) {
     return "Return Accepted";
   }
 
-  if (activeStatuses.some((status) => status === "Return Requested")) {
+  if (
+    activeStatuses.every((status) =>
+      [
+        "Return Requested",
+        "Return Accepted",
+        "Returned",
+        "Refunded",
+      ].includes(status),
+    )
+  ) {
     return "Return Requested";
   }
 
-  if (activeStatuses.some((status) => status === "Delivered")) {
+  if (
+    activeStatuses.some((status) =>
+      [
+        "Delivered",
+        "Return Requested",
+        "Return Accepted",
+        "Returned",
+        "Refunded",
+      ].includes(status),
+    )
+  ) {
     return "Delivered";
   }
 
@@ -46,31 +75,22 @@ export const calculateOrderStatus = (items = []) => {
   return "Placed";
 };
 
-export const canMarkCodPaid = (
-  items = [],
-) => {
-  const deliveredOrLater =
-    new Set([
-      "Delivered",
-      "Return Requested",
-      "Return Accepted",
-      "Returned",
-      "Refunded",
-    ]);
+export const canMarkCodPaid = (items = []) => {
+  const deliveredOrLater = new Set([
+    "Delivered",
+    "Return Requested",
+    "Return Accepted",
+    "Returned",
+    "Refunded",
+  ]);
 
-  const activeItems =
-    items.filter(
-      (item) =>
-        item.status !== "Cancelled",
-    );
+  const activeItems = items.filter(
+    (item) => item.status !== "Cancelled",
+  );
 
   return (
     activeItems.length > 0 &&
-    activeItems.every(
-      (item) =>
-        deliveredOrLater.has(
-          item.status,
-        ),
-    )
+    activeItems.every((item) => deliveredOrLater.has(item.status))
   );
 };
+

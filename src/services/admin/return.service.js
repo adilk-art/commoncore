@@ -13,6 +13,10 @@ import {
 } from "../../repositories/order.repository.js";
 
 import { creditWalletService } from "../user/wallet.service.js";
+import { calculateOrderStatus } from "../../utils/orderStatus.js";
+import {
+  decrementCouponUsage,
+} from "../../repositories/coupon.repository.js";
 
 export const getReturnsPageService = async ({
   limit,
@@ -81,16 +85,23 @@ export const getReturnDetailService = async (returnId) => {
   };
 };
 
-export const updateReturnStatusService = async (returnId, status) => {
-  const returnRequest = await findReturnById(returnId);
+export const updateReturnStatusService = async (
+  returnId,
+  status,
+) => {
+  const returnRequest =
+    await findReturnById(returnId);
 
   if (!returnRequest) {
-    const error = new Error("Return request not found");
+    const error =
+      new Error("Return request not found");
+
     error.status = 404;
     throw error;
   }
 
-  const currentStatus = returnRequest.status;
+  const currentStatus =
+    returnRequest.status;
 
   const allowedTransitions = {
     Requested: ["Approved"],
@@ -98,26 +109,43 @@ export const updateReturnStatusService = async (returnId, status) => {
     "Picked Up": ["Received"],
   };
 
-  if (!allowedTransitions[currentStatus]?.includes(status)) {
+  if (
+    !allowedTransitions[currentStatus]?.includes(
+      status,
+    )
+  ) {
     const error = new Error(
       `Cannot change return status from ${currentStatus} to ${status}`,
     );
+
     error.status = 400;
     throw error;
   }
 
-  const order = await findOrderById(returnRequest.orderId);
+  const order = await findOrderById(
+    returnRequest.orderId,
+  );
 
   if (!order) {
-    const error = new Error("Order not found for this return");
+    const error =
+      new Error(
+        "Order not found for this return",
+      );
+
     error.status = 404;
     throw error;
   }
 
-  const item = order.items.id(returnRequest.itemId);
+  const item = order.items.id(
+    returnRequest.itemId,
+  );
 
   if (!item) {
-    const error = new Error("Returned item not found in order");
+    const error =
+      new Error(
+        "Returned item not found in order",
+      );
+
     error.status = 404;
     throw error;
   }
@@ -125,22 +153,40 @@ export const updateReturnStatusService = async (returnId, status) => {
   returnRequest.status = status;
 
   if (status === "Approved") {
-    returnRequest.approvedAt = new Date();
-    item.status = "Return Accepted";
-    item.statusUpdatedAt = new Date();
+    returnRequest.approvedAt =
+      new Date();
+
+    item.status =
+      "Return Accepted";
+
+    item.statusUpdatedAt =
+      new Date();
   }
 
   if (status === "Picked Up") {
-    returnRequest.pickedUpAt = new Date();
+    returnRequest.pickedUpAt =
+      new Date();
   }
 
   if (status === "Received") {
-    returnRequest.receivedAt = new Date();
-    item.status = "Returned";
-    item.statusUpdatedAt = new Date();
+    returnRequest.receivedAt =
+      new Date();
 
-    await increaseVariantStock(item.variantId, item.quantity);
+    item.status = "Returned";
+
+    item.statusUpdatedAt =
+      new Date();
+
+    await increaseVariantStock(
+      item.variantId,
+      item.quantity,
+    );
   }
+
+  order.orderStatus =
+    calculateOrderStatus(
+      order.items,
+    );
 
   await returnRequest.save();
   await saveOrder(order);
@@ -148,43 +194,82 @@ export const updateReturnStatusService = async (returnId, status) => {
   return returnRequest;
 };
 
-export const rejectReturnService = async (returnId, rejectionReason) => {
-  const returnRequest = await findReturnById(returnId);
+export const rejectReturnService = async (
+  returnId,
+  rejectionReason,
+) => {
+  const returnRequest =
+    await findReturnById(returnId);
 
   if (!returnRequest) {
-    const error = new Error("Return request not found");
+    const error =
+      new Error("Return request not found");
+
     error.status = 404;
     throw error;
   }
 
-  if (returnRequest.status !== "Requested") {
-    const error = new Error("Only requested returns can be rejected");
+  if (
+    returnRequest.status !==
+    "Requested"
+  ) {
+    const error =
+      new Error(
+        "Only requested returns can be rejected",
+      );
+
     error.status = 400;
     throw error;
   }
 
-  const order = await findOrderById(returnRequest.orderId);
+  const order =
+    await findOrderById(
+      returnRequest.orderId,
+    );
 
   if (!order) {
-    const error = new Error("Order not found for this return");
+    const error =
+      new Error(
+        "Order not found for this return",
+      );
+
     error.status = 404;
     throw error;
   }
 
-  const item = order.items.id(returnRequest.itemId);
+  const item =
+    order.items.id(
+      returnRequest.itemId,
+    );
 
   if (!item) {
-    const error = new Error("Returned item not found in order");
+    const error =
+      new Error(
+        "Returned item not found in order",
+      );
+
     error.status = 404;
     throw error;
   }
 
-  returnRequest.status = "Rejected";
-  returnRequest.rejectionReason = rejectionReason;
-  returnRequest.rejectedAt = new Date();
+  returnRequest.status =
+    "Rejected";
+
+  returnRequest.rejectionReason =
+    rejectionReason;
+
+  returnRequest.rejectedAt =
+    new Date();
 
   item.status = "Delivered";
-  item.statusUpdatedAt = new Date();
+
+  item.statusUpdatedAt =
+    new Date();
+
+  order.orderStatus =
+    calculateOrderStatus(
+      order.items,
+    );
 
   await returnRequest.save();
   await saveOrder(order);
@@ -192,56 +277,133 @@ export const rejectReturnService = async (returnId, rejectionReason) => {
   return returnRequest;
 };
 
-export const processReturnRefundService = async (returnId) => {
-  const returnRequest = await findReturnById(returnId);
+export const processReturnRefundService = async (
+  returnId,
+) => {
+  const returnRequest =
+    await findReturnById(returnId);
 
   if (!returnRequest) {
-    const error = new Error("Return request not found");
+    const error =
+      new Error(
+        "Return request not found",
+      );
+
     error.status = 404;
     throw error;
   }
 
-  if (returnRequest.status !== "Received") {
-    const error = new Error(
-      "Refund can only be processed after item is received",
-    );
+  if (
+    returnRequest.status !==
+    "Received"
+  ) {
+    const error =
+      new Error(
+        "Refund can only be processed after item is received",
+      );
+
     error.status = 400;
     throw error;
   }
 
-  const order = await findOrderById(returnRequest.orderId);
+  const order =
+    await findOrderById(
+      returnRequest.orderId,
+    );
 
   if (!order) {
-    const error = new Error("Order not found for this return");
+    const error =
+      new Error(
+        "Order not found for this return",
+      );
+
     error.status = 404;
     throw error;
   }
 
-  const item = order.items.id(returnRequest.itemId);
+  const item =
+    order.items.id(
+      returnRequest.itemId,
+    );
 
   if (!item) {
-    const error = new Error("Returned item not found in order");
+    const error =
+      new Error(
+        "Returned item not found in order",
+      );
+
     error.status = 404;
     throw error;
   }
 
-  const refundAmount = returnRequest.refundAmount;
+  const itemAmount =
+    Number(item.unitPrice) *
+    Number(item.quantity);
 
-  await creditWalletService(returnRequest.userId, {
-    amount: refundAmount,
-    category: "ReturnRefund",
-    description: `Refund for returned ${item.productName}`,
-    reference: returnRequest.returnNumber,
-  });
+  const couponDiscount =
+    Number(
+      item.couponDiscountAmount || 0,
+    );
 
-  returnRequest.status = "Refunded";
-  returnRequest.refundedAt = new Date();
+  const refundAmount =
+    Math.max(
+      itemAmount -
+      couponDiscount,
+      0,
+    );
 
-  item.status = "Returned";
-  item.statusUpdatedAt = new Date();
+  await creditWalletService(
+    returnRequest.userId,
+    {
+      amount:
+        Number(
+          refundAmount.toFixed(2),
+        ),
+
+      category:
+        "ReturnRefund",
+
+      description:
+        `Refund for returned ${item.productName}`,
+
+      reference:
+        returnRequest.returnNumber,
+    },
+  );
+
+  returnRequest.refundAmount =
+    Number(
+      refundAmount.toFixed(2),
+    );
+
+  returnRequest.status =
+    "Refunded";
+
+  returnRequest.refundedAt =
+    new Date();
+
+  item.status =
+    "Refunded";
+
+  item.statusUpdatedAt =
+    new Date();
+
+  order.orderStatus =
+    calculateOrderStatus(
+      order.items,
+    );
 
   await returnRequest.save();
   await saveOrder(order);
+
+  if (
+    order.orderStatus === "Refunded" &&
+    order.coupon?.couponId
+  ) {
+    await decrementCouponUsage(
+      order.coupon.couponId,
+    );
+  }
 
   return returnRequest;
 };

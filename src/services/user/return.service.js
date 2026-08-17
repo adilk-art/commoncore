@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import {
   findUserOrderById,
   updateOrderItemStatus,
+  saveOrder
 } from "../../repositories/order.repository.js";
 import { getAddressesService } from "./address.service.js";
 import {
@@ -12,6 +13,9 @@ import {
   cancelReturnRequestRepo,
   getLatestReturnNumber,
 } from "../../repositories/return.repository.js";
+import {
+  calculateOrderStatus,
+} from "../../utils/orderStatus.js";
 
 export const getReturnRequestPageService = async (orderId, itemId, userId) => {
   const order = await findUserOrderById(orderId, userId);
@@ -80,11 +84,22 @@ export const getReturnRequestPageService = async (orderId, itemId, userId) => {
   };
 };
 
-export const createReturnRequestService = async (payload, userId) => {
-  const { orderId, itemId, reason, comments, pickupAddress } = payload;
+export const createReturnRequestService = async (
+  payload,
+  userId,
+) => {
+  const {
+    orderId,
+    itemId,
+    reason,
+    comments,
+    pickupAddress,
+  } = payload;
 
   if (!reason?.trim()) {
-    throw new Error("Return reason is required.");
+    throw new Error(
+      "Return reason is required.",
+    );
   }
 
   if (
@@ -96,100 +111,192 @@ export const createReturnRequestService = async (payload, userId) => {
     !pickupAddress.state?.trim() ||
     !pickupAddress.pincode?.trim()
   ) {
-    throw new Error("Pickup address is required.");
+    throw new Error(
+      "Pickup address is required.",
+    );
   }
 
-  const order = await findUserOrderById(orderId, userId);
+  const order =
+    await findUserOrderById(
+      orderId,
+      userId,
+    );
 
   if (!order) {
-    throw new Error("Order not found.");
+    throw new Error(
+      "Order not found.",
+    );
   }
 
-  const item = order.items.id(itemId);
+  const item =
+    order.items.id(itemId);
 
   if (!item) {
-    throw new Error("Item not found.");
+    throw new Error(
+      "Item not found.",
+    );
   }
 
-  if (item.status !== "Delivered") {
-    throw new Error("Item cannot be returned.");
+  if (
+    item.status !== "Delivered"
+  ) {
+    throw new Error(
+      "Item cannot be returned.",
+    );
   }
 
-  const deliveredAt = new Date(item.statusUpdatedAt);
+  const deliveredAt =
+    new Date(
+      item.statusUpdatedAt,
+    );
 
-  const returnLastDate = new Date(deliveredAt);
+  const returnLastDate =
+    new Date(deliveredAt);
 
-  returnLastDate.setDate(returnLastDate.getDate() + 14);
+  returnLastDate.setDate(
+    returnLastDate.getDate() + 14,
+  );
 
-  if (Date.now() > returnLastDate.getTime()) {
-    throw new Error("Return period has expired.");
+  if (
+    Date.now() >
+    returnLastDate.getTime()
+  ) {
+    throw new Error(
+      "Return period has expired.",
+    );
   }
 
-  const existing = await findActiveReturnByOrderItemId(itemId);
+  const existing =
+    await findActiveReturnByOrderItemId(
+      itemId,
+    );
 
   if (existing) {
-    throw new Error("Return request already exists.");
+    throw new Error(
+      "Return request already exists.",
+    );
   }
 
-  const latestReturnNumber = await getLatestReturnNumber();
+  const latestReturnNumber =
+    await getLatestReturnNumber();
 
   let nextNumber = 1001;
 
   if (latestReturnNumber) {
-    const lastNumeric = Number(latestReturnNumber.replace("RET", ""));
+    const lastNumeric =
+      Number(
+        latestReturnNumber.replace(
+          "RET",
+          "",
+        ),
+      );
 
-    if (!Number.isNaN(lastNumeric)) {
-      nextNumber = lastNumeric + 1;
+    if (
+      !Number.isNaN(
+        lastNumeric,
+      )
+    ) {
+      nextNumber =
+        lastNumeric + 1;
     }
   }
 
-  const returnNumber = `RET${nextNumber}`;
+  const returnNumber =
+    `RET${nextNumber}`;
 
-  const quantity = Number(item.quantity) || 0;
+  const quantity =
+    Number(item.quantity) || 0;
 
-  const itemAmount = Number(item.unitPrice || 0) * quantity;
+  const itemAmount =
+    Number(
+      item.unitPrice || 0,
+    ) * quantity;
 
-  const couponDiscount = Number(item.couponDiscountAmount || 0);
+  const couponDiscount =
+    Number(
+      item.couponDiscountAmount || 0,
+    );
 
-  const refundAmount = Math.max(itemAmount - couponDiscount, 0);
+  const refundAmount =
+    Math.max(
+      itemAmount -
+      couponDiscount,
+      0,
+    );
 
-  const returnRequest = await createReturn({
-    returnNumber,
+  const returnRequest =
+    await createReturn({
+      returnNumber,
 
-    orderId: new mongoose.Types.ObjectId(orderId),
+      orderId:
+        new mongoose.Types.ObjectId(
+          orderId,
+        ),
 
-    itemId: new mongoose.Types.ObjectId(itemId),
+      itemId:
+        new mongoose.Types.ObjectId(
+          itemId,
+        ),
 
-    userId: new mongoose.Types.ObjectId(userId),
+      userId:
+        new mongoose.Types.ObjectId(
+          userId,
+        ),
 
-    reason: reason.trim(),
+      reason:
+        reason.trim(),
 
-    comments: comments?.trim() || "",
+      comments:
+        comments?.trim() || "",
 
-    pickupAddress: {
-      fullName: pickupAddress.fullName.trim(),
+      pickupAddress: {
+        fullName:
+          pickupAddress.fullName.trim(),
 
-      phone: pickupAddress.phone.trim(),
+        phone:
+          pickupAddress.phone.trim(),
 
-      line1: pickupAddress.line1.trim(),
+        line1:
+          pickupAddress.line1.trim(),
 
-      line2: pickupAddress.line2?.trim() || "",
+        line2:
+          pickupAddress.line2?.trim() ||
+          "",
 
-      city: pickupAddress.city.trim(),
+        city:
+          pickupAddress.city.trim(),
 
-      state: pickupAddress.state.trim(),
+        state:
+          pickupAddress.state.trim(),
 
-      pincode: pickupAddress.pincode.trim(),
-    },
+        pincode:
+          pickupAddress.pincode.trim(),
+      },
 
-    refundAmount: Number(refundAmount.toFixed(2)),
+      refundAmount:
+        Number(
+          refundAmount.toFixed(2),
+        ),
 
-    status: "Requested",
+      status:
+        "Requested",
 
-    requestedAt: new Date(),
-  });
+      requestedAt:
+        new Date(),
+    });
 
-  await updateOrderItemStatus(orderId, itemId, "Return Requested");
+  item.status =
+    "Return Requested";
+
+  item.statusUpdatedAt =
+    new Date();
+
+  order.orderStatus =
+    calculateOrderStatus(
+      order.items,
+    );
+
+  await saveOrder(order);
 
   return returnRequest;
 };
@@ -423,31 +530,87 @@ export const getReturnDetailService = async ({ orderId, itemId, userId }) => {
   };
 };
 
-export const cancelReturnRequestService = async ({ returnId, userId }) => {
-  const returnRequest = await findReturnByIdAndUser({
-    returnId,
-    userId,
-  });
+export const cancelReturnRequestService = async ({
+  returnId,
+  userId,
+}) => {
+  const returnRequest =
+    await findReturnByIdAndUser({
+      returnId,
+      userId,
+    });
 
   if (!returnRequest) {
-    const error = new Error("Return request not found");
+    const error =
+      new Error(
+        "Return request not found",
+      );
+
     error.statusCode = 404;
     throw error;
   }
 
-  if (returnRequest.status !== "Requested") {
-    const error = new Error("Only requested returns can be cancelled");
+  if (
+    returnRequest.status !==
+    "Requested"
+  ) {
+    const error =
+      new Error(
+        "Only requested returns can be cancelled",
+      );
+
     error.statusCode = 400;
     throw error;
   }
 
-  const updatedReturn = await cancelReturnRequestRepo(returnId);
+  const order =
+    await findUserOrderById(
+      returnRequest.orderId,
+      userId,
+    );
 
-  await updateOrderItemStatus(
-    returnRequest.orderId,
-    returnRequest.itemId,
-    "Delivered",
-  );
+  if (!order) {
+    const error =
+      new Error(
+        "Order not found",
+      );
+
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const item =
+    order.items.id(
+      returnRequest.itemId,
+    );
+
+  if (!item) {
+    const error =
+      new Error(
+        "Order item not found",
+      );
+
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const updatedReturn =
+    await cancelReturnRequestRepo(
+      returnId,
+    );
+
+  item.status =
+    "Delivered";
+
+  item.statusUpdatedAt =
+    new Date();
+
+  order.orderStatus =
+    calculateOrderStatus(
+      order.items,
+    );
+
+  await saveOrder(order);
 
   return updatedReturn;
 };

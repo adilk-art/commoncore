@@ -16,8 +16,9 @@ import { creditWalletService } from "./wallet.service.js";
 import {
   findReferralsByReferrerId,
 } from "../../repositories/referral.repository.js";
-
-
+import {
+  findOrderById,
+} from "../../repositories/order.repository.js";
 
 
 const generateReferralCode = (name = "USER") => {
@@ -99,31 +100,61 @@ export const rewardReferralService = async ({
     return null;
   }
 
+  const order =
+    await findOrderById(orderId);
+
+  if (!order) {
+    const error =
+      new Error("Qualifying order not found");
+
+    error.status = 404;
+    throw error;
+  }
+
   await creditWalletService(
     referral.referrerId,
     {
-      amount:Number(referral.referrerReward),
-      category:"ReferralReward",
-      description:"Reward earned from a successful referral",
-      reference:String(orderId),
+      amount:
+        Number(referral.referrerReward),
+
+      category:
+        "ReferralReward",
+
+      description:
+        "Reward earned from a successful referral",
+
+      reference:
+        order.orderNumber,
     },
   );
 
   await creditWalletService(
     referral.referredUserId,
     {
-      amount:Number(
-        referral.referredUserReward,
-      ),
-      category:"ReferralReward",
-      description:"Referral signup reward",
-      reference:String(orderId),
+      amount:
+        Number(
+          referral.referredUserReward,
+        ),
+
+      category:
+        "ReferralReward",
+
+      description:
+        "Referral signup reward",
+
+      reference:
+        order.orderNumber,
     },
   );
 
-  referral.qualifyingOrderId = orderId;
-  referral.status = "Rewarded";
-  referral.rewardedAt = new Date();
+  referral.qualifyingOrderId =
+    order._id;
+
+  referral.status =
+    "Rewarded";
+
+  referral.rewardedAt =
+    new Date();
 
   await saveReferral(referral);
 

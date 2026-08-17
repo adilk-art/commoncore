@@ -104,7 +104,7 @@ export const decrementCouponUsage = async (couponId) => {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
     },
   );
 };

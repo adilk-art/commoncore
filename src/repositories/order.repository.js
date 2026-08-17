@@ -240,7 +240,10 @@ export const hasUserUsedCoupon = async ({
     "coupon.couponId": couponId,
 
     orderStatus: {
-      $ne: "Cancelled",
+      $nin: [
+        "Cancelled",
+        "Refunded",
+      ],
     },
 
     $or: [
