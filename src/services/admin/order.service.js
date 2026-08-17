@@ -21,7 +21,6 @@ export const getOrdersPageService = async ({
   payment,
   sort,
 }) => {
-  await expirePendingRazorpayOrdersService();
 
   const filter = {
     orderStatus: {
@@ -333,7 +332,7 @@ export const markCodAsPaidService = async (orderId) => {
 
   await rewardReferralService({
     userId: order.userId,
-    orderId: order.orderNumber,
+    orderId: order._id,
     orderStatus,
     paymentStatus: "Paid",
   });
