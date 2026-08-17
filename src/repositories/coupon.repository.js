@@ -91,3 +91,20 @@ export const incrementCouponUsage = async (couponId) => {
     },
   );
 };
+
+export const decrementCouponUsage = async (couponId) => {
+  return await Coupon.findOneAndUpdate(
+    {
+      _id: couponId,
+      usedCount: { $gt: 0 },
+    },
+    {
+      $inc: {
+        usedCount: -1,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+};

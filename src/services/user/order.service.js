@@ -43,7 +43,7 @@ import {
 } from "../shared/pricing.service.js";
 
 import { validateCouponService } from "./coupon.service.js";
-import { incrementCouponUsage } from "../../repositories/coupon.repository.js";
+import { incrementCouponUsage,decrementCouponUsage } from "../../repositories/coupon.repository.js";
 
 
 
@@ -1015,7 +1015,10 @@ export const getOrderDetailService = async (orderId, userId) => {
   };
 };
 
-export const cancelOrderService = async ({ userId, orderId }) => {
+export const cancelOrderService = async ({
+  userId,
+  orderId,
+}) => {
   const order = await findOrderById(orderId);
 
   if (!order) {
@@ -1024,55 +1027,83 @@ export const cancelOrderService = async ({ userId, orderId }) => {
     throw error;
   }
 
-  if (order.userId.toString() !== userId.toString()) {
+  if (
+    order.userId.toString() !==
+    userId.toString()
+  ) {
     const error = new Error("Unauthorized");
     error.status = 403;
     throw error;
   }
 
-  if (order.orderStatus !== "Placed" && order.orderStatus !== "Processing") {
-    const error = new Error("Order cannot be cancelled");
+  if (
+    order.orderStatus !== "Placed" &&
+    order.orderStatus !== "Processing"
+  ) {
+    const error = new Error(
+      "Order cannot be cancelled",
+    );
+
     error.status = 400;
     throw error;
   }
 
-  let refundAmount = 0;
-
   for (const item of order.items) {
-    if (item.status === "Placed" || item.status === "Processing") {
+    if (
+      item.status === "Placed" ||
+      item.status === "Processing"
+    ) {
       item.status = "Cancelled";
 
-      await increaseVariantStock(item.variantId, item.quantity);
-
-      refundAmount += item.unitPrice * item.quantity;
+      await increaseVariantStock(
+        item.variantId,
+        item.quantity,
+      );
     }
   }
 
   if (
     order.paymentStatus === "Paid" &&
-    (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet")
+    (
+      order.paymentMethod === "Razorpay" ||
+      order.paymentMethod === "Wallet"
+    )
   ) {
-    await creditWalletService(userId, {
-      amount: refundAmount,
+    const refundAmount =
+      Number(order.total) || 0;
 
-      category: "OrderRefund",
-
-      description: `Refund for cancelled order ${order.orderNumber}`,
-
-      reference: order.orderNumber,
-    });
+    await creditWalletService(
+      userId,
+      {
+        amount: refundAmount,
+        category: "OrderRefund",
+        description:
+          `Refund for cancelled order ${order.orderNumber}`,
+        reference: order.orderNumber,
+      },
+    );
   }
 
   order.orderStatus = "Cancelled";
 
   await saveOrder(order);
 
+  if (order.coupon?.couponId) {
+    await decrementCouponUsage(
+      order.coupon.couponId,
+    );
+  }
+
   return {
     orderStatus: order.orderStatus,
   };
 };
 
-export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
+export const cancelOrderItemService = async ({
+  userId,
+  orderId,
+  itemId,
+}) => {
   const order = await findOrderById(orderId);
 
   if (!order) {
@@ -1081,7 +1112,10 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
     throw error;
   }
 
-  if (order.userId.toString() !== userId.toString()) {
+  if (
+    order.userId.toString() !==
+    userId.toString()
+  ) {
     const error = new Error("Unauthorized");
     error.status = 403;
     throw error;
@@ -1095,34 +1129,60 @@ export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
     throw error;
   }
 
-  if (item.status !== "Placed" && item.status !== "Processing") {
-    const error = new Error("Item cannot be cancelled");
+  if (
+    item.status !== "Placed" &&
+    item.status !== "Processing"
+  ) {
+    const error = new Error(
+      "Item cannot be cancelled",
+    );
+
     error.status = 400;
     throw error;
   }
 
   item.status = "Cancelled";
 
-  await increaseVariantStock(item.variantId, item.quantity);
+  await increaseVariantStock(
+    item.variantId,
+    item.quantity,
+  );
 
   if (
     order.paymentStatus === "Paid" &&
-    (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet")
+    (
+      order.paymentMethod === "Razorpay" ||
+      order.paymentMethod === "Wallet"
+    )
   ) {
-    const refundAmount = item.unitPrice * item.quantity;
+    const itemAmount =
+      Number(item.unitPrice) *
+      Number(item.quantity);
 
-    await creditWalletService(userId, {
-      amount: refundAmount,
+    const couponDiscount =
+      Number(
+        item.couponDiscountAmount || 0,
+      );
 
-      category: "OrderRefund",
+    const refundAmount = Math.max(
+      itemAmount - couponDiscount,
+      0,
+    );
 
-      description: `Refund for cancelled item from ${order.orderNumber}`,
-
-      reference: order.orderNumber,
-    });
+    await creditWalletService(
+      userId,
+      {
+        amount: refundAmount,
+        category: "OrderRefund",
+        description:
+          `Refund for cancelled item from ${order.orderNumber}`,
+        reference: order.orderNumber,
+      },
+    );
   }
 
-  order.orderStatus = calculateOrderStatus(order.items);
+  order.orderStatus =
+    calculateOrderStatus(order.items);
 
   await saveOrder(order);
 

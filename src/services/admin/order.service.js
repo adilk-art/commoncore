@@ -333,7 +333,7 @@ export const markCodAsPaidService = async (orderId) => {
 
   await rewardReferralService({
     userId: order.userId,
-    orderId: order._id,
+    orderId: order.orderNumber,
     orderStatus,
     paymentStatus: "Paid",
   });
