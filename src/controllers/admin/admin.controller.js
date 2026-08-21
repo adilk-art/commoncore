@@ -32,13 +32,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const loadDashboardPage = (req, res) => {
-  res.render("admin/dashboard.ejs", {
-    stats: null,
-    active: "dashboard",
-    title: "Dashboard",
-  });
-};
+
 
 export const loadUsersPage = async (req, res) => {
   const search = req.query.search || "";

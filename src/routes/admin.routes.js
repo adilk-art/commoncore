@@ -8,6 +8,7 @@ import * as returnController from "../controllers/admin/return.controller.js"
 import * as offerController from "../controllers/admin/offer.controller.js"
 import * as couponController from "../controllers/admin/coupon.controller.js"
 import * as salesController from "../controllers/admin/sales.controller.js"
+import * as dashboardController from "../controllers/admin/dashboard.controller.js"
 import { isAdminAuth,isAdminNotAuth } from "../middlewares/adminAuth.middleware.js";
 import userController from "../controllers/user/user.controller.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
@@ -22,7 +23,6 @@ router.post("/login",adminController.login);
 router.get("/users",isAdminAuth,adminController.loadUsersPage);
 router.post("/users/toggle-block/:id",isAdminAuth,adminController.blockUser)
 
-router.get("/dashboard",isAdminAuth,adminController.loadDashboardPage);
 router.get("/logout",isAdminAuth,adminController.logout);
 
 router.get("/categories",isAdminAuth,categoryController.loadCategoryPage);
@@ -75,6 +75,12 @@ router.patch("/coupons/status/:id",isAdminAuth,couponController.changeCouponStat
 router.get("/sales-report",isAdminAuth,salesController.getSalesReportPage);
 router.get("/sales-report/pdf",isAdminAuth,salesController.downloadSalesReportPdf);
 router.get("/sales-report/excel",isAdminAuth,salesController.downloadSalesReportExcel);
+
+
+router.get("/dashboard",isAdminAuth,dashboardController.getDashboard);
+router.get("/dashboard/sales-chart",isAdminAuth,dashboardController.getSalesChart);
+router.get("/dashboard/top-selling",isAdminAuth,dashboardController.getTopSellingData);
+
 
 
 

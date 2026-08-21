@@ -1,47 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Dashboard</title>
 
-  <link rel="stylesheet" href="/css/admin/layout.css">
-  <link rel="stylesheet" href="/css/admin/logout-modal.css">
-  <link rel="stylesheet" href="/css/admin/dashboard.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<head>
+
+  <%- include("./partials/head", {
+    title: "Dashboard"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/dashboard.css"
+  >
+
 </head>
 
 <body>
 
-  <!-- HEADER (FULL WIDTH) -->
-  <%- include("./partials/header") %>
-  
+  <%- include("./partials/header", {
+    title: "Dashboard"
+  }) %>
+
   <div class="layout">
 
-    <!-- SIDEBAR -->
-    <%- include("./partials/sidebar", { active: "dashboard" }) %>
+    <%- include("./partials/sidebar", {
+      active: "dashboard"
+    }) %>
+
     <%- include("./partials/logout-modal") %>
 
-    <!-- MAIN CONTENT -->
     <div class="main">
-      
+
       <div class="content">
 
-        <!-- PAGE TITLE (moved here) -->
-        <h2 class="page-title">Dashboard</h2>
+        <div class="page-top">
 
-        <% if (!stats) { %>
-          <div class="empty-state">
-            <i class="fa-solid fa-chart-simple"></i>
-            <h3>No Data Yet</h3>
-            <p>Start by adding products or managing orders</p>
+          <div>
+
+            <p class="breadcrumb">
+              Admin Dashboard &gt; Overview
+            </p>
+
+            <h2 class="page-title">
+              Dashboard
+            </h2>
+
           </div>
-        <% } %>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Total Sales</p>
+
+              <i class="fa-solid fa-indian-rupee-sign"></i>
+
+            </div>
+
+            <h3>
+              ₹<%= Number(stats?.totalSales || 0).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </h3>
+
+            <span class="stat-description">
+              Net sales revenue
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Total Orders</p>
+
+              <i class="fa-solid fa-bag-shopping"></i>
+
+            </div>
+
+            <h3>
+              <%= stats?.totalOrders || 0 %>
+            </h3>
+
+            <span class="stat-description">
+              Confirmed orders
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Total Customers</p>
+
+              <i class="fa-solid fa-users"></i>
+
+            </div>
+
+            <h3>
+              <%= stats?.totalCustomers || 0 %>
+            </h3>
+
+            <span class="stat-description">
+              Registered customers
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Total Products</p>
+
+              <i class="fa-solid fa-box"></i>
+
+            </div>
+
+            <h3>
+              <%= stats?.totalProducts || 0 %>
+            </h3>
+
+            <span class="stat-description">
+              Products in catalog
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="dashboard-card sales-chart-card">
+
+          <div class="card-header">
+
+            <div>
+
+              <h3>
+                Sales Overview
+              </h3>
+
+              <p>
+                Net sales performance over time
+              </p>
+
+            </div>
+
+            <div class="chart-controls">
+
+              <select id="salesChartFilter">
+
+                <option value="weekly">
+                  Weekly
+                </option>
+
+                <option
+                  value="monthly"
+                  selected
+                >
+                  Monthly
+                </option>
+
+                <option value="yearly">
+                  Yearly
+                </option>
+
+              </select>
+
+              <select id="salesChartYear">
+
+                <%
+                  const currentYear =
+                    new Date().getFullYear();
+                %>
+
+                <% for (
+                  let year = currentYear;
+                  year >= currentYear - 5;
+                  year--
+                ) { %>
+
+                  <option value="<%= year %>">
+                    <%= year %>
+                  </option>
+
+                <% } %>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div class="chart-wrapper">
+
+            <canvas id="salesChart"></canvas>
+
+          </div>
+
+        </div>
+
+
+        <div class="ranking-grid">
+
+          <div class="dashboard-card ranking-card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h3>
+                  Best Selling Products
+                </h3>
+
+                <p>
+                  Top 10 products by quantity sold
+                </p>
+
+              </div>
+
+            </div>
+
+            <div
+              class="ranking-list"
+              id="topProductsList"
+            >
+
+              <div class="ranking-empty">
+                Loading...
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="dashboard-card ranking-card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h3>
+                  Best Selling Categories
+                </h3>
+
+                <p>
+                  Top 10 categories by quantity sold
+                </p>
+
+              </div>
+
+            </div>
+
+            <div
+              class="ranking-list"
+              id="topCategoriesList"
+            >
+
+              <div class="ranking-empty">
+                Loading...
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="dashboard-card ranking-card">
+
+            <div class="card-header">
+
+              <div>
+
+                <h3>
+                  Best Selling Variants
+                </h3>
+
+                <p>
+                  Top 10 size and color variants
+                </p>
+
+              </div>
+
+            </div>
+
+            <div
+              class="ranking-list"
+              id="topVariantsList"
+            >
+
+              <div class="ranking-empty">
+                Loading...
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
     </div>
 
   </div>
-  <script src="/js/admin/logout.js"></script>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/js/admin/dashboard.js"></script>
+
 </body>
+
 </html>
