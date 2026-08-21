@@ -7,6 +7,7 @@ import * as orderController from "../controllers/admin/order.controller.js"
 import * as returnController from "../controllers/admin/return.controller.js"
 import * as offerController from "../controllers/admin/offer.controller.js"
 import * as couponController from "../controllers/admin/coupon.controller.js"
+import * as salesController from "../controllers/admin/sales.controller.js"
 import { isAdminAuth,isAdminNotAuth } from "../middlewares/adminAuth.middleware.js";
 import userController from "../controllers/user/user.controller.js";
 import { noCache } from "../middlewares/noCache.middleware.js";
@@ -70,6 +71,11 @@ router.post("/coupons/add",isAdminAuth,couponController.addCoupon);
 router.get("/coupons/:id/edit",isAdminAuth,couponController.loadEditCouponPage);
 router.patch("/coupons/:id/edit",isAdminAuth,couponController.editCoupon);
 router.patch("/coupons/status/:id",isAdminAuth,couponController.changeCouponStatus);
+
+router.get("/sales-report",isAdminAuth,salesController.getSalesReportPage);
+router.get("/sales-report/pdf",isAdminAuth,salesController.downloadSalesReportPdf);
+router.get("/sales-report/excel",isAdminAuth,salesController.downloadSalesReportExcel);
+
 
 
 export default router;

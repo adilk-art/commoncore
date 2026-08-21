@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <%- include("./partials/head", {
+    title: "Sales Report"
+  }) %>
+
+  <link
+    rel="stylesheet"
+    href="/css/admin/sales-report.css"
+  >
+
+</head>
+
+<body>
+
+  <%- include("./partials/header", {
+    title: "Sales Report"
+  }) %>
+
+  <div class="layout">
+
+    <%- include("./partials/sidebar", {
+      active: "sales-report"
+    }) %>
+
+    <%- include("./partials/logout-modal") %>
+
+    <div class="main">
+
+      <div class="content">
+
+        <div class="page-top">
+
+          <div>
+
+            <p class="breadcrumb">
+              Admin Dashboard &gt; Sales Report
+            </p>
+
+            <h2 class="page-title">
+              Sales Report
+            </h2>
+
+          </div>
+
+          <div class="export-actions">
+
+<a
+  href="/admin/sales-report/pdf?filter=<%= encodeURIComponent(filter) %>&startDate=<%= encodeURIComponent(selectedStartDate || '') %>&endDate=<%= encodeURIComponent(selectedEndDate || '') %>"
+  class="export-btn"
+>
+  <i class="fa-solid fa-file-pdf"></i>
+  PDF
+</a>
+
+<a
+  href="/admin/sales-report/excel?filter=<%= encodeURIComponent(filter) %>&startDate=<%= encodeURIComponent(selectedStartDate || '') %>&endDate=<%= encodeURIComponent(selectedEndDate || '') %>"
+  class="export-btn"
+>
+  <i class="fa-solid fa-file-excel"></i>
+  Excel
+</a>
+
+          </div>
+
+        </div>
+
+
+        <div class="filter-card">
+
+          <form
+            action="/admin/sales-report"
+            method="GET"
+            class="report-filter-form"
+            id="reportFilterForm"
+          >
+
+            <div class="filter-group">
+
+              <label>
+                Report Period
+              </label>
+
+              <select
+                name="filter"
+                id="reportFilter"
+              >
+
+                <option
+                  value="daily"
+                  <%= filter === "daily" ? "selected" : "" %>
+                >
+                  Daily
+                </option>
+
+                <option
+                  value="weekly"
+                  <%= filter === "weekly" ? "selected" : "" %>
+                >
+                  Weekly
+                </option>
+
+                <option
+                  value="monthly"
+                  <%= filter === "monthly" ? "selected" : "" %>
+                >
+                  Monthly
+                </option>
+
+                <option
+                  value="yearly"
+                  <%= filter === "yearly" ? "selected" : "" %>
+                >
+                  Yearly
+                </option>
+
+                <option
+                  value="custom"
+                  <%= filter === "custom" ? "selected" : "" %>
+                >
+                  Custom
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div
+              class="custom-date-fields <%= filter === 'custom' ? '' : 'hidden' %>"
+              id="customDateFields"
+            >
+
+              <div class="filter-group">
+
+                <label>
+                  From
+                </label>
+
+                <input
+                  type="date"
+                  name="startDate"
+                  value="<%= selectedStartDate || '' %>"
+                >
+
+              </div>
+
+              <div class="filter-group">
+
+                <label>
+                  To
+                </label>
+
+                <input
+                  type="date"
+                  name="endDate"
+                  value="<%= selectedEndDate || '' %>"
+                >
+
+              </div>
+
+            </div>
+
+
+            <button
+              type="submit"
+              class="apply-filter-btn"
+            >
+              <i class="fa-solid fa-filter"></i>
+              Apply
+            </button>
+
+
+            <% if (
+              filter !== "daily" ||
+              selectedStartDate ||
+              selectedEndDate
+            ) { %>
+
+              <a
+                href="/admin/sales-report"
+                class="clear-filter-btn"
+              >
+                <i class="fa-solid fa-xmark"></i>
+                Clear
+              </a>
+
+            <% } %>
+
+          </form>
+
+        </div>
+
+
+        <div class="report-period">
+
+          <i class="fa-regular fa-calendar"></i>
+
+          <span>
+
+            <%= new Date(startDate).toLocaleDateString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+              }
+            ) %>
+
+            -
+
+            <%= new Date(endDate).toLocaleDateString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+              }
+            ) %>
+
+          </span>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Sales Orders</p>
+
+              <i class="fa-solid fa-bag-shopping"></i>
+
+            </div>
+
+            <h3>
+              <%= report.orderCount %>
+            </h3>
+
+            <span class="stat-description">
+              Orders contributing to sales
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Items Sold</p>
+
+              <i class="fa-solid fa-box"></i>
+
+            </div>
+
+            <h3>
+              <%= report.salesQuantity %>
+            </h3>
+
+            <span class="stat-description">
+              Total quantity sold
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Gross Sales</p>
+
+              <i class="fa-solid fa-indian-rupee-sign"></i>
+
+            </div>
+
+            <h3>
+              ₹<%= Number(report.grossSales).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </h3>
+
+            <span class="stat-description">
+              Before discounts
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Offer Discount</p>
+
+              <i class="fa-solid fa-tags"></i>
+
+            </div>
+
+            <h3>
+              ₹<%= Number(report.offerDiscount).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </h3>
+
+            <span class="stat-description">
+              Product and category offers
+            </span>
+
+          </div>
+
+
+          <div class="stat-card">
+
+            <div class="stat-top">
+
+              <p>Coupon Discount</p>
+
+              <i class="fa-solid fa-ticket"></i>
+
+            </div>
+
+            <h3>
+              ₹<%= Number(report.couponDiscount).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </h3>
+
+            <span class="stat-description">
+              Coupon deductions
+            </span>
+
+          </div>
+
+
+          <div class="stat-card highlight-card">
+
+            <div class="stat-top">
+
+              <p>Net Sales</p>
+
+              <i class="fa-solid fa-chart-line"></i>
+
+            </div>
+
+            <h3>
+              ₹<%= Number(report.netSales).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </h3>
+
+            <span class="stat-description">
+              After all discounts
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="discount-summary">
+
+          <div>
+
+            <span>
+              Total Discount
+            </span>
+
+            <strong>
+              ₹<%= Number(report.totalDiscount).toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </strong>
+
+          </div>
+
+          <p>
+            Combined offer and coupon deductions for the selected period.
+          </p>
+
+        </div>
+
+
+        <div class="report-table-card">
+
+          <div class="table-header">
+
+            <div>
+
+              <h3>
+                Sales Details
+              </h3>
+
+              <p>
+                Order-wise sales for the selected period
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="table-responsive">
+
+            <table class="report-table">
+
+              <thead>
+
+                <tr>
+                  <th>Date</th>
+                  <th>Order ID</th>
+                  <th>Items</th>
+                  <th>Gross Amount</th>
+                  <th>Offer Discount</th>
+                  <th>Coupon Discount</th>
+                  <th>Total Discount</th>
+                  <th>Net Amount</th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <% if (rows.length) { %>
+
+                  <% rows.forEach(row => { %>
+
+                    <tr>
+
+                      <td>
+
+                        <%= new Date(
+                          row.createdAt
+                        ).toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                          }
+                        ) %>
+
+                      </td>
+
+                      <td class="order-number">
+                        <%= row.orderNumber %>
+                      </td>
+
+                      <td>
+                        <%= row.itemsSold %>
+                      </td>
+
+                      <td>
+                        ₹<%= row.grossAmount.toLocaleString(
+                          "en-IN",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }
+                        ) %>
+                      </td>
+
+                      <td>
+                        ₹<%= row.offerDiscount.toLocaleString(
+                          "en-IN",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }
+                        ) %>
+                      </td>
+
+                      <td>
+                        ₹<%= row.couponDiscount.toLocaleString(
+                          "en-IN",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }
+                        ) %>
+                      </td>
+
+                      <td>
+                        ₹<%= row.totalDiscount.toLocaleString(
+                          "en-IN",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }
+                        ) %>
+                      </td>
+
+                      <td class="net-amount">
+
+                        ₹<%= row.netAmount.toLocaleString(
+                          "en-IN",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }
+                        ) %>
+
+                      </td>
+
+                    </tr>
+
+                  <% }) %>
+
+                <% } else { %>
+
+                  <tr>
+
+                    <td
+                      colspan="8"
+                      class="empty-report"
+                    >
+
+                      <i class="fa-solid fa-chart-column"></i>
+
+                      <span>
+                        No sales found for this period.
+                      </span>
+
+                    </td>
+
+                  </tr>
+
+                <% } %>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+
+          <% if (pagination.totalPages > 1) { %>
+
+            <div class="pagination">
+
+              <p class="results-text">
+
+                Showing
+
+                <%= pagination.totalRows > 0
+                  ? ((pagination.currentPage - 1) * pagination.limit) + 1
+                  : 0 %>
+
+                to
+
+                <%= Math.min(
+                  pagination.currentPage * pagination.limit,
+                  pagination.totalRows
+                ) %>
+
+                of
+
+                <%= pagination.totalRows %>
+
+                orders
+
+              </p>
+
+
+              <%
+                const reportQuery = [
+                  `filter=${encodeURIComponent(filter)}`,
+                  `startDate=${encodeURIComponent(selectedStartDate || "")}`,
+                  `endDate=${encodeURIComponent(selectedEndDate || "")}`
+                ].join("&");
+              %>
+
+
+              <% if (pagination.hasPrev) { %>
+
+                <a
+                  href="/admin/sales-report?page=<%= pagination.currentPage - 1 %>&<%= reportQuery %>"
+                  class="nav-btn"
+                >
+                  Prev
+                </a>
+
+              <% } else { %>
+
+                <span class="nav-btn disabled">
+                  Prev
+                </span>
+
+              <% } %>
+
+
+              <% for (
+                let i = 1;
+                i <= pagination.totalPages;
+                i++
+              ) { %>
+
+                <a
+                  href="/admin/sales-report?page=<%= i %>&<%= reportQuery %>"
+                  class="page-btn <%= pagination.currentPage === i ? 'active' : '' %>"
+                >
+                  <%= i %>
+                </a>
+
+              <% } %>
+
+
+              <% if (pagination.hasNext) { %>
+
+                <a
+                  href="/admin/sales-report?page=<%= pagination.currentPage + 1 %>&<%= reportQuery %>"
+                  class="nav-btn"
+                >
+                  Next
+                </a>
+
+              <% } else { %>
+
+                <span class="nav-btn disabled">
+                  Next
+                </span>
+
+              <% } %>
+
+            </div>
+
+          <% } %>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <%- include("./partials/scripts") %>
+
+  <script src="/js/admin/salesReport.js"></script>
+
+</body>
+
+</html>
