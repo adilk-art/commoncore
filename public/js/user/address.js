@@ -1,195 +1,385 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("addressForm");
-  if (!form) return;
-  const addAddressBtn = document.getElementById("addAddressBtn"); //add button in card when empty state
-  const addAddressBtnEmpty = document.getElementById("addAddressBtnEmpty");
+  const modal = document.getElementById("addressModal");
+  const modalTitle = document.getElementById("addressModalTitle");
+  const addBtn = document.getElementById("addAddressBtn");
+  const emptyAddBtn = document.getElementById("addAddressBtnEmpty");
+  const closeBtn = document.getElementById("closeAddressModal");
   const cancelBtn = document.getElementById("cancelAddressBtn");
-  const addAddressCard = document.getElementById("addAddressCard");
-  const formTitle = document.querySelector(".add-address-card h3");
-  function openAddForm() {
+  const saveBtn = document.getElementById("saveAddressBtn");
+  const addressId = document.getElementById("addressId");
+
+  if (!form || !modal) return;
+
+  function clearErrors() {
+    form.querySelectorAll(".error-msg").forEach((el) => {
+      el.textContent = "";
+      el.style.display = "none";
+    });
+
+    form.querySelectorAll(".input-error").forEach((input) => {
+      input.classList.remove("input-error");
+    });
+  }
+
+  function showError(id, message) {
+    const el = document.getElementById(id);
+
+    if (!el) return;
+
+    el.textContent = message;
+    el.style.display = "block";
+
+    const fieldName = id.replace("Error", "");
+
+    form.elements[fieldName]?.classList.add("input-error");
+  }
+
+  function openAddModal() {
     form.reset();
     clearErrors();
-    document.getElementById("addressList")?.classList.add("form-open");
-      document.querySelector(".right-section").classList.add("active");
-    document.getElementById("addressId").value = ""; //empty value for address id because it is newly adding one
-    addAddressCard.style.display = "block";
-    formTitle.innerText = "Add New Address";
+
+    addressId.value = "";
+    modalTitle.textContent = "Add New Address";
+    saveBtn.textContent = "Save Address";
+
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+
+    setTimeout(() => {
+      form.fullName.focus();
+    }, 100);
   }
-  addAddressBtn?.addEventListener("click", openAddForm);
-  addAddressBtnEmpty?.addEventListener("click", openAddForm);
-  cancelBtn?.addEventListener("click", () => {
-    document.getElementById("addressList")?.classList.remove("form-open");
-      document.querySelector(".right-section").classList.remove("active");
-    addAddressCard.style.display = "none";
+
+  function closeAddressModal() {
+    if (saveBtn.disabled) return;
+
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
 
     form.reset();
-    document.getElementById("addressId").value = "";
+    clearErrors();
+    addressId.value = "";
+  }
+
+  addBtn?.addEventListener("click", openAddModal);
+  emptyAddBtn?.addEventListener("click", openAddModal);
+  closeBtn?.addEventListener("click", closeAddressModal);
+  cancelBtn?.addEventListener("click", closeAddressModal);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeAddressModal();
+    }
   });
+
   document.querySelectorAll(".editAddressBtn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      addAddressCard.style.display = "block";
-      document.getElementById("addressList")?.classList.add("form-open");
-      document.querySelector(".right-section").classList.add("active");
-      formTitle.innerText = "Edit Address";
-      document.getElementById("addressId").value = btn.dataset.id; //value for addresId from edit button
+      form.reset();
+      clearErrors();
+
+      addressId.value = btn.dataset.id;
       form.fullName.value = btn.dataset.fullname;
       form.phone.value = btn.dataset.phone;
       form.line1.value = btn.dataset.line1;
-      form.line2.value = btn.dataset.line2;
+      form.line2.value = btn.dataset.line2 || "";
       form.city.value = btn.dataset.city;
       form.state.value = btn.dataset.state;
       form.pincode.value = btn.dataset.pincode;
       form.isDefault.checked = btn.dataset.default === "true";
+
+      modalTitle.textContent = "Edit Address";
+      saveBtn.textContent = "Update Address";
+
+      modal.classList.add("active");
+      document.body.style.overflow = "hidden";
+
+      setTimeout(() => {
+        form.fullName.focus();
+      }, 100);
+    });
+  });
+
+  form.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("input", () => {
+      input.classList.remove("input-error");
+
+      const error = document.getElementById(
+        `${input.name}Error`,
+      );
+
+      if (error) {
+        error.textContent = "";
+        error.style.display = "none";
+      }
     });
   });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    document.querySelectorAll(".error-msg").forEach((el) => {
-      el.innerText = "";
-      el.style.display = "none";
-    });
+    if (saveBtn.disabled) return;
 
-    let isValid = true;
+    clearErrors();
 
     const fullName = form.fullName.value.trim();
     const phone = form.phone.value.trim();
     const line1 = form.line1.value.trim();
+    const line2 = form.line2.value.trim();
     const city = form.city.value.trim();
     const state = form.state.value.trim();
     const pincode = form.pincode.value.trim();
 
-    if (fullName.length < 3) {
-      showError("fullNameError", "Minimum 3 characters required");
+    let valid = true;
 
-      isValid = false;
+    if (fullName.length < 3) {
+      showError(
+        "fullNameError",
+        "Minimum 3 characters required",
+      );
+
+      valid = false;
     }
 
     if (!/^[6-9]\d{9}$/.test(phone)) {
-      showError("phoneError", "Invalid phone number");
+      showError(
+        "phoneError",
+        "Enter a valid 10-digit phone number",
+      );
 
-      isValid = false;
+      valid = false;
     }
 
     if (line1.length < 3) {
-      showError("line1Error", "Address is required");
+      showError(
+        "line1Error",
+        "Address is required",
+      );
 
-      isValid = false;
+      valid = false;
     }
 
     if (city.length < 2) {
-      showError("cityError", "City is required");
+      showError(
+        "cityError",
+        "City is required",
+      );
 
-      isValid = false;
+      valid = false;
     }
 
     if (state.length < 2) {
-      showError("stateError", "State is required");
+      showError(
+        "stateError",
+        "State is required",
+      );
 
-      isValid = false;
+      valid = false;
     }
 
     if (!/^\d{6}$/.test(pincode)) {
-      showError("pincodeError", "Invalid pincode");
+      showError(
+        "pincodeError",
+        "Enter a valid 6-digit pincode",
+      );
 
-      isValid = false;
+      valid = false;
     }
 
-    if (isValid) {
-      const formData = new FormData(form);
+    if (!valid) return;
 
-      const data = Object.fromEntries(formData.entries());
+    const id = addressId.value;
 
-      data.isDefault = form.isDefault.checked;
+    const data = {
+      fullName,
+      phone,
+      line1,
+      line2,
+      city,
+      state,
+      pincode,
+      isDefault: form.isDefault.checked,
+    };
 
-      const addressId = document.getElementById("addressId").value;
+    const originalText = saveBtn.textContent;
 
-      try {
-        if (addressId) {     //edit route for addressId active
-                            
-          await axios.patch(`/user/address/update/${addressId}`, data);
-          utils.showToast("Address updated successfully", "success");
+    saveBtn.disabled = true;
 
-        } else {
-          await axios.post("/user/address/add", data);
-          utils.showToast("Address added successfully", "success");
-        }
-      document.getElementById("addressList")?.classList.remove("form-open");
-      document.querySelector(".right-section").classList.remove("active");
-       setTimeout(() => {
-        window.location.href = "/user/address";
-      }, 1200);
-      } catch (err) {
-        const errors = err.response?.data?.errors || [];
+    saveBtn.innerHTML = `
+      <span class="btn-spinner"></span>
+      ${id ? "Updating..." : "Saving..."}
+    `;
 
-        errors.forEach((e) => {
-          const field = e.path[0];
+    try {
+      if (id) {
+        await axios.patch(
+          `/user/address/update/${id}`,
+          data,
+        );
 
-          const message = e.message;
+        utils.showToast(
+          "Address updated successfully",
+          "success",
+        );
+      } else {
+        await axios.post(
+          "/user/address/add",
+          data,
+        );
 
-          showError(field + "Error", message);
-          utils.showToast(message, "error");
-        });
+        utils.showToast(
+          "Address added successfully",
+          "success",
+        );
       }
+
+      setTimeout(() => {
+        window.location.href = "/user/address";
+      }, 800);
+    } catch (err) {
+      const errors = err.response?.data?.errors;
+
+      if (Array.isArray(errors) && errors.length) {
+        errors.forEach((error) => {
+          const field = error.path?.[0];
+
+          if (field) {
+            showError(
+              `${field}Error`,
+              error.message,
+            );
+          }
+        });
+
+        utils.showToast(
+          errors[0]?.message ||
+            "Please check the entered details",
+          "error",
+        );
+      } else {
+        utils.showToast(
+          err.response?.data?.message ||
+            "Unable to save address",
+          "error",
+        );
+      }
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
     }
   });
 });
-
-function showError(id, message) {
-  const el = document.getElementById(id);
-
-  if (el) {
-    el.innerText = message;
-
-    el.style.display = "block";
-  }
-}
-
-function clearErrors() {
-  document.querySelectorAll(".error-msg").forEach((el) => {
-    el.innerText = "";
-    el.style.display = "none";
-  });
-}
 
 let deleteId = "";
 
 function openDeleteModal(id) {
   deleteId = id;
-  document.getElementById("deleteModal").style.display = "block";
+
+  const modal = document.getElementById("deleteModal");
+
+  modal?.classList.add("active");
+  document.body.style.overflow = "hidden";
 }
 
 function closeDeleteModal() {
-  document.getElementById("deleteModal").style.display = "none";
+  const btn = document.getElementById("confirmDeleteBtn");
+
+  if (btn?.disabled) return;
+
   deleteId = "";
+
+  document
+    .getElementById("deleteModal")
+    ?.classList.remove("active");
+
+  document.body.style.overflow = "";
 }
 
 async function confirmDelete() {
-  if (deleteId) {
-    try {
-      await axios.delete(`/user/address/delete/${deleteId}`);
-      utils.showToast("Address deleted successfully", "success");
+  if (!deleteId) return;
 
-      setTimeout(() => {
-        window.location.href = "/user/address";
-      }, 1200);
-    } catch (err) {
-      utils.showToast("Error deleting address", "error");
-    }
-  }
-}
+  const btn = document.getElementById("confirmDeleteBtn");
 
-async function setDefault(addressId) {
+  if (!btn || btn.disabled) return;
+
+  const originalText = btn.textContent;
+
+  btn.disabled = true;
+
+  btn.innerHTML = `
+    <span class="btn-spinner"></span>
+    Deleting...
+  `;
+
   try {
-    await axios.patch(`/user/address/default/${addressId}`);
+    await axios.delete(
+      `/user/address/delete/${deleteId}`,
+    );
 
-    utils.showToast("Default address updated", "success");
+    utils.showToast(
+      "Address deleted successfully",
+      "success",
+    );
 
     setTimeout(() => {
       window.location.href = "/user/address";
-    }, 1200);
+    }, 800);
   } catch (err) {
-    utils.showToast("Error setting default address", "error");
+    utils.showToast(
+      err.response?.data?.message ||
+        "Error deleting address",
+      "error",
+    );
+
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
+
+async function setDefault(addressId, btn) {
+  if (
+    !addressId ||
+    !btn ||
+    btn.disabled
+  ) {
+    return;
+  }
+
+  const originalText = btn.innerHTML;
+
+  btn.disabled = true;
+
+  btn.innerHTML = `
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    Updating
+  `;
+
+  try {
+    await axios.patch(
+      `/user/address/default/${addressId}`,
+    );
+
+    utils.showToast(
+      "Default address updated",
+      "success",
+    );
+
+    setTimeout(() => {
+      window.location.href = "/user/address";
+    }, 800);
+  } catch (err) {
+    utils.showToast(
+      err.response?.data?.message ||
+        "Error setting default address",
+      "error",
+    );
+
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+
+window.openDeleteModal = openDeleteModal;
+window.closeDeleteModal = closeDeleteModal;
+window.confirmDelete = confirmDelete;
+window.setDefault = setDefault;

@@ -54,14 +54,17 @@ export const verifyPasswordService = async (userId, password) => {
 
 export const verifyNewEmailService = async (email, userId) => {
   const validate = emailSchema.safeParse(email);
+
   if (!validate.success) {
-    throw new Error(resourceLimits.error.issues[0].message);
+    throw new Error(validate.error.issues[0].message);
   }
 
   const existing = await findUserByEmail(email);
+
   if (existing) {
     throw new Error("Email already in use");
   }
+
   return true;
 };
 

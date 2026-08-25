@@ -34,9 +34,9 @@ import {
 } from "../../services/user/referral.service.js";
 
 import { createUserWalletService } from "../../services/user/wallet.service.js";
-import {
-  getProfileReferralService,
-} from "../../services/user/referral.service.js";
+import { getProfileReferralService } from "../../services/user/referral.service.js";
+
+import { submitContactService } from "../../services/user/contact.service.js";
 
 const googleCallback = (req, res, next) => {
   if (!req.user.isBlocked) {
@@ -334,14 +334,11 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const loadProfilePage = async (req,res,next) => {
+const loadProfilePage = async (req, res, next) => {
   try {
-    const referral =
-      await getProfileReferralService(
-        req.session.userId,
-      );
+    const referral = await getProfileReferralService(req.session.userId);
 
-    res.render("user/profile.ejs",{
+    res.render("user/profile.ejs", {
       referral,
     });
   } catch (error) {
@@ -433,6 +430,42 @@ const loadSetPassword = async (req, res, next) => {
   }
 };
 
+
+const loadContactPage = async (req, res, next) => {
+  try {
+    res.render("user/contact", {
+      activePage: "contact",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const submitContact = async (req, res, next) => {
+  try {
+    await submitContactService(req.body);
+
+    return res.json({
+      success: true,
+      message: "Message sent successfully",
+    });
+  } catch (err) {
+    res.status(400);
+    return next(err);
+  }
+};
+
+const loadAboutPage = async (req, res, next) => {
+  try {
+    res.render("user/about", {
+      activePage: "about",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 export default {
   googleCallback,
   loadSignupPage,
@@ -455,4 +488,8 @@ export default {
   emailChange,
   verfifyPassword,
   changePassword,
+  submitContact,
+  loadContactPage,
+  loadAboutPage
 };
+

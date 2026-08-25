@@ -1,110 +1,352 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+
   <title>Edit Profile</title>
-  <link rel="stylesheet" href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  >
+
+  <link rel="stylesheet" href="/css/user/standard.css">
   <link rel="stylesheet" href="/css/user/style.css">
+  <link rel="stylesheet" href="/css/user/global.css">
+  <link rel="stylesheet" href="/css/user/user-header.css">
   <link rel="stylesheet" href="/css/user/otp-modal.css">
   <link rel="stylesheet" href="/css/user/editProfile.css">
-  <link rel="stylesheet" href="/css/user/global.css">
-    <link rel="stylesheet" href="/css/user/user-header.css">
-  <link rel="stylesheet" href="/css/user/standard.css">
+
 </head>
+
 <body>
 
-<%- include("../partials/user-header") %>
+  <%- include("../partials/user-header") %>
 
-<div class="account-container">
+  <div class="account-container">
 
-  <%- include("../partials/sidebar", { active: "profile" }) %>
+    <%- include("../partials/sidebar", {
+      active: "profile"
+    }) %>
 
-  <div class="main-content">
+    <div class="main-content">
 
-    <h2>Edit Profile</h2>
-    <div class="edit-container">
+      <div class="page-header">
+
+        <div>
+
+          <p class="page-eyebrow">
+            MY ACCOUNT
+          </p>
+
+          <h2 class="page-title">
+            Edit Profile
+          </h2>
+
+        </div>
+
+        <a
+          href="/user/profile"
+          class="back-btn"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+          Back to Profile
+        </a>
+
+      </div>
 
 
       <div class="edit-card">
 
-        <!-- FORM -->
-        <form id="editProfileForm" enctype="multipart/form-data">
+        <form
+          id="editProfileForm"
+          enctype="multipart/form-data"
+        >
 
-          <!-- PROFILE IMAGE -->
-          <div class="image-section">
+          <div class="profile-photo-section">
 
-          <img src="<%= user.profileImage %>" id="previewImg" class="profile-img">
+            <div class="profile-image-wrap">
 
-          <label for="profileImageInput" class="change-btn">
-            Change Photo
-          </label>
+              <img
+                src="<%= user.profileImage || '/images/default.png' %>"
+                id="previewImg"
+                class="profile-img"
+                alt="Profile"
+              >
 
-          <input type="file" name="profileImage" id="profileImageInput" hidden>
-           <span id="imageSelectError" class="error-msg"></span>
+              <label
+                for="profileImageInput"
+                class="photo-edit-btn"
+                title="Change profile photo"
+              >
+                <i class="fa-solid fa-camera"></i>
+              </label>
 
-        </div>
-
-          <!-- NAME -->
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" name="name" id="name" value="<%= user.name %>">
-            <span class="error-msg" id="nameError"></span>
-          </div>
-
-          <!-- EMAIL -->
-          <div class="form-group">
-            <label>Email</label>
-
-            <div class="email-wrapper">
-              <input type="text" value="<%= user.email %>" readonly class="email-input">
-              <span class="change-email-btn" onclick="openEmailModal()">
-                Change
-              </span>
             </div>
+
+            <div class="photo-info">
+
+              <h3>
+                Profile Photo
+              </h3>
+
+              <p>
+                Upload a JPG, PNG or WEBP image.
+              </p>
+
+              <label
+                for="profileImageInput"
+                class="change-photo-link"
+              >
+                Change Photo
+              </label>
+
+              <input
+                type="file"
+                name="profileImage"
+                id="profileImageInput"
+                accept=".jpg,.jpeg,.png,.webp"
+                hidden
+              >
+
+              <span
+                id="imageSelectError"
+                class="error-msg"
+              ></span>
+
+            </div>
+
           </div>
 
-          <!-- PHONE -->
-          <div class="form-group">
-            <label>Phone</label>
-            <input type="text" name="phone" id="phone" value="<%= user.phone || '' %>">
-            <span class="error-msg" id="phoneError"></span>
+
+          <div class="section-divider"></div>
+
+
+          <div class="form-section">
+
+            <div class="section-heading">
+
+              <h3>
+                Personal Information
+              </h3>
+
+              <p>
+                Update your personal details.
+              </p>
+
+            </div>
+
+
+            <div class="form-grid">
+
+              <div class="form-group">
+
+                <label for="name">
+                  Full Name
+                </label>
+
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  value="<%= user.name %>"
+                  placeholder="Enter your name"
+                >
+
+                <span
+                  class="error-msg"
+                  id="nameError"
+                ></span>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Email Address
+                </label>
+
+                <div class="email-wrapper">
+
+                  <input
+                    type="text"
+                    value="<%= user.email %>"
+                    readonly
+                    class="email-input"
+                  >
+
+                  <% if (user.password) { %>
+
+                    <button
+                      type="button"
+                      class="change-email-btn"
+                      onclick="openEmailModal()"
+                    >
+                      Change
+                    </button>
+
+                  <% } %>
+
+                </div>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label for="phone">
+                  Phone Number
+                </label>
+
+                <input
+                  type="text"
+                  name="phone"
+                  id="phone"
+                  value="<%= user.phone || '' %>"
+                  placeholder="Enter phone number"
+                  maxlength="10"
+                >
+
+                <span
+                  class="error-msg"
+                  id="phoneError"
+                ></span>
+
+              </div>
+
+            </div>
+
           </div>
-  <% if (user.password) { %>
-  <div class="form-group">
-    <label>Password</label>
-    <div class="password-link">
-      <i class="fa-solid fa-lock"></i>
-      <a href="javascript:void(0)" onclick="pwd_openModal()">
-        Change Password
-      </a>
-    </div>
-  </div>
 
-<% } else if (user.googleId) { %>
-  <div class="form-group">
-    <label>Password</label>
-    <div class="google-auth-msg">
-      <i class="fa-solid fa-lock"></i>
-      <span>
-        You are logged in via Google. Password management is handled by Google.
-      </span>
-    </div>
-  </div>
-<% } %>
 
-          <% if (typeof error !== "undefined") { %>
-            <p class="error-msg" style="display:block;"><%= error %></p>
+          <div class="section-divider"></div>
+
+
+          <div class="security-section">
+
+            <div class="section-heading">
+
+              <h3>
+                Security
+              </h3>
+
+              <p>
+                Manage your account password.
+              </p>
+
+            </div>
+
+            <% if (user.password) { %>
+
+              <div class="security-row">
+
+                <div class="security-info">
+
+                  <div class="security-icon">
+                    <i class="fa-solid fa-lock"></i>
+                  </div>
+
+                  <div>
+
+                    <h4>
+                      Password
+                    </h4>
+
+                    <p>
+                      Change your account password.
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <button
+                  type="button"
+                  class="secondary-action-btn"
+                  onclick="pwd_openModal()"
+                >
+                  Change Password
+                </button>
+
+              </div>
+
+            <% } else if (user.googleId) { %>
+
+              <div class="google-auth-msg">
+
+                <i class="fa-brands fa-google"></i>
+
+                <div>
+
+                  <strong>
+                    Google Account
+                  </strong>
+
+                  <p>
+                    Password management is handled through Google.
+                  </p>
+
+                </div>
+
+              </div>
+
+            <% } %>
+
+          </div>
+
+
+          <% if (typeof error !== "undefined" && error) { %>
+
+            <p class="server-message error">
+              <%= error %>
+            </p>
+
           <% } %>
 
-          <p id="profileUpdateSuccessMsg" class="profile-success-msg">
+
+          <p
+            id="profileUpdateSuccessMsg"
+            class="profile-success-msg"
+          >
+
             <i class="fa-solid fa-circle-check"></i>
+
             <span class="profile-success-text"></span>
+
           </p>
 
-          <p class="error-msg" id="serverErr"></p>
-          <div class="form-actions" id="profileActionBtns">
-            <button type="submit" class="btn submit-btn">Save Changes</button>
-            <a href="/user/profile" class="btn cancel-btn">Cancel</a>
+
+          <p
+            class="server-message error"
+            id="serverErr"
+          ></p>
+
+
+          <div
+            class="form-actions"
+            id="profileActionBtns"
+          >
+
+            <a
+              href="/user/profile"
+              class="cancel-btn"
+            >
+              Cancel
+            </a>
+
+            <button
+              type="submit"
+              class="submit-btn"
+            >
+              Save Changes
+            </button>
+
           </div>
 
         </form>
@@ -115,128 +357,306 @@
 
   </div>
 
-</div>
-                                             
-<div id="cropModal" class="crop-modal">
-  <div class="modal-content">
 
-    <span class="close-btn" onclick="closeCropModal()">&times;</span>
+  <div
+    id="cropModal"
+    class="crop-modal"
+  >
 
-    <div class="crop-wrapper">
-      <img id="cropImage">
-    </div>
+    <div class="crop-modal-content">
 
-    <button type="button" onclick="cropImage()">Crop & Use</button>
+      <div class="modal-header">
 
-  </div>
-</div>
+        <div>
 
+          <h3>
+            Crop Profile Photo
+          </h3>
 
+          <p>
+            Adjust the image before saving.
+          </p>
 
-<!-- MODAL -->
-<div id="emailModal" class="email-modal">
-  <div class="modal-content">
+        </div>
 
-    <span class="close" onclick="closeEmailModal()">&times;</span>
+        <button
+          type="button"
+          class="modal-close-btn"
+          onclick="closeCropModal()"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
 
-    <!-- STEP 1: PASSWORD -->
-    <div id="step1">
-      <h3>Confirm Password</h3>
-
-    <div class="input-wrapper">
-      <input type="password" id="confirmPassword" placeholder="Enter current password">
-
-      <span class="eye-toggle-btn" id="confirmPassEye">
-        <i class="fa-solid fa-eye"></i>
-      </span>
-    </div>
-      <p id="passwordError" class="error-msg"></p>
-
-      <button type="button" onclick="verifyPasswordStep()">Continue</button>
-    </div>
-
-    <!-- STEP 2: EMAIL -->
-    <div id="step2" style="display:none;">
-      <h3>Enter New Email</h3>
-
-      <input type="email" id="newEmail" placeholder="Enter new email">
-      <p id="emailError" class="error-msg"></p>
-
-      <button type="button" onclick="sendOtp()">Send OTP</button>
-    </div>
-
-  </div>
-</div>
-
-  <!-- PASSWORD MODAL -->
-<div id="pwd_modal" class="pwd_modal_overlay">
-  <div class="pwd_modal_box">
-
-    <span class="pwd_close" onclick="pwd_closeModal()">&times;</span>
-
-    <h3>Change Password</h3>
-
-    <p class="pwd_hint">
-      Password must be at least 8 characters, include 1 number and 1 special character.
-    </p>
-
-    <!-- Current -->
-    <div class="pwd_input_group">
-      <label for="pwd_current">Current Password</label>
-      <div class="pwd_input_wrap">
-        <input type="password" id="pwd_current" placeholder="Enter current password">
-        <i class="fa-solid fa-eye pwd_eye" onclick="togglePwd('pwd_current', this)"></i>
       </div>
-    </div>
 
-    <!-- New -->
-    <div class="pwd_input_group">
-      <label for="pwd_new">New Password</label>
-      <div class="pwd_input_wrap">
-        <input type="password" id="pwd_new" placeholder="Enter new password">
-        <i class="fa-solid fa-eye pwd_eye" onclick="togglePwd('pwd_new', this)"></i>
+      <div class="crop-wrapper">
+        <img id="cropImage">
       </div>
+
+      <button
+        type="button"
+        class="modal-primary-btn"
+        onclick="cropImage()"
+      >
+        Crop & Use
+      </button>
+
     </div>
-
-    <!-- Confirm -->
-    <div class="pwd_input_group">
-      <label for="pwd_confirm">Confirm Password</label>
-      <div class="pwd_input_wrap">
-        <input type="password" id="pwd_confirm" placeholder="Re-enter new password">
-        <i class="fa-solid fa-eye pwd_eye" onclick="togglePwd('pwd_confirm', this)"></i>
-      </div>
-    </div>
-
-    <p id="pwd_error" class="pwd_error"></p>
-
-    <button type="button" onclick="pwd_changePassword()">Update Password</button>
 
   </div>
-</div>
 
-<div id="successModal" class="email-modal">
-  <div class="modal-content" style="text-align:center;">
 
-    <div class="success-icon">
-      <i class="fa-solid fa-circle-check"></i>
+  <div
+    id="emailModal"
+    class="email-modal"
+  >
+
+    <div class="email-modal-content">
+
+      <button
+        type="button"
+        class="modal-close-btn"
+        onclick="closeEmailModal()"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div id="step1">
+
+        <h3>
+          Confirm Password
+        </h3>
+
+        <p class="modal-description">
+          Enter your current password to continue.
+        </p>
+
+        <div class="input-wrapper">
+
+          <input
+            type="password"
+            id="confirmPassword"
+            placeholder="Enter current password"
+          >
+
+          <span
+            class="eye-toggle-btn"
+            id="confirmPassEye"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </span>
+
+        </div>
+
+        <p
+          id="passwordError"
+          class="modal-error"
+        ></p>
+
+        <button
+          type="button"
+          class="modal-primary-btn"
+          onclick="verifyPasswordStep()"
+        >
+          Continue
+        </button>
+
+      </div>
+
+
+      <div
+        id="step2"
+        style="display:none"
+      >
+
+        <h3>
+          Enter New Email
+        </h3>
+
+        <p class="modal-description">
+          We'll send an OTP to verify your new email.
+        </p>
+
+        <input
+          type="email"
+          id="newEmail"
+          placeholder="Enter new email"
+        >
+
+        <p
+          id="emailError"
+          class="modal-error"
+        ></p>
+
+        <button
+  type="button"
+  class="modal-primary-btn"
+  id="sendEmailOtpBtn"
+  onclick="sendOtp()"
+>
+  Send OTP
+</button>
+
+      </div>
+
     </div>
 
-    <h3>Password Updated</h3>
-    <p>Your password has been changed successfully.</p>
+  </div>
 
-    <button type="button" onclick="goToLogin()">
-      Go to Login
-    </button>
+
+  <div
+    id="pwd_modal"
+    class="pwd-modal-overlay"
+  >
+
+    <div class="pwd-modal-box">
+
+      <button
+        type="button"
+        class="modal-close-btn"
+        onclick="pwd_closeModal()"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3>
+        Change Password
+      </h3>
+
+      <p class="modal-description">
+        Use at least 8 characters with one number and one special character.
+      </p>
+
+
+      <div class="pwd-input-group">
+
+        <label for="pwd_current">
+          Current Password
+        </label>
+
+        <div class="pwd-input-wrap">
+
+          <input
+            type="password"
+            id="pwd_current"
+            placeholder="Enter current password"
+          >
+
+          <i
+            class="fa-solid fa-eye pwd-eye"
+            onclick="togglePwd('pwd_current', this)"
+          ></i>
+
+        </div>
+
+      </div>
+
+
+      <div class="pwd-input-group">
+
+        <label for="pwd_new">
+          New Password
+        </label>
+
+        <div class="pwd-input-wrap">
+
+          <input
+            type="password"
+            id="pwd_new"
+            placeholder="Enter new password"
+          >
+
+          <i
+            class="fa-solid fa-eye pwd-eye"
+            onclick="togglePwd('pwd_new', this)"
+          ></i>
+
+        </div>
+
+      </div>
+
+
+      <div class="pwd-input-group">
+
+        <label for="pwd_confirm">
+          Confirm Password
+        </label>
+
+        <div class="pwd-input-wrap">
+
+          <input
+            type="password"
+            id="pwd_confirm"
+            placeholder="Re-enter new password"
+          >
+
+          <i
+            class="fa-solid fa-eye pwd-eye"
+            onclick="togglePwd('pwd_confirm', this)"
+          ></i>
+
+        </div>
+
+      </div>
+
+      <p
+        id="pwd_error"
+        class="modal-error"
+      ></p>
+
+      <button
+        type="button"
+        class="modal-primary-btn"
+        onclick="pwd_changePassword()"
+      >
+        Update Password
+      </button>
+
+    </div>
 
   </div>
-</div>
 
 
-<%- include("../partials/otp-modal") %>
-<script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
- <script src="/js/user/logout.js"></script>
-<script src="/js/user/otpModal.js"></script>
-<script src="/js/user/editProfile.js"></script>
+  <div
+    id="successModal"
+    class="email-modal"
+  >
+
+    <div class="email-modal-content success-modal-content">
+
+      <div class="success-icon">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+
+      <h3>
+        Password Updated
+      </h3>
+
+      <p>
+        Your password has been changed successfully.
+      </p>
+
+      <button
+        type="button"
+        class="modal-primary-btn"
+        onclick="goToLogin()"
+      >
+        Go to Login
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <%- include("../partials/otp-modal") %>
+
+  <script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/js/user/logout.js"></script>
+  <script src="/js/user/otpModal.js"></script>
+  <script src="/js/user/editProfile.js"></script>
+
 </body>
+
 </html>

@@ -34,7 +34,10 @@ app.use(localsMiddleware);
 app.use(cartCountMiddleware);
 app.use(wishlistCountMiddleware);
 
-
+app.use((req, res, next) => {
+  res.locals.requestPath = req.originalUrl.split("?")[0];
+  next();
+});
 app.use("/", indexRoutes);
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);

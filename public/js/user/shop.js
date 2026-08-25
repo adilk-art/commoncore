@@ -62,14 +62,6 @@ searchInput?.addEventListener("keydown", function (event) {
   }
 });
 
-const navToggle = document.getElementById("navToggle");
-const mobileNav = document.getElementById("mobileNav");
-
-navToggle?.addEventListener("click", () => {
-  mobileNav?.classList.toggle("mobile-nav--open");
-  navToggle.classList.toggle("hamburger--open");
-});
-
 updatePanels();
 
 document.querySelectorAll(".wish-form").forEach((form) => {
@@ -83,6 +75,8 @@ document.querySelectorAll(".wish-form").forEach((form) => {
     if (!productId || !button || !svg) return;
 
     try {
+      button.disabled = true;
+
       const isWishlisted = button.classList.contains("wish-btn--active");
 
       const response = isWishlisted
@@ -110,7 +104,7 @@ document.querySelectorAll(".wish-form").forEach((form) => {
         wishlistCount.textContent = response.data.wishlistCount;
       }
 
-      userToast(response.data.message);
+      userToast(response.data.message || "Wishlist updated");
     } catch (error) {
       const status = error?.response?.status;
       const message = error?.response?.data?.message;
@@ -121,6 +115,8 @@ document.querySelectorAll(".wish-form").forEach((form) => {
       }
 
       userToast(message || "Failed to update wishlist");
+    } finally {
+      button.disabled = false;
     }
   });
 });
@@ -135,7 +131,6 @@ const previewPrice = document.getElementById("variantPreviewPrice");
 const previewName = document.getElementById("variantProductName");
 const stockText = document.getElementById("variantStockText");
 const cartError = document.getElementById("cartVariantError");
-
 const offerPills = document.getElementById("variantOfferPills");
 const discountPill = document.getElementById("variantDiscountPill");
 const offerNamePill = document.getElementById("variantOfferNamePill");
@@ -237,6 +232,8 @@ document.querySelectorAll(".cart-form").forEach((form) => {
     showSelectedProductPricing();
 
     try {
+      cartButton.disabled = true;
+
       const response = await axios.get(`/user/cart/variants/${productId}`);
 
       allVariants = response.data.variants || [];
@@ -262,6 +259,8 @@ document.querySelectorAll(".cart-form").forEach((form) => {
       }
 
       userToast(message || "Failed to load variants");
+    } finally {
+      cartButton.disabled = false;
     }
   });
 });
@@ -396,12 +395,20 @@ confirmCartBtn?.addEventListener("click", async () => {
     return;
   }
 
+  if (confirmCartBtn.disabled) return;
+
+  const originalContent = confirmCartBtn.innerHTML;
+
   try {
     if (cartError) {
       cartError.textContent = "";
     }
 
     confirmCartBtn.disabled = true;
+    confirmCartBtn.innerHTML = `
+      <span class="btn-loader"></span>
+      <span>Adding...</span>
+    `;
 
     const response = await axios.post("/user/cart/add", {
       variantId: selectedVariant._id,
@@ -414,7 +421,7 @@ confirmCartBtn?.addEventListener("click", async () => {
       cartCount.textContent = response.data.cartCount;
     }
 
-    userToast(response.data.message);
+    userToast(response.data.message || "Added to cart");
     closeCartModal();
   } catch (error) {
     if (cartError) {
@@ -423,6 +430,14 @@ confirmCartBtn?.addEventListener("click", async () => {
     }
 
     confirmCartBtn.disabled = Number(selectedVariant?.stock) <= 0;
+  } finally {
+    if (confirmCartBtn) {
+      confirmCartBtn.innerHTML = originalContent;
+
+      if (selectedVariant) {
+        confirmCartBtn.disabled = Number(selectedVariant.stock) <= 0;
+      }
+    }
   }
 });
 

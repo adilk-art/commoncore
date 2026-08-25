@@ -12,7 +12,8 @@ import * as checkoutController from "../controllers/user/checkout.controller.js"
 import * as orderController from "../controllers/user/order.controller.js";
 import * as returnController from "../controllers/user/return.controller.js";
 import * as walletController from "../controllers/user/wallet.controller.js";
-import * as couponController from "../controllers/user/coupon.controller.js"
+import * as couponController from "../controllers/user/coupon.controller.js";
+import * as reviewController from "../controllers/user/review.controller.js";
 
 import { isAuthenticated, isNotAuthenticated } from "../middlewares/auth.middleware.js";
 import { createUpload } from "../middlewares/upload.js";
@@ -47,6 +48,12 @@ router.patch("/profile/email-change", isAuthenticated, userController.emailChang
 router.patch("/profile/edit", isAuthenticated, uploadProfile.single("profileImage"), userController.EditProfile);
 router.post("/profile/verify-password", isAuthenticated, userController.verfifyPassword);
 router.post("/profile/change-password", isAuthenticated, userController.changePassword);
+
+router.get("/contact",userController.loadContactPage);
+router.post("/contact",userController.submitContact);
+
+router.get("/about", userController.loadAboutPage);
+
 
 router.get("/address", isAuthenticated, addressController.getAddressPage);
 router.post("/address/add", isAuthenticated, addressController.addAddress);
@@ -103,6 +110,9 @@ router.post("/wallet/add-money",isAuthenticated,walletController.createWalletRaz
 router.post("/wallet/verify-payment",isAuthenticated,walletController.verifyWalletPayment);
 router.get("/wallet/payment-failed",isAuthenticated,walletController.getWalletPaymentFailedPage);
 router.post("/wallet/retry-payment",isAuthenticated,walletController.retryWalletPayment);
+
+router.post("/reviews",isAuthenticated,reviewController.createReview);
+router.delete("/reviews/:reviewId", isAuthenticated, reviewController.deleteReview);
 
 
 router.post("/coupons/apply",isAuthenticated,couponController.applyCoupon);

@@ -1,241 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>commoncore — Common For All</title>
-  <%- include('../partials/user-head') %>
-  <link rel="stylesheet" href="/css/user/home.css" />
-</head>
-<body>
+  <head>
+    <title>CommonCore — Common For All</title>
 
-  <%- include('../partials/user-header') %>
+    <%- include("../partials/user-head") %>
 
-  <main class="home-page">
+    <link rel="stylesheet" href="/css/user/home.css" />
+    <link rel="stylesheet" href="/css/user/footer.css" />
+  </head>
 
-    <!-- ── HERO ── -->
-    <section class="hero">
+  <body>
+    <%- include("../partials/user-header") %>
 
-      <div class="hero-left">
-        <span class="hero-tag">COMMONCORE® 2026 COLLECTION</span>
-        <h1 class="hero-title">
-          Quiet<br>
-          Luxury<br>
-          <em>for Every</em><br>
-          Day.
-        </h1>
-        <p class="hero-body">
-          Elevated essentials built around clean silhouettes,
-          premium fabrics, and the kind of simplicity that
-          never goes out of style.
+    <main class="home-page">
+      <section class="hero">
+        <div class="hero-content">
+          <p class="hero-eyebrow">COMMONCORE® / UNISEX ESSENTIALS</p>
+
+          <h1>
+            Designed for<br />
+            every <span>body.</span>
+          </h1>
+
+          <p class="hero-description">
+            Minimal unisex essentials made with quality fabrics, clean
+            silhouettes and everyday comfort. Designed to be worn by anyone,
+            anywhere.
+          </p>
+
+          <div class="hero-actions">
+            <a href="/user/shop" class="hero-primary-btn">
+              Shop Collection
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
+            <a href="/user/about" class="hero-story-link">
+              Our Story
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <img
+            src="/images/hero-commoncore.png"
+            alt="CommonCore unisex collection"
+          />
+        </div>
+      </section>
+
+      <section class="brand-points">
+        <div class="brand-point">
+          <span>01</span>
+
+          <div>
+            <strong>UNISEX</strong>
+            <p>Designed for everyone</p>
+          </div>
+        </div>
+
+        <div class="brand-point">
+          <span>02</span>
+
+          <div>
+            <strong>QUALITY</strong>
+            <p>Fabrics chosen to feel better</p>
+          </div>
+        </div>
+
+        <div class="brand-point">
+          <span>03</span>
+
+          <div>
+            <strong>MINIMAL</strong>
+            <p>Essentials made beyond trends</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="category-section">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">EXPLORE</p>
+            <h2>Shop by category</h2>
+          </div>
+
+          <a href="/user/shop" class="view-all-link">
+            View all
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <div class="category-grid">
+          <a
+            href="/user/shop?category=6a0319106e95d204811a5784"
+            class="category-card"
+          >
+            <div class="category-image">
+              <img
+                src="/images/category-tshirts.png"
+                alt="CommonCore T-Shirts"
+              />
+
+              <div class="category-arrow">
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
+            </div>
+
+            <div class="category-info">
+              <span>ESSENTIALS</span>
+
+              <div>
+                <h3>T-Shirts</h3>
+                <p>Clean everyday basics</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="/user/shop?category=6a0319066e95d204811a577c"
+            class="category-card"
+          >
+            <div class="category-image">
+              <img src="/images/category-jeans.png" alt="CommonCore Jeans" />
+
+              <div class="category-arrow">
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
+            </div>
+
+            <div class="category-info">
+              <span>DENIM</span>
+
+              <div>
+                <h3>Jeans</h3>
+                <p>Easy structure for every day</p>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="/user/shop?category=6a0319426e95d204811a578e"
+            class="category-card"
+          >
+            <div class="category-image">
+              <img
+                src="/images/category-hoodies.png"
+                alt="CommonCore Hoodies"
+              />
+
+              <div class="category-arrow">
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
+            </div>
+
+            <div class="category-info">
+              <span>LAYERS</span>
+
+              <div>
+                <h3>Hoodies</h3>
+                <p>Comfort in every layer</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div class="collection-link-wrap">
+          <a href="/user/shop" class="collection-link">
+            Explore the full collection
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </section>
+
+      <section class="brand-statement">
+        <p class="brand-statement-eyebrow">COMMON FOR ALL</p>
+
+        <h2>
+          No men's collection.<br />
+          No women's collection.<br />
+          <span>Just good essentials.</span>
+        </h2>
+
+        <p class="brand-statement-description">
+          CommonCore creates versatile clothing around minimal design, quality
+          fabrics and effortless comfort. Simple pieces made to work across
+          people, styles and everyday life.
         </p>
-        <div class="hero-actions">
-          <a href="/user/shop" class="btn-dark">
-            Shop Now
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-          <a href="/user/shop" class="btn-ghost">
-            Explore Collection
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </a>
-        </div>
-      </div>
 
-      <div class="hero-right">
+        <a href="/user/about" class="brand-story-link">
+          Discover our story
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </section>
 
-        <!-- Floating badges -->
-        <div class="badge-float badge-float--tl">
-          <span class="badge-label">New Drop</span>
-          <span class="badge-val">SS 2026</span>
-        </div>
-        <div class="badge-float badge-float--br">
-          <span class="badge-label">Ships in</span>
-          <span class="badge-val">2–4 days</span>
-        </div>
+      <section class="features-section">
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
 
-        <!-- Hero image — swap src with your actual image -->
-        <div class="hero-img-wrap">
-          <div class="hero-figure">
-            <img
-              src="/images/hero.png"
-              alt="2026 Collection"
-              class="hero-figure-img"
-              onerror="this.style.display='none'"
-            />
+          <div>
+            <h3>Quality Fabrics</h3>
+
+            <p>
+              Carefully selected materials made for comfort, structure and
+              everyday durability.
+            </p>
           </div>
         </div>
 
-      </div>
-    </section>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fa-solid fa-rotate-left"></i>
+          </div>
 
-    <!-- ── MARQUEE ── -->
-    <!-- <div class="marquee-wrap" aria-hidden="true">
-      <div class="marquee-track">
-        <span class="marquee-item">FREE SHIPPING OVER ₹999</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">PREMIUM FABRICS</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">EASY 30-DAY RETURNS</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">NEW SS 2026 COLLECTION</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">SUSTAINABLE MATERIALS</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">MADE FOR EVERYDAY WEAR</span><span class="marquee-dot">·</span> -->
-        <!-- Duplicate for seamless loop -->
-        <!-- <span class="marquee-item">FREE SHIPPING OVER ₹999</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">PREMIUM FABRICS</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">EASY 30-DAY RETURNS</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">NEW SS 2026 COLLECTION</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">SUSTAINABLE MATERIALS</span><span class="marquee-dot">·</span>
-        <span class="marquee-item">MADE FOR EVERYDAY WEAR</span><span class="marquee-dot">·</span>
-      </div>
-    </div> -->
+          <div>
+            <h3>Easy Returns</h3>
 
-    <!-- ── CATEGORIES ── -->
-   <section class="section">
-
-  <div class="section-header">
-    <span class="section-title">Shop by Category</span>
-
-    <a href="/user/shop" class="section-link">
-      View all →
-    </a>
-  </div>
-
-  <div class="cat-grid">
-
-    <a
-      href="/user/shop?search=&sort=&minPrice=&maxPrice=&category=6a0319106e95d204811a5784&page=1"
-      class="cat-card cat-card--large cat-card--warm"
-    >
-      <div class="cat-info">
-        <span class="cat-eyebrow">ESSENTIALS</span>
-
-        <div class="cat-name">
-          T-Shirts
-        </div>
-
-        <div class="cat-sub">
-          Clean basics for daily rotation
-        </div>
-      </div>
-
-      <img
-        src="/images/tshirts.png"
-        alt="T-Shirts"
-        class="cat-img"
-      />
-    </a>
-
-
-    <div class="cat-stack">
-
-      <a
-  href="/user/shop?search=&sort=&minPrice=&maxPrice=&category=6a0319066e95d204811a577c&page=1"
-  class="cat-card cat-card--cool"
->
-        <div class="cat-info">
-          <span class="cat-eyebrow">DENIM</span>
-
-          <div class="cat-name">
-            Jeans
+            <p>Simple returns within 14 days of delivery.</p>
           </div>
         </div>
 
-        <img
-          src="/images/jeans.png"
-          alt="Jeans"
-          class="cat-img"
-        />
-      </a>
+        <div class="feature-item">
+          <div class="feature-icon">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
 
+          <div>
+            <h3>Reliable Delivery</h3>
 
-      <a
-  href="/user/shop?search=&sort=&minPrice=&maxPrice=&category=6a0319426e95d204811a578e&page=1"
-  class="cat-card cat-card--muted"
->
-        <div class="cat-info">
-          <span class="cat-eyebrow">LAYERS</span>
-
-          <div class="cat-name">
-            Hoodies
+            <p>
+              Secure delivery with clear order tracking from checkout to your
+              doorstep.
+            </p>
           </div>
         </div>
+      </section>
+    </main>
 
-        <img
-          src="/images/hoodies.png"
-          alt="Hoodies"
-          class="cat-img"
-        />
-      </a>
-
-    </div>
-
-
-    <a
-      href="/user/shop"
-      class="cat-card cat-card--large cat-card--sage"
-    >
-      <div class="cat-info">
-        <span class="cat-eyebrow">ALL STYLES</span>
-
-        <div class="cat-name">
-          Full<br>Collection
-        </div>
-
-        <div class="cat-sub" style="margin-top:14px;">
-          Browse everything →
-        </div>
-      </div>
-    </a>
-
-  </div>
-
-</section>
-
-    <!-- ── FEATURED PRODUCTS ── -->
-  
-
-    <!-- ── FEATURES ── -->
-    <section class="features">
-
-      <div class="feat">
-        <div class="feat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-        </div>
-        <h3>Premium Materials</h3>
-        <p>Carefully selected fabrics with elevated comfort and lasting durability.</p>
-      </div>
-
-      <div class="feat">
-        <div class="feat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
-          </svg>
-        </div>
-        <h3>Easy Returns</h3>
-        <p>Smooth 30-day returns and hassle-free exchanges on every order.</p>
-      </div>
-
-      <div class="feat">
-        <div class="feat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <rect x="1" y="3" width="15" height="13"/>
-            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-            <circle cx="5.5" cy="18.5" r="2.5"/>
-            <circle cx="18.5" cy="18.5" r="2.5"/>
-          </svg>
-        </div>
-        <h3>Fast Shipping</h3>
-        <p>Reliable delivery across India in 2–4 business days.</p>
-      </div>
-
-    </section>
-
-  </main>
-
-  <%- include('../partials/user-scripts') %>
-
-</body>
+    <%- include("../partials/user-footer") %> <%-
+    include("../partials/user-scripts") %>
+  </body>
 </html>

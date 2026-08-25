@@ -11,6 +11,7 @@ import {
 
 import { findWishlistByUserId } from "../../repositories/wishlist.repository.js";
 import {buildActiveOfferLookup, getBestOfferPricing} from "../../services/shared/pricing.service.js"
+import { getProductReviewsService } from "./review.service.js";
 
 export const getShopPageService = async (query, userId) => {
 
@@ -140,16 +141,24 @@ export const getProductDetailService = async ({ productId, userId }) => {
     throw error;
   }
 
-  let selectedVariant = activeVariants.find((v) => v.isDefault);
+  let selectedVariant = activeVariants.find(
+    (variant) => variant.isDefault,
+  );
 
   if (!selectedVariant) {
     selectedVariant = activeVariants[0];
   }
- 
-  const relatedProducts = await findRelatedProducts(
-    product.categoryId._id,
-    product._id,
-  );
+
+  const [relatedProducts, reviewData] = await Promise.all([
+    findRelatedProducts(
+      product.categoryId._id,
+      product._id,
+    ),
+    getProductReviewsService(
+      productId,
+      userId,
+    ),
+  ]);
 
   let isWishlisted = false;
   let wishlistProductIds = [];
@@ -160,34 +169,41 @@ export const getProductDetailService = async ({ productId, userId }) => {
     wishlistProductIds =
       wishlist?.products?.map((id) => String(id)) || [];
 
-    isWishlisted = wishlistProductIds.includes(String(product._id));
+    isWishlisted = wishlistProductIds.includes(
+      String(product._id),
+    );
   }
 
   const offerLookup = await buildActiveOfferLookup();
 
-  const pricing = getBestOfferPricing (product,selectedVariant,offerLookup);
+  const pricing = getBestOfferPricing(
+    product,
+    selectedVariant,
+    offerLookup,
+  );
 
   const productData = {
     ...product,
     ...pricing,
   };
 
- const relatedProductsData = relatedProducts
-  .filter((item) => item.previewVariant)
-  .map((item) => {
-    const pricing = getBestOfferPricing(
-      item,
-      item.previewVariant,
-      offerMaps,
-    );
+  const relatedProductsData = relatedProducts
+    .filter((item) => item.previewVariant)
+    .map((item) => {
+      const pricing = getBestOfferPricing(
+        item,
+        item.previewVariant,
+        offerLookup,
+      );
 
-    return {
-      ...item,
-      ...pricing,
-      isWishlisted: wishlistProductIds.includes(String(item._id)),
-    };
-  });
-
+      return {
+        ...item,
+        ...pricing,
+        isWishlisted: wishlistProductIds.includes(
+          String(item._id),
+        ),
+      };
+    });
 
   return {
     product: productData,
@@ -196,6 +212,10 @@ export const getProductDetailService = async ({ productId, userId }) => {
     relatedProducts: relatedProductsData,
     isWishlisted,
     isUnavailable,
+    reviews: reviewData.reviews,
+    reviewSummary: reviewData.reviewSummary,
+    userReview: reviewData.userReview,
+    canReview: reviewData.canReview,
   };
 };
 

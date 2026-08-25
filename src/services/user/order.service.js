@@ -43,9 +43,11 @@ import {
 } from "../shared/pricing.service.js";
 
 import { validateCouponService } from "./coupon.service.js";
-import { incrementCouponUsage,decrementCouponUsage } from "../../repositories/coupon.repository.js";
-
-
+import {
+  incrementCouponUsage,
+  decrementCouponUsage,
+} from "../../repositories/coupon.repository.js";
+import { findReviewsByUserAndProducts } from "../../repositories/review.repository.js";
 
 export const expirePendingRazorpayOrdersService = async () => {
   return await expirePendingRazorpayOrdersRepo();
@@ -724,13 +726,34 @@ export const getOrderDetailService = async (orderId, userId) => {
     throw error;
   }
 
-  const returnRequests = await Return.find({
-    orderId: order._id,
-    userId,
-  }).lean();
+  const productIds = order.items.map(
+    (item) => item.productId,
+  );
+
+  const [returnRequests, userReviews] = await Promise.all([
+    Return.find({
+      orderId: order._id,
+      userId,
+    }).lean(),
+
+    findReviewsByUserAndProducts(
+      userId,
+      productIds,
+    ),
+  ]);
 
   const returnMap = new Map(
-    returnRequests.map((request) => [String(request.itemId), request]),
+    returnRequests.map((request) => [
+      String(request.itemId),
+      request,
+    ]),
+  );
+
+  const reviewMap = new Map(
+    userReviews.map((review) => [
+      String(review.productId),
+      review,
+    ]),
   );
 
   const isRazorpayPending =
@@ -750,15 +773,25 @@ export const getOrderDetailService = async (orderId, userId) => {
       order.paymentFailure?.reason,
     );
 
-  const isPaymentState = isRazorpayPending || paymentExpired;
+  const isPaymentState =
+    isRazorpayPending ||
+    paymentExpired;
 
-  const displayStatus = paymentFailed ? "Payment Failed" : order.orderStatus;
+  const displayStatus =
+    paymentFailed
+      ? "Payment Failed"
+      : order.orderStatus;
 
-  const canReturnToCheckout =
-    order.paymentMethod === "Razorpay" &&
-    order.paymentStatus !== "Paid" &&
-    ["Payment Pending", "Payment Expired"].includes(order.orderStatus) &&
-    order.items.length > 0;
+  const paymentDisplayStatus =
+    paymentExpired
+      ? "Expired"
+      : paymentFailed
+        ? "Failed"
+        : order.paymentStatus;
+
+  const canRetryPayment =
+    isRazorpayPending &&
+    !paymentExpired;
 
   const RETURN_WINDOW_DAYS = 14;
 
@@ -773,37 +806,59 @@ export const getOrderDetailService = async (orderId, userId) => {
       return "";
     }
 
-    return parsedDate.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    return parsedDate.toLocaleDateString(
+      "en-IN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      },
+    );
   };
 
   order.items.forEach((item) => {
     item.canCancel =
-      !isPaymentState && ["Placed", "Processing"].includes(item.status);
+      !isPaymentState &&
+      ["Placed", "Processing"].includes(
+        item.status,
+      );
 
     item.canReturn = false;
     item.returnDaysLeft = 0;
     item.showReturnStatusBtn = false;
     item.statusMetaText = "";
 
-    const itemReturn = returnMap.get(String(item._id));
+    const itemReturn = returnMap.get(
+      String(item._id),
+    );
 
     const deliveredAt =
-      item.status === "Delivered" && item.statusUpdatedAt
+      item.status === "Delivered" &&
+      item.statusUpdatedAt
         ? new Date(item.statusUpdatedAt)
         : null;
 
     let diffDays = null;
 
-    if (deliveredAt && !Number.isNaN(deliveredAt.getTime())) {
+    if (
+      deliveredAt &&
+      !Number.isNaN(
+        deliveredAt.getTime(),
+      )
+    ) {
       diffDays = Math.floor(
-        (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24),
+        (
+          Date.now() -
+          deliveredAt.getTime()
+        ) /
+        (1000 * 60 * 60 * 24),
       );
 
-      item.returnDaysLeft = Math.max(0, RETURN_WINDOW_DAYS - diffDays);
+      item.returnDaysLeft = Math.max(
+        0,
+        RETURN_WINDOW_DAYS -
+        diffDays,
+      );
     }
 
     const canRequestReturn =
@@ -814,63 +869,124 @@ export const getOrderDetailService = async (orderId, userId) => {
       diffDays < RETURN_WINDOW_DAYS;
 
     if (itemReturn) {
-      if (itemReturn.status === "Cancelled") {
-        item.canReturn = canRequestReturn;
-        return;
+      if (
+        itemReturn.status === "Cancelled"
+      ) {
+        item.canReturn =
+          canRequestReturn;
+      } else {
+        item.showReturnStatusBtn = true;
+
+        const returnStatusText = {
+          Requested:
+            `Return requested on ${formatReturnDate(
+              itemReturn.requestedAt ||
+              itemReturn.createdAt,
+            )}`,
+
+          Approved:
+            `Return approved on ${formatReturnDate(
+              itemReturn.approvedAt ||
+              itemReturn.updatedAt,
+            )}`,
+
+          "Picked Up":
+            `Item picked up on ${formatReturnDate(
+              itemReturn.pickedUpAt ||
+              itemReturn.updatedAt,
+            )}`,
+
+          Received:
+            `Returned item received on ${formatReturnDate(
+              itemReturn.receivedAt ||
+              itemReturn.updatedAt,
+            )}`,
+
+          Refunded:
+            `Refund processed on ${formatReturnDate(
+              itemReturn.refundedAt ||
+              itemReturn.updatedAt,
+            )}`,
+
+          Rejected:
+            `Return rejected on ${formatReturnDate(
+              itemReturn.rejectedAt ||
+              itemReturn.updatedAt,
+            )}`,
+        };
+
+        item.statusMetaText =
+          returnStatusText[
+            itemReturn.status
+          ] || "";
       }
-
-      item.showReturnStatusBtn = true;
-
-      const returnStatusText = {
-        Requested: `Return requested on ${formatReturnDate(
-          itemReturn.requestedAt || itemReturn.createdAt,
-        )}`,
-        Approved: `Return approved on ${formatReturnDate(
-          itemReturn.approvedAt || itemReturn.updatedAt,
-        )}`,
-        "Picked Up": `Item picked up on ${formatReturnDate(
-          itemReturn.pickedUpAt || itemReturn.updatedAt,
-        )}`,
-        Received: `Returned item received on ${formatReturnDate(
-          itemReturn.receivedAt || itemReturn.updatedAt,
-        )}`,
-        Refunded: `Refund processed on ${formatReturnDate(
-          itemReturn.refundedAt || itemReturn.updatedAt,
-        )}`,
-        Rejected: `Return rejected on ${formatReturnDate(
-          itemReturn.rejectedAt || itemReturn.updatedAt,
-        )}`,
-      };
-
-      item.statusMetaText = returnStatusText[itemReturn.status] || "";
-
-      return;
+    } else {
+      item.canReturn =
+        canRequestReturn;
     }
 
-    item.canReturn = canRequestReturn;
+    const existingReview =
+      reviewMap.get(
+        String(item.productId),
+      );
+
+    item.canReview =
+      !isPaymentState &&
+      item.status === "Delivered" &&
+      !existingReview;
+
+    item.hasReview =
+      Boolean(existingReview);
+
+    item.reviewId =
+      existingReview?._id || null;
   });
 
-  const activeItems = order.items.filter((item) => item.status !== "Cancelled");
+  const activeItems =
+    order.items.filter(
+      (item) =>
+        item.status !== "Cancelled",
+    );
 
-  const cancelledItems = order.items.filter(
-    (item) => item.status === "Cancelled",
-  );
+  const cancelledItems =
+    order.items.filter(
+      (item) =>
+        item.status === "Cancelled",
+    );
 
-  const calculateItemAmounts = (item) => {
-    const quantity = Number(item.quantity) || 0;
+  const calculateItemAmounts = (
+    item,
+  ) => {
+    const quantity =
+      Number(item.quantity) || 0;
 
     const originalUnitPrice =
-      Number(item.originalUnitPrice) || Number(item.unitPrice) || 0;
+      Number(
+        item.originalUnitPrice,
+      ) ||
+      Number(item.unitPrice) ||
+      0;
 
-    const unitPrice = Number(item.unitPrice) || 0;
+    const unitPrice =
+      Number(item.unitPrice) || 0;
 
-    const originalAmount = originalUnitPrice * quantity;
+    const originalAmount =
+      originalUnitPrice * quantity;
 
-    const offerAmount = unitPrice * quantity;
+    const offerAmount =
+      unitPrice * quantity;
 
-    const couponDiscount = Number(item.couponDiscountAmount) || 0;
+    const couponDiscount =
+      Number(
+        item.couponDiscountAmount,
+      ) || 0;
 
-    const finalAmount = Math.max(offerAmount - couponDiscount, 0);
+    const finalAmount =
+      Math.max(
+        offerAmount -
+        couponDiscount,
+        0,
+      );
 
     return {
       originalAmount,
@@ -880,25 +996,40 @@ export const getOrderDetailService = async (orderId, userId) => {
     };
   };
 
-  const calculateTotals = (items) => {
+  const calculateTotals = (
+    items,
+  ) => {
     return items.reduce(
       (totals, item) => {
-        const amounts = calculateItemAmounts(item);
+        const amounts =
+          calculateItemAmounts(item);
 
-        totals.originalSubtotal += amounts.originalAmount;
+        totals.originalSubtotal +=
+          amounts.originalAmount;
 
-        totals.subtotal += amounts.offerAmount;
+        totals.subtotal +=
+          amounts.offerAmount;
 
-        totals.couponDiscountTotal += amounts.couponDiscount;
+        totals.couponDiscountTotal +=
+          amounts.couponDiscount;
 
-        totals.finalSubtotal += amounts.finalAmount;
+        totals.finalSubtotal +=
+          amounts.finalAmount;
 
-        const gstRate = Number(item.gstRate) || 0;
+        const gstRate =
+          Number(item.gstRate) || 0;
 
-        if (gstRate > 0 && amounts.finalAmount > 0) {
-          const taxableValue = amounts.finalAmount / (1 + gstRate / 100);
+        if (
+          gstRate > 0 &&
+          amounts.finalAmount > 0
+        ) {
+          const taxableValue =
+            amounts.finalAmount /
+            (1 + gstRate / 100);
 
-          totals.gstAmount += amounts.finalAmount - taxableValue;
+          totals.gstAmount +=
+            amounts.finalAmount -
+            taxableValue;
         }
 
         return totals;
@@ -913,108 +1044,266 @@ export const getOrderDetailService = async (orderId, userId) => {
     );
   };
 
-  const orderTotals = calculateTotals(order.items);
+  const orderTotals =
+    calculateTotals(
+      order.items,
+    );
 
-  const activeTotals = calculateTotals(activeItems);
+  const activeTotals =
+    calculateTotals(
+      activeItems,
+    );
 
-  const cancelledTotals = calculateTotals(cancelledItems);
+  const cancelledTotals =
+    calculateTotals(
+      cancelledItems,
+    );
 
-  const offerDiscountTotal = Math.max(
-    orderTotals.originalSubtotal - orderTotals.subtotal,
-    0,
-  );
+  const offerDiscountTotal =
+    Math.max(
+      orderTotals.originalSubtotal -
+      orderTotals.subtotal,
+      0,
+    );
 
-  const activeOfferDiscountTotal = Math.max(
-    activeTotals.originalSubtotal - activeTotals.subtotal,
-    0,
-  );
+  const activeOfferDiscountTotal =
+    Math.max(
+      activeTotals.originalSubtotal -
+      activeTotals.subtotal,
+      0,
+    );
 
-  const cancelledAmount = cancelledTotals.finalSubtotal;
+  const cancelledAmount =
+    cancelledTotals.finalSubtotal;
 
-  const cancelledOriginalAmount = cancelledTotals.originalSubtotal;
+  const cancelledOriginalAmount =
+    cancelledTotals.originalSubtotal;
 
   const fullyCancelled =
     order.items.length > 0 &&
-    order.items.every((item) => item.status === "Cancelled");
+    order.items.every(
+      (item) =>
+        item.status ===
+        "Cancelled",
+    );
 
-  const partiallyCancelled = cancelledItems.length > 0 && !fullyCancelled;
+  const partiallyCancelled =
+    cancelledItems.length > 0 &&
+    !fullyCancelled;
 
-  const originalShippingFee = Number(order.shippingFee) || 0;
+  const originalShippingFee =
+    Number(
+      order.shippingFee,
+    ) || 0;
 
-  const shippingFee = fullyCancelled ? 0 : originalShippingFee;
+  const shippingFee =
+    fullyCancelled
+      ? 0
+      : originalShippingFee;
 
-  const currentValue = activeTotals.finalSubtotal + shippingFee;
+  const currentValue =
+    activeTotals.finalSubtotal +
+    shippingFee;
 
-  const originalOrderTotal = Number(order.total) || 0;
+  const originalOrderTotal =
+    Number(order.total) || 0;
 
   const paymentCollected =
-    order.paymentStatus === "Paid" ? originalOrderTotal : 0;
+    order.paymentStatus === "Paid"
+      ? originalOrderTotal
+      : 0;
 
   const cancellationRefundAmount =
-    fullyCancelled && order.paymentStatus === "Paid" ? originalOrderTotal : 0;
+    fullyCancelled &&
+    order.paymentStatus === "Paid"
+      ? originalOrderTotal
+      : 0;
 
-  const refundRequired = fullyCancelled && order.paymentStatus === "Paid";
+  const refundRequired =
+    fullyCancelled &&
+    order.paymentStatus === "Paid";
 
   const canCancelAnyItem =
     !isPaymentState &&
     order.items.some(
-      (item) => item.status === "Placed" || item.status === "Processing",
+      (item) =>
+        item.status === "Placed" ||
+        item.status ===
+          "Processing",
     );
 
   const canDownloadInvoice =
-    !isPaymentState &&
-    (order.paymentStatus === "Paid" ||
-      order.paymentMethod === "CashOnDelivery");
+    order.paymentStatus === "Paid" ||
+    order.paymentMethod ===
+      "CashOnDelivery";
 
   const showEstimatedDelivery =
     !isPaymentState &&
     !fullyCancelled &&
     activeItems.some((item) =>
-      ["Placed", "Processing", "Shipped"].includes(item.status),
+      [
+        "Placed",
+        "Processing",
+        "Shipped",
+      ].includes(item.status),
     );
 
   return {
     order,
+
     displayStatus,
-    paymentDisplayStatus: paymentFailed ? "Payment Failed" : null,
-    originalSubtotal: Number(orderTotals.originalSubtotal.toFixed(2)),
-    offerDiscountTotal: Number(offerDiscountTotal.toFixed(2)),
-    subtotal: Number(orderTotals.subtotal.toFixed(2)),
-    couponDiscountTotal: Number(orderTotals.couponDiscountTotal.toFixed(2)),
-    discountedSubtotal: Number(orderTotals.finalSubtotal.toFixed(2)),
-    cancelledAmount: Number(cancelledAmount.toFixed(2)),
-    cancelledOriginalAmount: Number(cancelledOriginalAmount.toFixed(2)),
-    activeOriginalSubtotal: Number(activeTotals.originalSubtotal.toFixed(2)),
-    activeOfferDiscountTotal: Number(activeOfferDiscountTotal.toFixed(2)),
-    activeSubtotal: Number(activeTotals.subtotal.toFixed(2)),
-    activeCouponDiscountTotal: Number(
-      activeTotals.couponDiscountTotal.toFixed(2),
-    ),
-    activeDiscountedSubtotal: Number(activeTotals.finalSubtotal.toFixed(2)),
-    originalShippingFee: Number(originalShippingFee.toFixed(2)),
-    shippingFee: Number(shippingFee.toFixed(2)),
-    currentValue: Number(currentValue.toFixed(2)),
-    originalOrderTotal: Number(originalOrderTotal.toFixed(2)),
-    paymentCollected: Number(paymentCollected.toFixed(2)),
-    cancellationRefundAmount: Number(cancellationRefundAmount.toFixed(2)),
-    gstAmount: Number(activeTotals.gstAmount.toFixed(2)),
+    paymentDisplayStatus,
+
+    originalSubtotal:
+      Number(
+        orderTotals.originalSubtotal.toFixed(
+          2,
+        ),
+      ),
+
+    offerDiscountTotal:
+      Number(
+        offerDiscountTotal.toFixed(
+          2,
+        ),
+      ),
+
+    subtotal:
+      Number(
+        orderTotals.subtotal.toFixed(
+          2,
+        ),
+      ),
+
+    couponDiscountTotal:
+      Number(
+        orderTotals.couponDiscountTotal.toFixed(
+          2,
+        ),
+      ),
+
+    discountedSubtotal:
+      Number(
+        orderTotals.finalSubtotal.toFixed(
+          2,
+        ),
+      ),
+
+    cancelledAmount:
+      Number(
+        cancelledAmount.toFixed(
+          2,
+        ),
+      ),
+
+    cancelledOriginalAmount:
+      Number(
+        cancelledOriginalAmount.toFixed(
+          2,
+        ),
+      ),
+
+    activeOriginalSubtotal:
+      Number(
+        activeTotals.originalSubtotal.toFixed(
+          2,
+        ),
+      ),
+
+    activeOfferDiscountTotal:
+      Number(
+        activeOfferDiscountTotal.toFixed(
+          2,
+        ),
+      ),
+
+    activeSubtotal:
+      Number(
+        activeTotals.subtotal.toFixed(
+          2,
+        ),
+      ),
+
+    activeCouponDiscountTotal:
+      Number(
+        activeTotals.couponDiscountTotal.toFixed(
+          2,
+        ),
+      ),
+
+    activeDiscountedSubtotal:
+      Number(
+        activeTotals.finalSubtotal.toFixed(
+          2,
+        ),
+      ),
+
+    originalShippingFee:
+      Number(
+        originalShippingFee.toFixed(
+          2,
+        ),
+      ),
+
+    shippingFee:
+      Number(
+        shippingFee.toFixed(
+          2,
+        ),
+      ),
+
+    currentValue:
+      Number(
+        currentValue.toFixed(
+          2,
+        ),
+      ),
+
+    originalOrderTotal:
+      Number(
+        originalOrderTotal.toFixed(
+          2,
+        ),
+      ),
+
+    paymentCollected:
+      Number(
+        paymentCollected.toFixed(
+          2,
+        ),
+      ),
+
+    cancellationRefundAmount:
+      Number(
+        cancellationRefundAmount.toFixed(
+          2,
+        ),
+      ),
+
+    gstAmount:
+      Number(
+        activeTotals.gstAmount.toFixed(
+          2,
+        ),
+      ),
+
     fullyCancelled,
     partiallyCancelled,
     refundRequired,
     canCancelAnyItem,
     canDownloadInvoice,
     showEstimatedDelivery,
+
     isRazorpayPending,
-    paymentExpired,
-    paymentFailed,
-    canReturnToCheckout,
+    paymentExpired:
+      Boolean(paymentExpired),
+    paymentFailed:
+      Boolean(paymentFailed),
+    canRetryPayment,
   };
 };
 
-export const cancelOrderService = async ({
-  userId,
-  orderId,
-}) => {
+export const cancelOrderService = async ({ userId, orderId }) => {
   const order = await findOrderById(orderId);
 
   if (!order) {
@@ -1023,61 +1312,39 @@ export const cancelOrderService = async ({
     throw error;
   }
 
-  if (
-    order.userId.toString() !==
-    userId.toString()
-  ) {
+  if (order.userId.toString() !== userId.toString()) {
     const error = new Error("Unauthorized");
     error.status = 403;
     throw error;
   }
 
-  if (
-    order.orderStatus !== "Placed" &&
-    order.orderStatus !== "Processing"
-  ) {
-    const error = new Error(
-      "Order cannot be cancelled",
-    );
+  if (order.orderStatus !== "Placed" && order.orderStatus !== "Processing") {
+    const error = new Error("Order cannot be cancelled");
 
     error.status = 400;
     throw error;
   }
 
   for (const item of order.items) {
-    if (
-      item.status === "Placed" ||
-      item.status === "Processing"
-    ) {
+    if (item.status === "Placed" || item.status === "Processing") {
       item.status = "Cancelled";
 
-      await increaseVariantStock(
-        item.variantId,
-        item.quantity,
-      );
+      await increaseVariantStock(item.variantId, item.quantity);
     }
   }
 
   if (
     order.paymentStatus === "Paid" &&
-    (
-      order.paymentMethod === "Razorpay" ||
-      order.paymentMethod === "Wallet"
-    )
+    (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet")
   ) {
-    const refundAmount =
-      Number(order.total) || 0;
+    const refundAmount = Number(order.total) || 0;
 
-    await creditWalletService(
-      userId,
-      {
-        amount: refundAmount,
-        category: "OrderRefund",
-        description:
-          `Refund for cancelled order ${order.orderNumber}`,
-        reference: order.orderNumber,
-      },
-    );
+    await creditWalletService(userId, {
+      amount: refundAmount,
+      category: "OrderRefund",
+      description: `Refund for cancelled order ${order.orderNumber}`,
+      reference: order.orderNumber,
+    });
   }
 
   order.orderStatus = "Cancelled";
@@ -1085,9 +1352,7 @@ export const cancelOrderService = async ({
   await saveOrder(order);
 
   if (order.coupon?.couponId) {
-    await decrementCouponUsage(
-      order.coupon.couponId,
-    );
+    await decrementCouponUsage(order.coupon.couponId);
   }
 
   return {
@@ -1095,11 +1360,7 @@ export const cancelOrderService = async ({
   };
 };
 
-export const cancelOrderItemService = async ({
-  userId,
-  orderId,
-  itemId,
-}) => {
+export const cancelOrderItemService = async ({ userId, orderId, itemId }) => {
   const order = await findOrderById(orderId);
 
   if (!order) {
@@ -1108,10 +1369,7 @@ export const cancelOrderItemService = async ({
     throw error;
   }
 
-  if (
-    order.userId.toString() !==
-    userId.toString()
-  ) {
+  if (order.userId.toString() !== userId.toString()) {
     const error = new Error("Unauthorized");
     error.status = 403;
     throw error;
@@ -1125,13 +1383,8 @@ export const cancelOrderItemService = async ({
     throw error;
   }
 
-  if (
-    item.status !== "Placed" &&
-    item.status !== "Processing"
-  ) {
-    const error = new Error(
-      "Item cannot be cancelled",
-    );
+  if (item.status !== "Placed" && item.status !== "Processing") {
+    const error = new Error("Item cannot be cancelled");
 
     error.status = 400;
     throw error;
@@ -1139,56 +1392,32 @@ export const cancelOrderItemService = async ({
 
   item.status = "Cancelled";
 
-  await increaseVariantStock(
-    item.variantId,
-    item.quantity,
-  );
+  await increaseVariantStock(item.variantId, item.quantity);
 
   if (
     order.paymentStatus === "Paid" &&
-    (
-      order.paymentMethod === "Razorpay" ||
-      order.paymentMethod === "Wallet"
-    )
+    (order.paymentMethod === "Razorpay" || order.paymentMethod === "Wallet")
   ) {
-    const itemAmount =
-      Number(item.unitPrice) *
-      Number(item.quantity);
+    const itemAmount = Number(item.unitPrice) * Number(item.quantity);
 
-    const couponDiscount =
-      Number(
-        item.couponDiscountAmount || 0,
-      );
+    const couponDiscount = Number(item.couponDiscountAmount || 0);
 
-    const refundAmount = Math.max(
-      itemAmount - couponDiscount,
-      0,
-    );
+    const refundAmount = Math.max(itemAmount - couponDiscount, 0);
 
-    await creditWalletService(
-      userId,
-      {
-        amount: refundAmount,
-        category: "OrderRefund",
-        description:
-          `Refund for cancelled item from ${order.orderNumber}`,
-        reference: order.orderNumber,
-      },
-    );
+    await creditWalletService(userId, {
+      amount: refundAmount,
+      category: "OrderRefund",
+      description: `Refund for cancelled item from ${order.orderNumber}`,
+      reference: order.orderNumber,
+    });
   }
 
-  order.orderStatus =
-    calculateOrderStatus(order.items);
+  order.orderStatus = calculateOrderStatus(order.items);
 
   await saveOrder(order);
 
-  if (
-    order.orderStatus === "Refunded" &&
-    order.coupon?.couponId
-  ) {
-    await decrementCouponUsage(
-      order.coupon.couponId,
-    );
+  if (order.orderStatus === "Refunded" && order.coupon?.couponId) {
+    await decrementCouponUsage(order.coupon.couponId);
   }
 
   return {

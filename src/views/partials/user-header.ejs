@@ -1,83 +1,130 @@
 <%
+  const currentPath = requestPath || "";
+
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Shop", href: "/user/shop" },
-    { label: "About", href: "" },
-    { label: "Contact", href: "" },
+    { label: "Home", href: "/", key: "home" },
+    { label: "Shop", href: "/user/shop", key: "shop" },
+    { label: "About", href: "/user/about", key: "about" },
+    { label: "Contact", href: "/user/contact", key: "contact" },
   ];
+
+  const isActive = (key) => {
+    if (key === "home") return currentPath === "/";
+    if (key === "shop") return currentPath.startsWith("/user/shop") || currentPath.startsWith("/user/product");
+    if (key === "about") return currentPath.startsWith("/user/about");
+    if (key === "contact") return currentPath.startsWith("/user/contact");
+    return false;
+  };
 %>
 
 <header class="site-header">
   <div class="header-inner">
-
-     <a href="/" class="logo-wrap">
-        <img src="/images/logo.png" alt="Common Core" class="logo" />
-  </a>
-
-    <!-- <a href="/" class="brand">
-      <span class="brand-mark">◆</span>
-      <span class="brand-name">COMMONCORE</span>
-    </a> -->
+    <a href="/" class="logo-wrap">
+      <img src="/images/logo.png" alt="Common Core" class="logo">
+    </a>
 
     <nav class="main-nav">
       <% navLinks.forEach(link => { %>
         <a
           href="<%= link.href %>"
-          class="nav-link <%= link.href === '/shop' ? 'nav-link--active' : '' %>"
-        ><%= link.label %></a>
+          class="nav-link <%= isActive(link.key) ? 'nav-link--active' : '' %>"
+        >
+          <%= link.label %>
+        </a>
       <% }) %>
     </nav>
 
     <div class="header-actions">
-      <a href="" class="icon-btn" aria-label="Search">
+      <button type="button" class="icon-btn" id="headerSearchBtn" aria-label="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
         </svg>
-      </a>
-      <a href="/user/wishlist" class="icon-btn wishlist-btn" aria-label="Wishlist">
+      </button>
 
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
+      <a
+        href="/user/wishlist"
+        class="icon-btn <%= currentPath.startsWith('/user/wishlist') ? 'icon-btn--active' : '' %>"
+        aria-label="Wishlist"
       >
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-
-      <span class="cart-badge" id="wishlistCount">
-        <%= wishlistCount %>
-      </span>
-
-    </a>
-      <a href="/user/cart" class="icon-btn cart-btn" aria-label="Cart">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
-        <span class="cart-badge" id="cartCount"><%=cartCount%></span>
+
+        <% if (typeof wishlistCount !== "undefined" && wishlistCount > 0) { %>
+          <span class="cart-badge" id="wishlistCount"><%= wishlistCount %></span>
+        <% } %>
       </a>
-      <a href="/user/profile" class="icon-btn" aria-label="Account">
+
+      <a
+        href="/user/cart"
+        class="icon-btn <%= currentPath.startsWith('/user/cart') ? 'icon-btn--active' : '' %>"
+        aria-label="Cart"
+      >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+
+        <% if (typeof cartCount !== "undefined" && cartCount > 0) { %>
+          <span class="cart-badge" id="cartCount"><%= cartCount %></span>
+        <% } %>
+      </a>
+
+      <a
+        href="/user/profile"
+        class="icon-btn <%= currentPath.startsWith('/user/profile') ? 'icon-btn--active' : '' %>"
+        aria-label="Account"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
         </svg>
       </a>
     </div>
 
-    <button class="hamburger" id="navToggle" aria-label="Toggle menu">
-      <span></span><span></span><span></span>
+    <button type="button" class="hamburger" id="navToggle" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
     </button>
+  </div>
 
+  <div class="header-search" id="headerSearch">
+    <form action="/user/shop" method="GET" class="header-search-form">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+
+      <input
+        type="text"
+        name="search"
+        placeholder="Search T-shirts, hoodies, jeans..."
+        autocomplete="off"
+      >
+
+      <button type="button" id="closeHeaderSearch" aria-label="Close search">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </form>
   </div>
 
   <div class="mobile-nav" id="mobileNav">
     <% navLinks.forEach(link => { %>
-      <a href="<%= link.href %>" class="mobile-nav-link"><%= link.label %></a>
+      <a
+        href="<%= link.href %>"
+        class="mobile-nav-link <%= isActive(link.key) ? 'mobile-nav-link--active' : '' %>"
+      >
+        <%= link.label %>
+      </a>
     <% }) %>
+
     <div class="mobile-nav-actions">
-      <a href="/account">Account</a>
-      <a href="/cart">Cart</a>
+      <a href="/user/wishlist">Wishlist</a>
+      <a href="/user/cart">Cart</a>
+      <a href="/user/profile">Account</a>
     </div>
   </div>
 </header>

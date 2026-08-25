@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <title>Order Details — Commoncore</title>
+
   <%- include("../partials/user-head") %>
-  <link rel="stylesheet" href="/css/user/order-detail.css">
+
+  <link
+    rel="stylesheet"
+    href="/css/user/order-detail.css"
+  >
 </head>
 
 <body>
@@ -23,51 +27,40 @@
       String(currentDisplayStatus)
         .toLowerCase()
         .trim()
-        .replace(/\s+/g,"-");
-
-    const isPaymentState =
-      order.orderStatus === "Payment Pending" ||
-      order.orderStatus === "Payment Expired";
+        .replace(/\s+/g, "-");
 
     const currentPaymentStatus =
-      isPaymentState
-        ? "Failed"
-        : order.paymentStatus;
+      paymentExpired
+        ? "Expired"
+        : paymentFailed
+          ? "Failed"
+          : order.paymentStatus;
 
     const paymentStatusClass =
       String(currentPaymentStatus)
         .toLowerCase()
         .trim()
-        .replace(/\s+/g,"-");
+        .replace(/\s+/g, "-");
 
-    const money = value =>
+    const money = (value) =>
       Number(value || 0).toLocaleString(
         "en-IN",
         {
-          minimumFractionDigits:2,
-          maximumFractionDigits:2,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
         },
       );
-
-    const paymentMethodText =
-      order.paymentMethod === "CashOnDelivery"
-        ? "Cash On Delivery"
-        : order.paymentMethod.replace(
-            /([a-z])([A-Z])/g,
-            "$1 $2",
-          );
   %>
 
   <section class="order-header card card-md">
 
     <div>
-
       <h1 class="order-number">
         <%= order.orderNumber %>
       </h1>
 
       <p class="order-date">
-        <%= isPaymentState
+        <%= isRazorpayPending
           ? "Created on"
           : "Placed on" %>
 
@@ -76,13 +69,12 @@
         ).toLocaleDateString(
           "en-IN",
           {
-            day:"numeric",
-            month:"long",
-            year:"numeric",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
           },
         ) %>
       </p>
-
     </div>
 
     <div class="order-header-right">
@@ -94,40 +86,68 @@
       </span>
 
       <% if (canDownloadInvoice) { %>
-
         <a
           href="/user/order/<%= order._id %>/invoice"
           class="invoice-btn"
         >
           Download Invoice
         </a>
-
       <% } %>
 
     </div>
 
   </section>
 
-  <% if (isPaymentState) { %>
+  <% if (isRazorpayPending) { %>
 
-    <section class="payment-recovery-card card card-md">
+    <section
+      class="
+        payment-pending-card
+        card
+        card-md
+        <%= paymentExpired
+          ? 'payment-pending-card--expired'
+          : paymentFailed
+            ? 'payment-pending-card--failed'
+            : '' %>
+      "
+    >
 
-      <div class="payment-recovery-content">
+      <div class="payment-pending-content">
 
-        <div class="payment-recovery-icon">
-          <i class="fa-solid fa-circle-exclamation"></i>
+        <div class="payment-pending-icon">
+          <% if (paymentExpired) { %>
+            ×
+          <% } else if (paymentFailed) { %>
+            !
+          <% } else { %>
+            ₹
+          <% } %>
         </div>
 
-        <div class="payment-recovery-text">
+        <div class="payment-pending-text">
 
           <h2>
-            Payment not completed
+            <% if (paymentExpired) { %>
+              Payment session expired
+            <% } else if (paymentFailed) { %>
+              Payment was unsuccessful
+            <% } else { %>
+              Complete your payment
+            <% } %>
           </h2>
 
           <p>
-            This order was not confirmed.
-            Checkout again to continue with current stock,
-            pricing, offers and availability.
+            <% if (paymentExpired) { %>
+              The payment window for this order has expired.
+              This order has not been confirmed.
+            <% } else if (paymentFailed) { %>
+              Your previous payment attempt was unsuccessful.
+              Retry the payment to confirm this order.
+            <% } else { %>
+              Your order has been created, but payment is still
+              pending. Complete the payment to confirm the order.
+            <% } %>
           </p>
 
           <% if (
@@ -145,14 +165,15 @@
 
       </div>
 
-      <% if (canReturnToCheckout) { %>
+      <% if (canRetryPayment) { %>
 
         <button
           type="button"
-          class="primary-btn checkout-again-btn"
+          id="retryPaymentBtn"
+          class="primary-btn retry-payment-btn"
           data-order-id="<%= order._id %>"
         >
-          Checkout Again
+          Retry Payment
         </button>
 
       <% } %>
@@ -163,61 +184,46 @@
 
   <section class="info-grid">
 
-    <div class="card card-md info-card">
+    <div class="card card-md">
 
       <h3 class="info-title">
         Shipping Details
       </h3>
 
-      <div class="shipping-details">
+      <div class="shipping-box">
 
-        <div class="shipping-person">
+        <h4>
+          <%= order.shippingAddress.fullName %>
+        </h4>
 
-          <div class="shipping-avatar">
-            <i class="fa-solid fa-location-dot"></i>
-          </div>
+        <p>
+          <%= order.shippingAddress.line1 %>
+        </p>
 
-          <div>
-
-            <strong class="shipping-name">
-              <%= order.shippingAddress.fullName %>
-            </strong>
-
-            <p class="shipping-phone">
-              +91 <%= order.shippingAddress.phone %>
-            </p>
-
-          </div>
-
-        </div>
-
-        <div class="shipping-address">
-
+        <% if (order.shippingAddress.line2) { %>
           <p>
-            <%= order.shippingAddress.line1 %>
+            <%= order.shippingAddress.line2 %>
           </p>
+        <% } %>
 
-          <% if (order.shippingAddress.line2) { %>
+        <p>
+          <%= order.shippingAddress.city %>,
+          <%= order.shippingAddress.state %>
+        </p>
 
-            <p>
-              <%= order.shippingAddress.line2 %>
-            </p>
+        <p>
+          <%= order.shippingAddress.pincode %>
+        </p>
 
-          <% } %>
-
-          <p>
-            <%= order.shippingAddress.city %>,
-            <%= order.shippingAddress.state %>
-            - <%= order.shippingAddress.pincode %>
-          </p>
-
-        </div>
+        <p>
+          +91 <%= order.shippingAddress.phone %>
+        </p>
 
       </div>
 
     </div>
 
-    <div class="card card-md info-card">
+    <div class="card card-md">
 
       <h3 class="info-title">
         Order Information
@@ -226,55 +232,44 @@
       <div class="order-info-box">
 
         <div class="info-row">
-
-          <span>
-            Items
-          </span>
-
-          <strong>
+          <span>Items</span>
+          <p>
             <%= order.items.length %>
-          </strong>
-
+          </p>
         </div>
 
         <div class="info-row">
-
-          <span>
-            Payment Method
-          </span>
+          <span>Payment Method</span>
 
           <strong>
-            <%= paymentMethodText %>
+            <%= order.paymentMethod ===
+              "CashOnDelivery"
+                ? "Cash On Delivery"
+                : order.paymentMethod.replace(
+                    /([a-z])([A-Z])/g,
+                    "$1 $2",
+                  ) %>
           </strong>
-
         </div>
 
         <div class="info-row">
-
-          <span>
-            Payment Status
-          </span>
+          <span>Payment Status</span>
 
           <strong
             class="payment-status <%= paymentStatusClass %>"
           >
             <%= currentPaymentStatus %>
           </strong>
-
         </div>
 
         <div class="info-row">
-
-          <span>
-            Order Status
-          </span>
+          <span>Order Status</span>
 
           <strong
-            class="order-status-text order-status-<%= displayStatusClass %>"
+            class="order-status-text status-<%= displayStatusClass %>"
           >
             <%= currentDisplayStatus %>
           </strong>
-
         </div>
 
         <% if (
@@ -283,15 +278,11 @@
         ) { %>
 
           <div class="info-row">
-
-            <span>
-              Payment Reference
-            </span>
+            <span>Payment Reference</span>
 
             <strong class="payment-reference">
               <%= order.razorpayOrderId %>
             </strong>
-
           </div>
 
         <% } %>
@@ -304,94 +295,63 @@
 
   <section class="card card-md summary-card">
 
-    <div class="summary-header">
+    <h2 class="summary-title">
+      Order Summary
+    </h2>
 
-      <h2 class="summary-title">
-        Order Summary
-      </h2>
+    <% order.items.forEach((item) => { %>
 
-      <span class="summary-item-count">
-        <%= order.items.length %>
-        <%= order.items.length === 1
-          ? "Item"
-          : "Items" %>
-      </span>
+      <%
+        const itemOfferAmount =
+          Number(item.unitPrice || 0) *
+          Number(item.quantity || 0);
 
-    </div>
+        const itemCouponDiscount =
+          Number(
+            item.couponDiscountAmount || 0,
+          );
 
-    <div class="summary-items">
+        const itemFinalAmount =
+          Math.max(
+            itemOfferAmount -
+            itemCouponDiscount,
+            0,
+          );
 
-      <% order.items.forEach(item => { %>
+        const itemStatusClass =
+          String(item.status || "Placed")
+            .toLowerCase()
+            .replace(/\s+/g, "-");
+      %>
 
-        <%
-          const itemQuantity =
-            Number(item.quantity || 0);
+      <div
+        class="
+          summary-item
+          <%= item.status === "Cancelled"
+            ? "summary-item--cancelled"
+            : "" %>
+        "
+      >
 
-          const itemOriginalAmount =
-            Number(
-              item.originalUnitPrice ||
-              item.unitPrice ||
-              0,
-            ) * itemQuantity;
-
-          const itemOfferAmount =
-            Number(item.unitPrice || 0) *
-            itemQuantity;
-
-          const itemCouponDiscount =
-            Number(
-              item.couponDiscountAmount || 0,
-            );
-
-          const itemFinalAmount =
-            Math.max(
-              itemOfferAmount -
-              itemCouponDiscount,
-              0,
-            );
-
-          const itemOfferDiscount =
-            Math.max(
-              itemOriginalAmount -
-              itemOfferAmount,
-              0,
-            );
-
-          const itemStatusClass =
-            String(
-              item.status || "Placed",
-            )
-              .toLowerCase()
-              .replace(/\s+/g,"-");
-        %>
-
-        <div
-          class="
-            summary-item
-            <%= item.status === "Cancelled"
-              ? "summary-item--cancelled"
-              : "" %>
-          "
+        <img
+          src="<%= item.productImage || '/images/no-image.png' %>"
+          alt="<%= item.productName %>"
         >
 
-          <img
-            src="<%= item.productImage || '/images/no-image.png' %>"
-            alt="<%= item.productName %>"
-            class="summary-item-image"
-          >
+        <div class="summary-item-content">
 
-          <div class="summary-item-content">
+          <div class="item-top-row">
 
-            <div class="item-title-row">
+            <h4 class="item-title">
 
-              <h4 class="item-title">
-                <%= item.productName %>
-              </h4>
+              <%= item.productName %>
 
-              <% if (isPaymentState) { %>
+              <% if (isRazorpayPending) { %>
 
-                <span class="item-status-text status-payment-failed">
-                  Payment Failed
+                <span
+                  class="item-status-text status-<%= displayStatusClass %>"
+                >
+                  <%= currentDisplayStatus %>
                 </span>
 
               <% } else { %>
@@ -404,106 +364,129 @@
 
               <% } %>
 
-            </div>
-
-            <p class="item-variant">
-              <%= item.color %>
-              /
-              <%= item.size %>
-              · Qty <%= item.quantity %>
-            </p>
-
-            <% if (isPaymentState) { %>
-
-              <p class="item-meta-text">
-                Payment not completed · Item was not confirmed
-              </p>
-
-            <% } else if (item.statusMetaText) { %>
-
-              <p class="item-meta-text">
-                <%= item.statusMetaText %>
-              </p>
-
-            <% } %>
-
-            <% if (item.canReturn) { %>
-
-              <p class="item-return-text">
-                Return available ·
-                <%= item.returnDaysLeft %>
-                day<%= item.returnDaysLeft !== 1
-                  ? "s"
-                  : "" %>
-                left
-              </p>
-
-            <% } %>
+            </h4>
 
           </div>
 
-          <div class="summary-item-side">
+          <p class="item-variant">
+            <%= item.color %> /
+            <%= item.size %>
+            · Qty <%= item.quantity %>
+          </p>
 
-            <div class="item-price-compact">
+          <% if (isRazorpayPending) { %>
 
-              <div class="item-price-main">
+            <p class="item-meta-text">
+              <%= paymentExpired
+                ? "Payment expired. This item was not confirmed."
+                : paymentFailed
+                  ? "Payment failed. Retry payment to confirm this item."
+                  : "Item will be confirmed after successful payment." %>
+            </p>
 
-                <strong
-                  class="
-                    item-final-price
-                    <%= item.status === "Cancelled"
-                      ? "price-cancelled"
-                      : "" %>
-                  "
-                >
-                  ₹<%= money(itemFinalAmount) %>
-                </strong>
+          <% } else if (item.statusMetaText) { %>
 
-                <% if (
-                  itemOriginalAmount >
-                  itemFinalAmount
-                ) { %>
+            <p class="item-meta-text">
+              <%= item.statusMetaText %>
+            </p>
 
-                  <span class="item-original-price">
-                    ₹<%= money(itemOriginalAmount) %>
+          <% } %>
+
+          <% if (item.canReturn) { %>
+
+            <p class="item-return-text">
+              Return available ·
+              <%= item.returnDaysLeft %>
+              day<%= item.returnDaysLeft !== 1
+                ? "s"
+                : "" %>
+              left
+            </p>
+
+          <% } %>
+
+        </div>
+
+        <div class="summary-item-right">
+
+          <div class="item-price-breakdown">
+
+            <div class="item-unit-price-row">
+
+              <span class="unit-price">
+                ₹<%= money(item.unitPrice) %>
+                × <%= item.quantity %>
+              </span>
+
+              <% if (
+                item.offerId &&
+                Number(item.originalUnitPrice) >
+                Number(item.unitPrice)
+              ) { %>
+
+                <span class="item-old-unit-price">
+                  ₹<%= money(item.originalUnitPrice) %>
+                </span>
+
+                <% if (item.offerId) { %>
+
+                  <span class="item-offer-badge">
+
+                    <% if (
+                      item.discountType === "PERCENTAGE"
+                    ) { %>
+
+                      <%= Number(item.discountValue) %>% OFF
+
+                    <% } else { %>
+
+                      ₹<%= Number(
+                        item.discountValue,
+                      ).toLocaleString("en-IN") %> OFF
+
+                    <% } %>
+
                   </span>
 
                 <% } %>
-
-              </div>
-
-              <% if (
-                itemOfferDiscount > 0 ||
-                itemCouponDiscount > 0
-              ) { %>
-
-                <div class="item-discount-tags">
-
-                  <% if (itemOfferDiscount > 0) { %>
-
-                    <span class="discount-tag">
-                      offer
-                      -₹<%= money(itemOfferDiscount) %>
-                    </span>
-
-                  <% } %>
-
-                  <% if (itemCouponDiscount > 0) { %>
-
-                    <span class="discount-tag">
-                      coupon
-                      -₹<%= money(itemCouponDiscount) %>
-                    </span>
-
-                  <% } %>
-
-                </div>
 
               <% } %>
 
             </div>
 
-            <% if (!isPaymentState) { %>
+            <% if (itemCouponDiscount > 0) { %>
+
+              <div class="item-coupon-discount">
+
+                <span>
+                  Coupon discount
+                </span>
+
+                <strong>
+                  −₹<%= money(itemCouponDiscount) %>
+                </strong>
+
+              </div>
+
+            <% } %>
+
+            <div class="item-line-price-row">
+
+              <strong
+                class="item-final-price <%= item.status === 'Cancelled'
+                  ? 'price-cancelled'
+                  : '' %>"
+              >
+                ₹<%= money(itemFinalAmount) %>
+              </strong>
+
+            </div>
+
+          </div>
+
+          <% if (!isRazorpayPending) { %>
+
+            <div class="item-actions">
 
               <% if (item.canCancel) { %>
 
@@ -521,7 +504,9 @@
                   Cancel Item
                 </button>
 
-              <% } else if (item.canReturn) { %>
+              <% } %>
+
+              <% if (item.canReturn) { %>
 
                 <a
                   href="/user/returns/request/<%= order._id %>/<%= item._id %>"
@@ -541,165 +526,30 @@
 
               <% } %>
 
-            <% } %>
+              <% if (item.canReview) { %>
 
-          </div>
+                <button
+                  type="button"
+                  class="secondary-btn write-review-btn"
+                  data-product-id="<%= item.productId %>"
+                  data-product-name="<%= item.productName %>"
+                  data-product-image="<%= item.productImage || '/images/no-image.png' %>"
+                >
+                  <i class="fa-regular fa-star"></i>
+                  Write Review
+                </button>
 
-        </div>
+              <% } else if (item.hasReview) { %>
 
-      <% }) %>
+                <a
+                  href="/user/product/<%= item.productId %>#reviews"
+                  class="secondary-btn view-review-btn"
+                >
+                  <i class="fa-regular fa-star"></i>
+                  Your Review
+                </a>
 
-    </div>
-
-    <div class="summary-divider"></div>
-
-    <div class="order-price-summary">
-
-      <% if (fullyCancelled) { %>
-
-        <div class="summary-row">
-
-          <span>
-            Original subtotal
-          </span>
-
-          <span>
-            ₹<%= money(originalSubtotal) %>
-          </span>
-
-        </div>
-
-        <% if (offerDiscountTotal > 0) { %>
-
-          <div class="summary-row summary-discount">
-
-            <span>
-              Offer discount
-            </span>
-
-            <span>
-              −₹<%= money(offerDiscountTotal) %>
-            </span>
-
-          </div>
-
-        <% } %>
-
-        <% if (couponDiscountTotal > 0) { %>
-
-          <div class="summary-row summary-discount">
-
-            <span>
-              Coupon discount
-
-              <% if (order.coupon?.code) { %>
-                (<%= order.coupon.code %>)
               <% } %>
-            </span>
-
-            <span>
-              −₹<%= money(couponDiscountTotal) %>
-            </span>
-
-          </div>
-
-        <% } %>
-
-        <div class="summary-row">
-
-          <span>
-            Shipping
-          </span>
-
-          <span>
-            <%= Number(originalShippingFee) === 0
-              ? "Free"
-              : `₹${money(originalShippingFee)}` %>
-          </span>
-
-        </div>
-
-        <div class="summary-divider"></div>
-
-        <div class="summary-row total-row">
-
-          <span>
-            Order total
-          </span>
-
-          <span>
-            ₹<%= money(originalOrderTotal) %>
-          </span>
-
-        </div>
-
-        <div class="cancellation-summary">
-
-          <h3 class="cancellation-summary-title">
-            Cancellation
-          </h3>
-
-          <div class="summary-row summary-cancelled">
-
-            <span>
-              Cancelled amount
-            </span>
-
-            <span>
-              ₹<%= money(originalOrderTotal) %>
-            </span>
-
-          </div>
-
-          <% if (refundRequired) { %>
-
-            <div class="summary-row">
-
-              <span>
-                Amount paid
-              </span>
-
-              <span>
-                ₹<%= money(paymentCollected) %>
-              </span>
-
-            </div>
-
-            <div class="summary-row cancellation-refund-row">
-
-              <span>
-                Refund amount
-              </span>
-
-              <strong>
-                ₹<%= money(cancellationRefundAmount) %>
-              </strong>
-
-            </div>
-
-          <% } else { %>
-
-            <div class="summary-row">
-
-              <span>
-                Payment collected
-              </span>
-
-              <span>
-                ₹0.00
-              </span>
-
-            </div>
-
-            <div class="summary-row">
-
-              <span>
-                Refund required
-              </span>
-
-              <strong>
-                No
-              </strong>
 
             </div>
 
@@ -707,229 +557,513 @@
 
         </div>
 
-      <% } else if (partiallyCancelled) { %>
+      </div>
 
-        <div class="summary-row">
+    <% }) %>
+
+    <div class="summary-divider"></div>
+
+    <% if (fullyCancelled) { %>
+
+      <div class="summary-row">
+        <span>Original subtotal</span>
+        <span>
+          ₹<%= money(originalSubtotal) %>
+        </span>
+      </div>
+
+      <% if (offerDiscountTotal > 0) { %>
+
+        <div class="summary-row summary-discount">
+          <span>Offer discount</span>
 
           <span>
-            Original order subtotal
+            −₹<%= money(
+              offerDiscountTotal,
+            ) %>
           </span>
-
-          <span>
-            ₹<%= money(originalSubtotal) %>
-          </span>
-
         </div>
 
-        <div class="summary-row summary-cancelled">
+      <% } %>
+
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span>
+          ₹<%= money(subtotal) %>
+        </span>
+      </div>
+
+      <% if (couponDiscountTotal > 0) { %>
+
+        <div class="summary-row summary-discount">
 
           <span>
-            Cancelled items
+            Coupon discount
+
+            <% if (order.coupon?.code) { %>
+              (<%= order.coupon.code %>)
+            <% } %>
           </span>
 
           <span>
-            −₹<%= money(cancelledOriginalAmount) %>
-          </span>
-
-        </div>
-
-        <div class="summary-row">
-
-          <span>
-            Remaining items subtotal
-          </span>
-
-          <span>
-            ₹<%= money(activeOriginalSubtotal) %>
-          </span>
-
-        </div>
-
-        <% if (activeOfferDiscountTotal > 0) { %>
-
-          <div class="summary-row summary-discount">
-
-            <span>
-              Offer discount
-            </span>
-
-            <span>
-              −₹<%= money(activeOfferDiscountTotal) %>
-            </span>
-
-          </div>
-
-        <% } %>
-
-        <% if (activeCouponDiscountTotal > 0) { %>
-
-          <div class="summary-row summary-discount">
-
-            <span>
-              Coupon discount
-
-              <% if (order.coupon?.code) { %>
-                (<%= order.coupon.code %>)
-              <% } %>
-            </span>
-
-            <span>
-              −₹<%= money(activeCouponDiscountTotal) %>
-            </span>
-
-          </div>
-
-        <% } %>
-
-        <div class="summary-row">
-
-          <span>
-            Remaining subtotal
-          </span>
-
-          <span>
-            ₹<%= money(activeDiscountedSubtotal) %>
-          </span>
-
-        </div>
-
-        <div class="summary-row">
-
-          <span>
-            Shipping
-          </span>
-
-          <span>
-            <%= Number(shippingFee) === 0
-              ? "Free"
-              : `₹${money(shippingFee)}` %>
-          </span>
-
-        </div>
-
-        <div class="summary-row summary-gst">
-
-          <span>
-            GST Included
-          </span>
-
-          <span>
-            ₹<%= money(gstAmount) %>
-          </span>
-
-        </div>
-
-        <div class="summary-divider"></div>
-
-        <div class="summary-row total-row">
-
-          <span>
-            Current order value
-          </span>
-
-          <span>
-            ₹<%= money(currentValue) %>
-          </span>
-
-        </div>
-
-      <% } else { %>
-
-        <div class="summary-row">
-
-          <span>
-            Original subtotal
-          </span>
-
-          <span>
-            ₹<%= money(originalSubtotal) %>
-          </span>
-
-        </div>
-
-        <% if (offerDiscountTotal > 0) { %>
-
-          <div class="summary-row summary-discount">
-
-            <span>
-              Offer discount
-            </span>
-
-            <span>
-              −₹<%= money(offerDiscountTotal) %>
-            </span>
-
-          </div>
-
-        <% } %>
-
-        <% if (couponDiscountTotal > 0) { %>
-
-          <div class="summary-row summary-discount">
-
-            <span>
-              Coupon discount
-
-              <% if (order.coupon?.code) { %>
-                (<%= order.coupon.code %>)
-              <% } %>
-            </span>
-
-            <span>
-              −₹<%= money(couponDiscountTotal) %>
-            </span>
-
-          </div>
-
-        <% } %>
-
-        <div class="summary-row">
-
-          <span>
-            Shipping
-          </span>
-
-          <span>
-            <%= Number(shippingFee) === 0
-              ? "Free"
-              : `₹${money(shippingFee)}` %>
-          </span>
-
-        </div>
-
-        <div class="summary-row summary-gst">
-
-          <span>
-            GST Included
-          </span>
-
-          <span>
-            ₹<%= money(gstAmount) %>
-          </span>
-
-        </div>
-
-        <div class="summary-divider"></div>
-
-        <div class="summary-row total-row">
-
-          <span>
-            <%= isPaymentState
-              ? "Checkout total"
-              : "Order total" %>
-          </span>
-
-          <span>
-            ₹<%= money(currentValue) %>
+            −₹<%= money(
+              couponDiscountTotal,
+            ) %>
           </span>
 
         </div>
 
       <% } %>
 
-    </div>
+      <div class="summary-row">
+
+        <span>Shipping</span>
+
+        <span>
+          <%= Number(originalShippingFee) === 0
+            ? "Free"
+            : `₹${money(
+                originalShippingFee,
+              )}` %>
+        </span>
+
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-row total-row">
+        <span>Order total</span>
+
+        <span>
+          ₹<%= money(
+            originalOrderTotal,
+          ) %>
+        </span>
+      </div>
+
+      <div class="cancellation-summary">
+
+        <h3 class="cancellation-summary-title">
+          Cancellation
+        </h3>
+
+        <div class="summary-row summary-cancelled">
+
+          <span>
+            Cancelled amount
+          </span>
+
+          <span>
+            ₹<%= money(
+              originalOrderTotal,
+            ) %>
+          </span>
+
+        </div>
+
+        <% if (refundRequired) { %>
+
+          <div class="summary-row">
+            <span>Amount paid</span>
+
+            <span>
+              ₹<%= money(
+                paymentCollected,
+              ) %>
+            </span>
+          </div>
+
+          <div class="summary-row cancellation-refund-row">
+
+            <span>Refund amount</span>
+
+            <strong>
+              ₹<%= money(
+                cancellationRefundAmount,
+              ) %>
+            </strong>
+
+          </div>
+
+        <% } else { %>
+
+          <div class="summary-row">
+            <span>
+              Payment collected
+            </span>
+
+            <span>₹0.00</span>
+          </div>
+
+          <div class="summary-row">
+            <span>
+              Refund required
+            </span>
+
+            <strong>No</strong>
+          </div>
+
+        <% } %>
+
+      </div>
+
+    <% } else if (partiallyCancelled) { %>
+
+      <div class="summary-row">
+
+        <span>
+          Original order subtotal
+        </span>
+
+        <span>
+          ₹<%= money(
+            originalSubtotal,
+          ) %>
+        </span>
+
+      </div>
+
+      <div class="summary-row summary-cancelled">
+
+        <span>
+          Cancelled items
+        </span>
+
+        <span>
+          −₹<%= money(
+            cancelledOriginalAmount,
+          ) %>
+        </span>
+
+      </div>
+
+      <div class="summary-row">
+
+        <span>
+          Remaining items subtotal
+        </span>
+
+        <span>
+          ₹<%= money(
+            activeOriginalSubtotal,
+          ) %>
+        </span>
+
+      </div>
+
+      <% if (
+        activeOfferDiscountTotal > 0
+      ) { %>
+
+        <div class="summary-row summary-discount">
+
+          <span>
+            Offer discount
+          </span>
+
+          <span>
+            −₹<%= money(
+              activeOfferDiscountTotal,
+            ) %>
+          </span>
+
+        </div>
+
+      <% } %>
+
+      <% if (
+        activeCouponDiscountTotal > 0
+      ) { %>
+
+        <div class="summary-row summary-discount">
+
+          <span>
+            Coupon discount
+
+            <% if (order.coupon?.code) { %>
+              (<%= order.coupon.code %>)
+            <% } %>
+          </span>
+
+          <span>
+            −₹<%= money(
+              activeCouponDiscountTotal,
+            ) %>
+          </span>
+
+        </div>
+
+      <% } %>
+
+      <div class="summary-row">
+
+        <span>
+          Remaining subtotal
+        </span>
+
+        <span>
+          ₹<%= money(
+            activeDiscountedSubtotal,
+          ) %>
+        </span>
+
+      </div>
+
+      <div class="summary-row">
+
+        <span>Shipping</span>
+
+        <span>
+          <%= Number(shippingFee) === 0
+            ? "Free"
+            : `₹${money(
+                shippingFee,
+              )}` %>
+        </span>
+
+      </div>
+
+      <div class="summary-row summary-gst">
+
+        <span>
+          GST Included
+        </span>
+
+        <span>
+          ₹<%= money(gstAmount) %>
+        </span>
+
+      </div>
+
+      <div class="summary-row">
+
+        <span>Payment</span>
+
+        <span>
+          <%= order.paymentMethod ===
+            "CashOnDelivery"
+              ? "Cash On Delivery"
+              : order.paymentMethod.replace(
+                  /([a-z])([A-Z])/g,
+                  "$1 $2",
+                ) %>
+        </span>
+
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-row total-row">
+
+        <span>
+          Current order value
+        </span>
+
+        <span>
+          ₹<%= money(
+            currentValue,
+          ) %>
+        </span>
+
+      </div>
+
+    <% } else { %>
+
+      <div class="summary-row">
+
+        <span>
+          Original subtotal
+        </span>
+
+        <span>
+          ₹<%= money(
+            originalSubtotal,
+          ) %>
+        </span>
+
+      </div>
+
+      <% if (offerDiscountTotal > 0) { %>
+
+        <div class="summary-row summary-discount">
+
+          <span>
+            Offer discount
+          </span>
+
+          <span>
+            −₹<%= money(
+              offerDiscountTotal,
+            ) %>
+          </span>
+
+        </div>
+
+      <% } %>
+
+      <div class="summary-row">
+
+        <span>
+          Subtotal
+        </span>
+
+        <span>
+          ₹<%= money(subtotal) %>
+        </span>
+
+      </div>
+
+      <% if (couponDiscountTotal > 0) { %>
+
+        <div class="summary-row summary-discount">
+
+          <span>
+            Coupon discount
+
+            <% if (order.coupon?.code) { %>
+              (<%= order.coupon.code %>)
+            <% } %>
+          </span>
+
+          <span>
+            −₹<%= money(
+              couponDiscountTotal,
+            ) %>
+          </span>
+
+        </div>
+
+        <div class="summary-row">
+
+          <span>
+            Discounted subtotal
+          </span>
+
+          <span>
+            ₹<%= money(
+              discountedSubtotal,
+            ) %>
+          </span>
+
+        </div>
+
+      <% } %>
+
+      <div class="summary-row">
+
+        <span>
+          Shipping
+        </span>
+
+        <span>
+          <%= Number(shippingFee) === 0
+            ? "Free"
+            : `₹${money(
+                shippingFee,
+              )}` %>
+        </span>
+
+      </div>
+
+      <div class="summary-row summary-gst">
+
+        <span>
+          GST Included
+        </span>
+
+        <span>
+          ₹<%= money(gstAmount) %>
+        </span>
+
+      </div>
+
+      <div class="summary-row">
+
+        <span>Payment</span>
+
+        <span>
+          <%= order.paymentMethod ===
+            "CashOnDelivery"
+              ? "Cash On Delivery"
+              : order.paymentMethod.replace(
+                  /([a-z])([A-Z])/g,
+                  "$1 $2",
+                ) %>
+        </span>
+
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-row total-row">
+
+        <span>
+          Order total
+        </span>
+
+        <span>
+          ₹<%= money(
+            currentValue,
+          ) %>
+        </span>
+
+      </div>
+
+      <% if (isRazorpayPending) { %>
+
+        <p
+          class="
+            summary-payment-note
+            <%= paymentExpired
+              ? 'summary-payment-note--expired'
+              : paymentFailed
+                ? 'summary-payment-note--failed'
+                : '' %>
+          "
+        >
+          <%= paymentExpired
+            ? "The payment session has expired. This order was not confirmed."
+            : paymentFailed
+              ? "The payment attempt failed. Retry payment to confirm this order."
+              : "Payment is required before this order can be confirmed." %>
+        </p>
+
+      <% } %>
+
+    <% } %>
 
   </section>
+
+  <% if (showEstimatedDelivery) { %>
+
+    <section class="delivery-card card card-md">
+
+      <div>
+
+        <span class="delivery-label">
+          Expected Delivery
+        </span>
+
+        <strong>
+          <%= order.estimatedDeliveryDate
+            ? new Date(
+                order.estimatedDeliveryDate,
+              ).toLocaleDateString(
+                "en-IN",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                },
+              )
+            : "To be updated" %>
+        </strong>
+
+      </div>
+
+    </section>
+
+  <% } %>
 
   <div class="order-actions">
 
@@ -945,16 +1079,27 @@
 
     <% } %>
 
-    <% if (!canReturnToCheckout) { %>
+    <% if (canRetryPayment) { %>
 
-      <a
-        href="/user/shop"
-        class="primary-btn continue-shopping-btn"
+      <button
+        type="button"
+        class="primary-btn retry-payment-btn order-action-retry-btn"
+        data-order-id="<%= order._id %>"
+        onclick="document.getElementById('retryPaymentBtn')?.click()"
       >
-        Continue Shopping
-      </a>
+        Retry Payment
+      </button>
 
     <% } %>
+
+    <a
+      href="/user/shop"
+      class="<%= canRetryPayment
+        ? 'secondary-btn'
+        : 'primary-btn' %> continue-shopping-btn"
+    >
+      Continue Shopping
+    </a>
 
   </div>
 
@@ -991,15 +1136,10 @@
         >
 
         <div>
-
           <h3 id="modalName"></h3>
-
           <p id="modalColor"></p>
-
           <p id="modalSize"></p>
-
           <strong id="modalPrice"></strong>
-
         </div>
 
       </div>
@@ -1077,12 +1217,167 @@
 
   </div>
 
+<div
+  id="reviewModal"
+  class="review-modal hidden"
+>
+  <div class="review-modal-content">
+
+    <div class="modal-header">
+
+      <div>
+        <h2>Write a Review</h2>
+
+        <p class="review-modal-subtitle">
+          Share your experience with this product.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="closeReviewModal"
+        class="modal-close"
+        aria-label="Close review modal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="review-product">
+
+      <img
+        id="reviewProductImage"
+        src="/images/no-image.png"
+        alt="Product"
+      >
+
+      <div>
+
+        <span class="review-product-label">
+          REVIEWING
+        </span>
+
+        <h3 id="reviewProductName">
+          Product
+        </h3>
+
+        <p>
+          Your review will appear on the product page.
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="review-field">
+
+      <label>
+        Your Rating
+      </label>
+
+      <div
+        id="reviewStars"
+        class="review-stars"
+        role="radiogroup"
+        aria-label="Product rating"
+      >
+
+        <% for (
+          let rating = 1;
+          rating <= 5;
+          rating++
+        ) { %>
+
+          <button
+            type="button"
+            class="review-star"
+            data-rating="<%= rating %>"
+            aria-label="<%= rating %> star<%= rating > 1 ? 's' : '' %>"
+          >
+            <i class="fa-regular fa-star"></i>
+          </button>
+
+        <% } %>
+
+      </div>
+
+      <p
+        id="reviewRatingText"
+        class="review-rating-text"
+      >
+        Select a rating
+      </p>
+
+      <p
+        id="reviewRatingError"
+        class="review-field-error"
+      ></p>
+
+    </div>
+
+    <div class="review-field">
+
+      <div class="review-label-row">
+
+        <label for="reviewComment">
+          Your Review
+        </label>
+
+        <span id="reviewCharacterCount">
+          0 / 500
+        </span>
+
+      </div>
+
+      <textarea
+        id="reviewComment"
+        class="review-comment"
+        maxlength="500"
+        placeholder="What did you like about this product?"
+      ></textarea>
+
+      <p
+        id="reviewCommentError"
+        class="review-field-error"
+      ></p>
+
+    </div>
+
+    <p
+      id="reviewFormError"
+      class="review-form-error"
+    ></p>
+
+    <div class="review-modal-actions">
+
+      <button
+        type="button"
+        id="cancelReviewBtn"
+        class="secondary-btn"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        id="submitReviewBtn"
+        class="primary-btn"
+      >
+        Submit Review
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
 </main>
 
 <%- include("../partials/user-scripts") %>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="/js/user/orderDetail.js"></script>
 
 </body>
-
 </html>

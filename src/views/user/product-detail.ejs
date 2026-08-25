@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title><%= product.name %> — Stitch</title>
-    <%- include('../partials/user-head') %>
+  <title><%= product.name %> — CommonCore</title>
+
+  <%- include('../partials/user-head') %>
+
   <link rel="stylesheet" href="/css/user/product-detail.css" />
 </head>
+
 <body>
 
   <%- include('../partials/user-header.ejs') %>
 
   <main class="pd-page">
 
-    <!-- Breadcrumb -->
     <div class="pd-breadcrumb">
       <a href="/">Home</a>
       <span>/</span>
       <a href="/user/shop">Shop</a>
       <span>/</span>
-      <a href="/user/shop?category=<%= product.categoryId._id %>"><%= product.categoryId.name %></a>
+      <a href="/user/shop?category=<%= product.categoryId._id %>">
+        <%= product.categoryId.name %>
+      </a>
       <span>/</span>
       <p><%= product.name %></p>
     </div>
 
-    <!-- MAIN LAYOUT -->
     <section class="pd-layout">
 
-      <!-- THUMBS -->
       <div class="pd-thumbs" id="thumbsCol">
+
         <% selectedVariant.images.forEach((img, index) => { %>
+
           <button
             type="button"
             class="pd-thumb <%= index === 0 ? 'pd-thumb--active' : '' %>"
@@ -35,90 +39,98 @@
           >
             <img src="<%= img.url %>" alt="" />
           </button>
+
         <% }) %>
+
       </div>
 
-      <!-- MAIN IMAGE -->
       <div class="pd-image-box">
 
         <div class="pd-image-zoom" id="zoomContainer">
+
           <img
             src="<%= selectedVariant.images[0]?.url %>"
             alt="<%= product.name %>"
             id="mainImage"
             class="pd-main-image"
           />
+
         </div>
+
       </div>
 
-      <!-- INFO -->
       <div class="pd-info">
 
-        <!-- Category tag -->
+        <p class="pd-category-tag">
+          <%= product.categoryId.name %>
+        </p>
 
-        <p class="pd-category-tag"><%= product.categoryId.name %></p>
+        <h1 class="pd-title">
+          <%= product.name %>
+        </h1>
 
-        <!-- Title -->
-        <h1 class="pd-title"><%= product.name %></h1>
+        <div class="pd-price-wrap">
 
-        <!-- Price -->
-<div class="pd-price-wrap">
+          <span class="pd-price" id="displayPrice">
+            ₹<%= product.finalPrice.toLocaleString("en-IN") %>
+          </span>
 
-  <span class="pd-price" id="displayPrice">
-    ₹<%= product.finalPrice.toLocaleString('en-IN') %>
-  </span>
+          <% if (product.hasOffer) { %>
 
-  <% if (product.hasOffer) { %>
+            <span class="pd-old-price">
+              ₹<%= product.originalPrice.toLocaleString("en-IN") %>
+            </span>
 
-    <span class="pd-old-price">
-      ₹<%= product.originalPrice.toLocaleString('en-IN') %>
-    </span>
+            <div class="pd-offer-pills">
 
-<div class="pd-offer-pills">
+              <div class="pd-offer-meta">
 
-  <div class="pd-offer-meta">
+                <span class="pd-discount-pill">
 
-  <span class="pd-discount-pill">
+                  <% if (product.discountType === "PERCENTAGE") { %>
 
-    <% if (product.discountType === "PERCENTAGE") { %>
+                    <%= Number(product.discountValue) %>% OFF
 
-      <%= Number(product.discountValue) %>% OFF
+                    <% if (product.maxDiscountAmount != null) { %>
 
-      <% if (product.maxDiscountAmount != null) { %>
-        <span class="pd-cap-separator">·</span>
-        Max ₹<%= Number(
-          product.maxDiscountAmount
-        ).toLocaleString("en-IN") %>
-      <% } %>
+                      <span class="pd-cap-separator">·</span>
 
-    <% } else { %>
+                      Max ₹<%= Number(
+                        product.maxDiscountAmount,
+                      ).toLocaleString("en-IN") %>
 
-      ₹<%= Number(
-        product.discountValue
-      ).toLocaleString("en-IN") %> OFF
+                    <% } %>
 
-    <% } %>
+                  <% } else { %>
 
-  </span>
+                    ₹<%= Number(
+                      product.discountValue,
+                    ).toLocaleString("en-IN") %> OFF
 
-  <% if (product.offerTitle) { %>
-    <span class="pd-offer-name">
-      <%= product.offerTitle %>
-    </span>
-  <% } %>
+                  <% } %>
 
-</div>
+                </span>
 
-</div>
+                <% if (product.offerTitle) { %>
 
-  <% } %>
+                  <span class="pd-offer-name">
+                    <%= product.offerTitle %>
+                  </span>
 
-</div>
+                <% } %>
 
-        <!-- Description -->
-        <p class="pd-desc"><%= product.description %></p>
+              </div>
 
-        <!-- Stock -->
+            </div>
+
+          <% } %>
+
+        </div>
+
+        <p class="pd-desc">
+          <%= product.description %>
+        </p>
+
         <div class="pd-stock-row" id="stockRow">
 
           <% if (isUnavailable) { %>
@@ -149,354 +161,793 @@
 
         </div>
 
-        <!-- Color -->
         <div class="pd-option">
+
           <h4 class="pd-label">
-            Color: <span id="colorLabel"><%= selectedVariant.color.name %></span>
+            Color:
+            <span id="colorLabel">
+              <%= selectedVariant.color.name %>
+            </span>
           </h4>
+
           <div class="pd-colors">
+
             <%
-                                                       // Group unique colors; map color code → first variant with that color
               const colorMap = {};
-              variants.forEach(v => {
-                if (!colorMap[v.color.code]) colorMap[v.color.code] = v;
+
+              variants.forEach((variant) => {
+                if (!colorMap[variant.color.code]) {
+                  colorMap[variant.color.code] = variant;
+                }
               });
             %>
-            <% Object.values(colorMap).forEach(v => { %>
+
+            <% Object.values(colorMap).forEach((variant) => { %>
+
               <button
                 type="button"
-                class="pd-color <%= v.color.code === selectedVariant.color.code ? 'pd-color--active' : '' %>"
-                style="background:<%= v.color.code %>"
-                title="<%= v.color.name %>"
-                data-color-code="<%= v.color.code %>"
-                data-color-name="<%= v.color.name %>"
+                class="pd-color <%= variant.color.code === selectedVariant.color.code ? 'pd-color--active' : '' %>"
+                style="background: <%= variant.color.code %>"
+                title="<%= variant.color.name %>"
+                data-color-code="<%= variant.color.code %>"
+                data-color-name="<%= variant.color.name %>"
               ></button>
+
             <% }) %>
+
           </div>
+
         </div>
 
-        <!-- Size -->
         <div class="pd-option">
+
           <h4 class="pd-label">
-            Size: <span id="sizeLabel"><%= selectedVariant.size %></span>
+            Size:
+            <span id="sizeLabel">
+              <%= selectedVariant.size %>
+            </span>
           </h4>
+
           <div class="pd-sizes" id="sizesWrap">
+
             <%
-              // All variants as JSON for JS
-              const variantsJson = JSON.stringify(variants.map(v => ({
-                _id:       v._id,
-                size:      v.size,
-                colorCode: v.color.code,
-                colorName: v.color.name,
-                stock:     v.stock,
-                price:     v.price,
-                images:    v.images.map(i => i.url),
-                isDefault: v.isDefault,
-              })));
+              const variantsJson = JSON.stringify(
+                variants.map((variant) => ({
+                  _id: variant._id,
+                  size: variant.size,
+                  colorCode: variant.color.code,
+                  colorName: variant.color.name,
+                  stock: variant.stock,
+                  price: variant.price,
+                  images: variant.images.map((image) => image.url),
+                  isDefault: variant.isDefault,
+                })),
+              );
             %>
-            <% variants.filter(v => v.color.code === selectedVariant.color.code).forEach(v => { %>
+
+            <% variants
+              .filter(
+                (variant) =>
+                  variant.color.code === selectedVariant.color.code,
+              )
+              .forEach((variant) => {
+            %>
+
               <button
                 type="button"
-                class="pd-size <%= v._id.toString() === selectedVariant._id.toString() ? 'pd-size--active' : '' %> <%= v.stock <= 0 ? 'pd-size--disabled' : '' %>"
-                data-variant-id="<%= v._id %>"
+                class="pd-size <%= variant._id.toString() === selectedVariant._id.toString() ? 'pd-size--active' : '' %> <%= variant.stock <= 0 ? 'pd-size--disabled' : '' %>"
+                data-variant-id="<%= variant._id %>"
               >
-                <%= v.size %>
+                <%= variant.size %>
               </button>
+
             <% }) %>
+
           </div>
+
         </div>
 
-        <!-- Quantity -->
         <div class="pd-qty-wrap">
+
           <div class="pd-qty">
-            <button type="button" id="minusBtn" class="pd-qty-btn" disabled>−</button>
-            <input type="number" id="qtyInput" class="pd-qty-input" value="1" min="1" max="5" readonly />
-            <button type="button" id="plusBtn" class="pd-qty-btn">+</button>
+
+            <button
+              type="button"
+              id="minusBtn"
+              class="pd-qty-btn"
+              disabled
+            >
+              −
+            </button>
+
+            <input
+              type="number"
+              id="qtyInput"
+              class="pd-qty-input"
+              value="1"
+              min="1"
+              max="5"
+              readonly
+            />
+
+            <button
+              type="button"
+              id="plusBtn"
+              class="pd-qty-btn"
+            >
+              +
+            </button>
+
           </div>
-          <p class="pd-qty-note">Max 5 per order</p>
+
+          <p class="pd-qty-note">
+            Max 5 per order
+          </p>
+
         </div>
 
-        <!-- Error -->
         <div class="pd-error" id="errorBox"></div>
 
-        <!-- Actions -->
         <div class="pd-actions">
 
-          <form action="/user/cart/add" method="POST" class="pd-action-form" id="cartForm">
-            <input type="hidden" name="variantId" id="cartVariantId" value="<%= selectedVariant._id %>" />
-            <input type="hidden" name="quantity"  id="cartQty"       value="1" />
+          <form
+            action="/user/cart/add"
+            method="POST"
+            class="pd-action-form"
+            id="cartForm"
+          >
+
+            <input
+              type="hidden"
+              name="variantId"
+              id="cartVariantId"
+              value="<%= selectedVariant._id %>"
+            />
+
+            <input
+              type="hidden"
+              name="quantity"
+              id="cartQty"
+              value="1"
+            />
+
             <button
               type="submit"
               class="pd-cart-btn"
               id="cartBtn"
-              <%= isUnavailable || selectedVariant.stock <= 0 ? 'disabled' : '' %>
+              <%= isUnavailable || selectedVariant.stock <= 0 ? "disabled" : "" %>
             >
               Add to Cart
             </button>
+
           </form>
 
-          <form action="/user/checkout/buy-now" method="POST" class="pd-action-form" id="buyForm">
-            <input type="hidden" name="variantId" id="buyVariantId" value="<%= selectedVariant._id %>" />
-            <input type="hidden" name="quantity"  id="buyQty"       value="1" />
+          <form
+            action="/user/checkout/buy-now"
+            method="POST"
+            class="pd-action-form"
+            id="buyForm"
+          >
+
+            <input
+              type="hidden"
+              name="variantId"
+              id="buyVariantId"
+              value="<%= selectedVariant._id %>"
+            />
+
+            <input
+              type="hidden"
+              name="quantity"
+              id="buyQty"
+              value="1"
+            />
+
             <button
               type="submit"
               class="pd-buy-btn"
               id="buyBtn"
-              <%= isUnavailable || selectedVariant.stock <= 0 ? 'disabled' : '' %>
+              <%= isUnavailable || selectedVariant.stock <= 0 ? "disabled" : "" %>
             >
               Buy Now
             </button>
+
           </form>
-<form
-  action="/user/wishlist/add"
-  method="POST"
-  class="wishlist-form"
->
 
-  <input
-    type="hidden"
-    name="productId"
-    value="<%= product._id %>"
-  />
+          <form
+            action="/user/wishlist/add"
+            method="POST"
+            class="wishlist-form"
+          >
 
-  <button
-    type="submit"
-    class="pd-wishlist-btn <%= isWishlisted ? 'pd-wishlist-btn--active' : '' %>"
-    aria-label="Add to wishlist"
-  >
+            <input
+              type="hidden"
+              name="productId"
+              value="<%= product._id %>"
+            />
 
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="<%= isWishlisted ? 'currentColor' : 'none' %>"
-      stroke="currentColor"
-      stroke-width="1.8"
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
+            <button
+              type="submit"
+              class="pd-wishlist-btn <%= isWishlisted ? 'pd-wishlist-btn--active' : '' %>"
+              aria-label="Add to wishlist"
+            >
 
-  </button>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="<%= isWishlisted ? 'currentColor' : 'none' %>"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
 
-</form>
+            </button>
 
+          </form>
 
         </div>
 
-        <!-- Accordion -->
         <div class="pd-accordion">
 
           <details open>
-            <summary>Fit &amp; Material</summary>
+
+            <summary>
+              Fit &amp; Material
+            </summary>
+
             <div class="pd-accordion-content">
+
               <ul>
-                <li>Fit: <%= product.fit %></li>
-                <li>Material: <%= product.material %></li>
+                <li>
+                  Fit: <%= product.fit %>
+                </li>
+
+                <li>
+                  Material: <%= product.material %>
+                </li>
               </ul>
+
             </div>
+
           </details>
 
           <details>
-            <summary>Wash &amp; Care</summary>
+
+            <summary>
+              Wash &amp; Care
+            </summary>
+
             <div class="pd-accordion-content">
               <p><%= product.washCare %></p>
             </div>
+
           </details>
 
         </div>
+
       </div>
-      
+
     </section>
 
-    <!-- RELATED PRODUCTS -->
     <% if (relatedProducts && relatedProducts.length > 0) { %>
+
       <section class="pd-related">
+
         <div class="pd-related-head">
           <h2>You May Also Like</h2>
         </div>
+
         <div class="pd-related-grid">
-          <% relatedProducts.forEach(item => { %>
-            <a href="/user/product/<%= item._id %>" class="pd-related-card">
+
+          <% relatedProducts.forEach((item) => { %>
+
+            <a
+              href="/user/product/<%= item._id %>"
+              class="pd-related-card"
+            >
+
               <form class="related-wishlist-form">
-              <input
-                type="hidden"
-                name="productId"
-                value="<%= item._id %>"
-              />
 
-              <button
-                type="submit"
-                class="pd-related-wish <%= item.isWishlisted ? 'pd-related-wish--active' : '' %>"
-                aria-label="Wishlist"
-              >
+                <input
+                  type="hidden"
+                  name="productId"
+                  value="<%= item._id %>"
+                />
 
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="<%= item.isWishlisted ? 'currentColor' : 'none' %>"
-                  stroke="currentColor"
-                  stroke-width="1.8"
+                <button
+                  type="submit"
+                  class="pd-related-wish <%= item.isWishlisted ? 'pd-related-wish--active' : '' %>"
+                  aria-label="Wishlist"
                 >
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
 
-              </button>
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="<%= item.isWishlisted ? 'currentColor' : 'none' %>"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
 
-            </form>
+                </button>
+
+              </form>
+
               <div class="pd-related-image-wrap">
-                <img src="<%= item.defaultImage %>" alt="<%= item.name %>" class="pd-related-image" loading="lazy" />
+
+                <img
+                  src="<%= item.defaultImage %>"
+                  alt="<%= item.name %>"
+                  class="pd-related-image"
+                  loading="lazy"
+                />
+
               </div>
+
               <div class="pd-related-info">
-                <h4 class="pd-related-name"><%= item.name %></h4>
+
+                <h4 class="pd-related-name">
+                  <%= item.name %>
+                </h4>
+
                 <div class="pd-related-price-wrap">
 
-                <span class="pd-related-price">
-                  ₹<%= item.finalPrice.toLocaleString("en-IN") %>
-                </span>
+                  <span class="pd-related-price">
+                    ₹<%= item.finalPrice.toLocaleString("en-IN") %>
+                  </span>
 
-                <% if(item.hasOffer){ %>
+                  <% if (item.hasOffer) { %>
 
-                  <span class="pd-related-old-price">
-                    ₹<%= item.originalPrice.toLocaleString("en-IN") %>
+                    <span class="pd-related-old-price">
+                      ₹<%= item.originalPrice.toLocaleString("en-IN") %>
+                    </span>
+
+                  <% } %>
+
+                </div>
+
+                <% if (item.hasOffer) { %>
+
+                  <div class="pd-related-offer">
+
+                    <%=
+                      item.discountType === "PERCENTAGE"
+                        ? `${Number(item.discountValue)}% OFF`
+                        : `SAVE ₹${item.discountAmount.toLocaleString("en-IN")}`
+                    %>
+
+                  </div>
+
+                <% } %>
+
+              </div>
+
+            </a>
+
+          <% }) %>
+
+        </div>
+
+      </section>
+
+    <% } %>
+
+    <section class="pd-reviews">
+
+      <div class="pd-reviews-top">
+
+        <div class="pd-reviews-summary">
+
+          <div class="pd-reviews-rating-wrap">
+
+            <h2 class="pd-reviews-rating">
+              <%= Number(reviewSummary.averageRating || 0).toFixed(1) %>
+            </h2>
+
+            <div class="pd-reviews-meta">
+
+              <div class="pd-reviews-stars">
+
+                <% for (let i = 1; i <= 5; i++) { %>
+
+                  <span
+                    class="<%= i <= Math.round(reviewSummary.averageRating || 0) ? 'star-filled' : 'star-empty' %>"
+                  >
+                    ★
                   </span>
 
                 <% } %>
 
               </div>
 
-              <% if(item.hasOffer){ %>
+              <p class="pd-reviews-count">
 
-              <div class="pd-related-offer">
-                <%=
-                  item.discountType === "PERCENTAGE"
-                    ? `${Number(item.discountValue)}% OFF`
-                    : `SAVE ₹${item.discountAmount.toLocaleString("en-IN")}`
+                <%= reviewSummary.totalReviews %>
+
+                <%= reviewSummary.totalReviews === 1
+                  ? "review"
+                  : "reviews"
                 %>
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="pd-review-action">
+
+          <% if (userReview) { %>
+
+            <span class="pd-reviewed-label">
+              Review submitted
+            </span>
+
+          <% } else if (canReview) { %>
+
+            <button
+              type="button"
+              class="pd-review-btn"
+              id="writeReviewBtn"
+            >
+              Write a Review
+            </button>
+
+          <% } %>
+
+        </div>
+
+      </div>
+
+      <div class="pd-reviews-divider"></div>
+
+      <% if (reviews && reviews.length > 0) { %>
+
+        <div class="pd-reviews-grid">
+
+          <% reviews.forEach((review) => { %>
+
+            <%
+              const isOwnReview =
+                userReview &&
+                String(userReview._id) === String(review._id);
+            %>
+
+            <div
+              class="pd-review-card <%= isOwnReview ? 'pd-review-card--own' : '' %>"
+            >
+
+              <div class="pd-review-card-top">
+
+                <div>
+
+                  <div class="pd-review-author-row">
+
+                    <h4 class="pd-review-name">
+                      <%= review.userId?.name || "Customer" %>
+                    </h4>
+
+                    <% if (isOwnReview) { %>
+
+                      <span class="pd-your-review">
+                        Your Review
+                      </span>
+
+                    <% } %>
+
+                  </div>
+
+                  <div class="pd-review-stars-sm">
+
+                    <% for (let i = 1; i <= 5; i++) { %>
+
+                      <span
+                        class="<%= i <= review.rating ? 'star-filled' : 'star-empty' %>"
+                      >
+                        ★
+                      </span>
+
+                    <% } %>
+
+                  </div>
+
+                </div>
+
+                <span class="pd-review-time">
+
+                  <%= new Date(review.createdAt).toLocaleDateString(
+                    "en-IN",
+                    {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    },
+                  ) %>
+
+                </span>
+
               </div>
+
+              <p class="pd-review-text">
+                <%= review.comment %>
+              </p>
+
+              <% if (isOwnReview) { %>
+
+                <div class="pd-review-owner-actions">
+
+                  <button
+                    type="button"
+                    class="pd-delete-review-btn"
+                    data-review-id="<%= review._id %>"
+                  >
+                    Delete Review
+                  </button>
+
+                </div>
 
               <% } %>
-              </div>
-            </a>
+
+            </div>
+
           <% }) %>
+
         </div>
-      </section>
-    <% } %>
 
-<!-- REVIEWS -->
-<section class="pd-reviews">
+      <% } else { %>
 
-  <div class="pd-reviews-top">
+        <div class="pd-reviews-empty">
 
-    <div class="pd-reviews-summary">
-
-      <div class="pd-reviews-rating-wrap">
-        <h2 class="pd-reviews-rating">4.8</h2>
-
-        <div class="pd-reviews-meta">
-          <div class="pd-reviews-stars">
-            ★★★★★
+          <div class="pd-reviews-empty-icon">
+            <i class="fa-regular fa-star"></i>
           </div>
 
-          <p class="pd-reviews-count">
-            Based on 124 reviews
+          <h3>No reviews yet</h3>
+
+          <p>
+            Be the first to share your experience with this product.
           </p>
-        </div>
-      </div>
 
-    </div>
+          <% if (canReview) { %>
 
-    <button class="pd-review-btn">
-      Write a Review
-    </button>
+            <button
+              type="button"
+              class="pd-review-btn pd-review-empty-btn"
+              id="writeReviewEmptyBtn"
+            >
+              Write a Review
+            </button>
 
-  </div>
+          <% } %>
 
-  <div class="pd-reviews-divider"></div>
-
-  <div class="pd-reviews-grid">
-
-    <div class="pd-review-card">
-      <div class="pd-review-card-top">
-        <div>
-          <h4 class="pd-review-name">Alex M.</h4>
-
-          <div class="pd-review-stars-sm">
-            ★★★★★
-          </div>
         </div>
 
-        <span class="pd-review-time">
-          2 days ago
-        </span>
-      </div>
+      <% } %>
 
-      <p class="pd-review-text">
-        The fabric quality is outstanding for the price.
-        It's soft but substantial. The fit is exactly as described —
-        relaxed but not sloppy.
-      </p>
-    </div>
-
-    <div class="pd-review-card">
-      <div class="pd-review-card-top">
-        <div>
-          <h4 class="pd-review-name">Jordan K.</h4>
-
-          <div class="pd-review-stars-sm">
-            ★★★★☆
-          </div>
-        </div>
-
-        <span class="pd-review-time">
-          1 week ago
-        </span>
-      </div>
-
-      <p class="pd-review-text">
-        I bought the Cream and Olive colors.
-        They look even better in person.
-        The organic cotton feels great against the skin.
-        Will buy more!
-      </p>
-    </div>
-
-    <div class="pd-review-card">
-      <div class="pd-review-card-top">
-        <div>
-          <h4 class="pd-review-name">Taylor R.</h4>
-
-          <div class="pd-review-stars-sm">
-            ★★★★☆
-          </div>
-        </div>
-
-        <span class="pd-review-time">
-          2 weeks ago
-        </span>
-      </div>
-
-      <p class="pd-review-text">
-        Love the sustainability aspect.
-        The quality is top notch.
-        It runs a tiny bit larger than I expected,
-        but I like the oversized look anyway.
-      </p>
-    </div>
-
-  </div>
-
-  <div class="pd-reviews-footer">
-    <button class="pd-view-reviews-btn">
-      View All Reviews
-    </button>
-  </div>
-
-</section>
+    </section>
 
   </main>
 
+  <% if (canReview && !userReview) { %>
+
+    <div
+      class="pd-review-modal"
+      id="reviewModal"
+      aria-hidden="true"
+    >
+
+      <div
+        class="pd-review-modal-backdrop"
+        id="reviewModalBackdrop"
+      ></div>
+
+      <div
+        class="pd-review-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reviewModalTitle"
+      >
+
+        <div class="pd-review-modal-head">
+
+          <div>
+
+            <p class="pd-review-modal-eyebrow">
+              PRODUCT REVIEW
+            </p>
+
+            <h2 id="reviewModalTitle">
+              Share your experience
+            </h2>
+
+          </div>
+
+          <button
+            type="button"
+            class="pd-review-modal-close"
+            id="closeReviewModal"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+        </div>
+
+        <form id="reviewForm">
+
+          <input
+            type="hidden"
+            name="productId"
+            value="<%= product._id %>"
+          />
+
+          <input
+            type="hidden"
+            name="rating"
+            id="reviewRating"
+            value=""
+          />
+
+          <div class="pd-review-field">
+
+            <label>
+              Your rating
+            </label>
+
+            <div class="pd-rating-input">
+
+              <% for (let i = 1; i <= 5; i++) { %>
+
+                <button
+                  type="button"
+                  class="pd-rating-star"
+                  data-rating="<%= i %>"
+                  aria-label="<%= i %> star"
+                >
+                  ★
+                </button>
+
+              <% } %>
+
+            </div>
+
+            <p
+              class="pd-review-error"
+              id="ratingError"
+            ></p>
+
+          </div>
+
+          <div class="pd-review-field">
+
+            <div class="pd-review-label-row">
+
+              <label for="reviewComment">
+                Your review
+              </label>
+
+              <span id="reviewCharacterCount">
+                0 / 500
+              </span>
+
+            </div>
+
+            <textarea
+              id="reviewComment"
+              name="comment"
+              rows="5"
+              maxlength="500"
+              placeholder="Tell us what you liked about this product..."
+            ></textarea>
+
+            <p
+              class="pd-review-error"
+              id="commentError"
+            ></p>
+
+          </div>
+
+          <div class="pd-review-modal-actions">
+
+            <button
+              type="button"
+              class="pd-review-cancel-btn"
+              id="cancelReviewBtn"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="pd-review-submit-btn"
+              id="reviewSubmitBtn"
+            >
+              Submit Review
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  <% } %>
+
+  <% if (userReview) { %>
+
+    <div
+      class="pd-delete-modal"
+      id="deleteReviewModal"
+      aria-hidden="true"
+    >
+
+      <div
+        class="pd-delete-modal-backdrop"
+        id="deleteReviewBackdrop"
+      ></div>
+
+      <div
+        class="pd-delete-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteReviewTitle"
+      >
+
+        <div class="pd-delete-modal-icon">
+          <i class="fa-regular fa-trash-can"></i>
+        </div>
+
+        <div class="pd-delete-modal-content">
+
+          <h3 id="deleteReviewTitle">
+            Delete review?
+          </h3>
+
+          <p>
+            This review will be permanently removed.
+            This action cannot be undone.
+          </p>
+
+        </div>
+
+        <div class="pd-delete-modal-actions">
+
+          <button
+            type="button"
+            class="pd-delete-modal-cancel"
+            id="cancelDeleteReview"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            class="pd-delete-modal-confirm"
+            id="confirmDeleteReview"
+          >
+            Delete Review
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  <% } %>
+
+  <%- include('../partials/user-footer') %>
+
   <%- include('../partials/user-scripts') %>
+
   <script>
     window.__VARIANTS__ = <%- variantsJson %>;
     window.__SELECTED_ID__ = '<%= selectedVariant._id %>';
