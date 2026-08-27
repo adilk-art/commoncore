@@ -31,7 +31,7 @@ const calculateIncludedGst = (amount, gstRate) => {
   return inclusiveAmount - taxableValue;
 };
 
-const calculateShipping = (subtotal) => {
+export const calculateShipping = (subtotal) => {
   const amount = Number(subtotal);
 
   if (amount <= 0) {

@@ -1,4 +1,6 @@
+import "./config/env.js";
 import express from "express";
+
 import session from "express-session";
 import passport from "passport";
 import "./config/passport.js";
