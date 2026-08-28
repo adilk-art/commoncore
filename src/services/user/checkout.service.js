@@ -63,24 +63,14 @@ export const getCheckoutPageService = async (userId) => {
       return total;
     }
 
-    const itemSubtotal =
-      Number(item.finalPrice) *
-      Number(item.quantity);
+    const itemSubtotal = Number(item.finalPrice) * Number(item.quantity);
 
-    return (
-      total +
-      calculateIncludedGst(
-        itemSubtotal,
-        item.product?.gstRate,
-      )
-    );
+    return total + calculateIncludedGst(itemSubtotal, item.product?.gstRate);
   }, 0);
 
   const shipping = calculateShipping(cart.subtotal);
 
-  const total =
-    Number(cart.subtotal) +
-    shipping;
+  const total = Number(cart.subtotal) + shipping;
 
   const qualifiedCoupons = invalidCart
     ? []
@@ -89,11 +79,9 @@ export const getCheckoutPageService = async (userId) => {
         subtotal: cart.subtotal,
       });
 
-  const walletBalance =
-    Number(wallet?.balance || 0);
+  const walletBalance = Number(wallet?.balance || 0);
 
-  const canUseWallet =
-    walletBalance >= total;
+  const canUseWallet = walletBalance >= total;
 
   return {
     canUseWallet,
@@ -101,29 +89,21 @@ export const getCheckoutPageService = async (userId) => {
     cart,
     addresses,
 
-    originalSubtotal:
-      cart.originalSubtotal,
+    originalSubtotal: cart.originalSubtotal,
 
-    subtotal:
-      cart.subtotal,
+    subtotal: cart.subtotal,
 
     qualifiedCoupons,
 
-    canApplyCoupon:
-      qualifiedCoupons.some(
-        (coupon) => coupon.eligible,
-      ),
+    canApplyCoupon: qualifiedCoupons.some((coupon) => coupon.eligible),
 
-    totalDiscount:
-      cart.totalDiscount,
+    totalDiscount: cart.totalDiscount,
 
-    gstAmount:
-      Number(gstAmount.toFixed(2)),
+    gstAmount: Number(gstAmount.toFixed(2)),
 
     shipping,
 
-    total:
-      Number(total.toFixed(2)),
+    total: Number(total.toFixed(2)),
 
     invalidCart,
     message,
@@ -136,79 +116,50 @@ export const getCheckoutPageService = async (userId) => {
   };
 };
 
-export const validateBuyNowService = async (
-  variantId,
-  quantity,
-) => {
-  const qty =
-    Number.parseInt(quantity, 10);
+export const validateBuyNowService = async (variantId, quantity) => {
+  const qty = Number.parseInt(quantity, 10);
 
-  if (
-    !Number.isInteger(qty) ||
-    qty < 1 ||
-    qty > MAX_QTY
-  ) {
-    throw createServiceError(
-      `Quantity must be between 1 and ${MAX_QTY}`,
-    );
+  if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) {
+    throw createServiceError(`Quantity must be between 1 and ${MAX_QTY}`);
   }
 
   if (!variantId) {
-    throw createServiceError(
-      "Variant ID is required",
-    );
+    throw createServiceError("Variant ID is required");
   }
 
-  const variant =
-    await findActiveVariant(variantId);
+  const variant = await findActiveVariant(variantId);
 
   if (!variant) {
-    throw createServiceError(
-      "Variant not found",
-      404,
-    );
+    throw createServiceError("Variant not found", 404);
   }
 
   const product = variant.productId;
   const category = product?.categoryId;
 
   if (!product) {
-    throw createServiceError(
-      "Product not found",
-      404,
-    );
+    throw createServiceError("Product not found", 404);
   }
 
   if (!product.isActive) {
-    throw createServiceError(
-      "Product is unavailable",
-    );
+    throw createServiceError("Product is unavailable");
   }
 
   if (!category?.isActive) {
-    throw createServiceError(
-      "Product category is unavailable",
-    );
+    throw createServiceError("Product category is unavailable");
   }
 
   if (!variant.isActive) {
-    throw createServiceError(
-      "Variant is unavailable",
-    );
+    throw createServiceError("Variant is unavailable");
   }
 
   const stock = Number(variant.stock);
 
   if (stock <= 0) {
-    throw createServiceError(
-      "Product is out of stock",
-    );
+    throw createServiceError("Product is out of stock");
   }
 
   if (qty > stock) {
-    throw createServiceError(
-      `Only ${stock} available`,
-    );
+    throw createServiceError(`Only ${stock} available`);
   }
 
   return {
@@ -217,61 +168,36 @@ export const validateBuyNowService = async (
   };
 };
 
-export const getBuyNowCheckoutService = async (
-  userId,
-  variantId,
-  quantity,
-) => {
-  const [
-    wallet,
-    addresses,
-    validatedBuyNow,
-    offerLookup,
-  ] = await Promise.all([
+export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
+  const [wallet, addresses, validatedBuyNow, offerLookup] = await Promise.all([
     findWalletByUserId(userId),
     getAddressesService(userId),
-    validateBuyNowService(
-      variantId,
-      quantity,
-    ),
+    validateBuyNowService(variantId, quantity),
     buildActiveOfferLookup(),
   ]);
 
-  const { variant, qty } =
-    validatedBuyNow;
+  const { variant, qty } = validatedBuyNow;
 
   const product = variant.productId;
 
-  const pricing =
-    getBestOfferPricing(
-      product,
-      variant,
-      offerLookup,
-    );
+  const pricing = getBestOfferPricing(product, variant, offerLookup);
 
-  const originalPrice =
-    Number(pricing.originalPrice);
+  const originalPrice = Number(pricing.originalPrice);
 
-  const finalPrice =
-    Number(pricing.finalPrice);
+  const finalPrice = Number(pricing.finalPrice);
 
-  const discountAmount =
-    Number(pricing.discountAmount);
+  const discountAmount = Number(pricing.discountAmount);
 
-  const originalSubtotal =
-    originalPrice * qty;
+  const originalSubtotal = originalPrice * qty;
 
-  const subtotal =
-    finalPrice * qty;
+  const subtotal = finalPrice * qty;
 
-  const qualifiedCoupons =
-    await getQualifiedCouponsService({
-      userId,
-      subtotal,
-    });
+  const qualifiedCoupons = await getQualifiedCouponsService({
+    userId,
+    subtotal,
+  });
 
-  const totalDiscount =
-    originalSubtotal - subtotal;
+  const totalDiscount = originalSubtotal - subtotal;
 
   const item = {
     product,
@@ -283,57 +209,34 @@ export const getBuyNowCheckoutService = async (
     finalPrice,
     discountAmount,
 
-    hasOffer:
-      pricing.hasOffer,
+    hasOffer: pricing.hasOffer,
 
-    offerId:
-      pricing.offerId,
+    offerId: pricing.offerId,
 
-    offerTitle:
-      pricing.offerTitle,
+    offerTitle: pricing.offerTitle,
 
-    offerType:
-      pricing.offerType,
+    offerType: pricing.offerType,
 
-    discountType:
-      pricing.discountType,
+    discountType: pricing.discountType,
 
-    discountValue:
-      pricing.discountValue,
+    discountValue: pricing.discountValue,
 
-    lineOriginalTotal:
-      Number(
-        originalSubtotal.toFixed(2),
-      ),
+    lineOriginalTotal: Number(originalSubtotal.toFixed(2)),
 
-    lineTotal:
-      Number(
-        subtotal.toFixed(2),
-      ),
+    lineTotal: Number(subtotal.toFixed(2)),
 
-    lineDiscount:
-      Number(
-        totalDiscount.toFixed(2),
-      ),
+    lineDiscount: Number(totalDiscount.toFixed(2)),
   };
 
-  const shipping =
-    calculateShipping(subtotal);
+  const shipping = calculateShipping(subtotal);
 
-  const total =
-    subtotal + shipping;
+  const total = subtotal + shipping;
 
-  const walletBalance =
-    Number(wallet?.balance || 0);
+  const walletBalance = Number(wallet?.balance || 0);
 
-  const canUseWallet =
-    walletBalance >= total;
+  const canUseWallet = walletBalance >= total;
 
-  const gstAmount =
-    calculateIncludedGst(
-      subtotal,
-      product.gstRate,
-    );
+  const gstAmount = calculateIncludedGst(subtotal, product.gstRate);
 
   return {
     canUseWallet,
@@ -343,53 +246,30 @@ export const getBuyNowCheckoutService = async (
       items: [item],
       invalid: false,
 
-      originalSubtotal:
-        Number(
-          originalSubtotal.toFixed(2),
-        ),
+      originalSubtotal: Number(originalSubtotal.toFixed(2)),
 
-      subtotal:
-        Number(
-          subtotal.toFixed(2),
-        ),
+      subtotal: Number(subtotal.toFixed(2)),
 
-      totalDiscount:
-        Number(
-          totalDiscount.toFixed(2),
-        ),
+      totalDiscount: Number(totalDiscount.toFixed(2)),
     },
 
     addresses,
 
-    originalSubtotal:
-      Number(
-        originalSubtotal.toFixed(2),
-      ),
+    originalSubtotal: Number(originalSubtotal.toFixed(2)),
 
-    subtotal:
-      Number(
-        subtotal.toFixed(2),
-      ),
+    subtotal: Number(subtotal.toFixed(2)),
 
     qualifiedCoupons,
 
-    canApplyCoupon:
-      qualifiedCoupons.some(
-        (coupon) => coupon.eligible,
-      ),
+    canApplyCoupon: qualifiedCoupons.some((coupon) => coupon.eligible),
 
-    totalDiscount:
-      Number(
-        totalDiscount.toFixed(2),
-      ),
+    totalDiscount: Number(totalDiscount.toFixed(2)),
 
     shipping,
 
-    total:
-      Number(total.toFixed(2)),
+    total: Number(total.toFixed(2)),
 
-    gstAmount:
-      Number(gstAmount.toFixed(2)),
+    gstAmount: Number(gstAmount.toFixed(2)),
 
     invalidCart: false,
     message: null,
@@ -397,8 +277,7 @@ export const getBuyNowCheckoutService = async (
     isBuyNow: true,
 
     buyNow: {
-      variantId:
-        String(variant._id),
+      variantId: String(variant._id),
       quantity: qty,
     },
 
@@ -407,104 +286,76 @@ export const getBuyNowCheckoutService = async (
   };
 };
 
-export const getCheckoutAgainPageService = async (
-  userId,
-  checkoutAgain,
-) => {
-  const order =
-    await findUserOrderById(
-      checkoutAgain.orderId,
-      userId,
-    );
+export const getCheckoutAgainPageService = async (userId, checkoutAgain) => {
+  const order = await findUserOrderById(checkoutAgain.orderId, userId);
 
   if (!order) {
-    const error =
-      new Error("Order not found");
-
+    const error = new Error("Order not found");
     error.status = 404;
-
-    throw error;
-  }
-
-  if (
-    ![
-      "Payment Pending",
-      "Payment Expired",
-    ].includes(order.orderStatus)
-  ) {
-    const error =
-      new Error(
-        "This order cannot be checked out again",
-      );
-
-    error.status = 400;
-
     throw error;
   }
 
   if (order.paymentStatus === "Paid") {
-    const error =
-      new Error(
-        "This order is already paid",
-      );
-
+    const error = new Error("This order is already paid");
     error.status = 400;
-
     throw error;
   }
 
-  if (
-    !Array.isArray(checkoutAgain.items) ||
-    checkoutAgain.items.length === 0
-  ) {
-    const error =
-      new Error(
-        "No items available for checkout",
-      );
-
+  if (!Array.isArray(checkoutAgain.items) || checkoutAgain.items.length === 0) {
+    const error = new Error("No items available for checkout");
     error.status = 400;
-    error.code =
-      "EMPTY_CHECKOUT_AGAIN";
-
+    error.code = "EMPTY_CHECKOUT_AGAIN";
     throw error;
   }
 
-  const [
-    addresses,
-    wallet,
-    offerLookup,
-  ] = await Promise.all([
+  const [addresses, wallet, offerLookup] = await Promise.all([
     getAddressesService(userId),
     findWalletByUserId(userId),
     buildActiveOfferLookup(),
   ]);
 
+  const previousShippingAddress = order.shippingAddress || null;
+
+  let restoredAddressId = null;
+
+  if (previousShippingAddress && Array.isArray(addresses)) {
+    const normalize = (value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase();
+
+    const matchingAddress = addresses.find(
+      (address) =>
+        normalize(address.fullName) ===
+          normalize(previousShippingAddress.fullName) &&
+        normalize(address.phone) === normalize(previousShippingAddress.phone) &&
+        normalize(address.line1) === normalize(previousShippingAddress.line1) &&
+        normalize(address.line2) === normalize(previousShippingAddress.line2) &&
+        normalize(address.city) === normalize(previousShippingAddress.city) &&
+        normalize(address.state) === normalize(previousShippingAddress.state) &&
+        normalize(address.pincode) ===
+          normalize(previousShippingAddress.pincode),
+    );
+
+    if (matchingAddress) {
+      restoredAddressId = String(matchingAddress._id);
+    }
+  }
+
   const items = [];
 
-  for (
-    const selectedItem
-    of checkoutAgain.items
-  ) {
-    const oldItem =
-      order.items.find(
-        (item) =>
-          String(
-            item.variantId?._id ||
-            item.variantId,
-          ) ===
-          String(
-            selectedItem.variantId,
-          ),
-      );
+  for (const selectedItem of checkoutAgain.items) {
+    const oldItem = order.items.find(
+      (item) =>
+        String(item.variantId?._id || item.variantId) ===
+        String(selectedItem.variantId),
+    );
 
     if (!oldItem) {
       continue;
     }
 
-    const variant =
-      await findActiveVariant(
-        selectedItem.variantId,
-      );
+    const variant = await findActiveVariant(selectedItem.variantId);
 
     if (!variant) {
       items.push({
@@ -515,19 +366,15 @@ export const getCheckoutAgainPageService = async (
         },
 
         variant: {
-          _id:
-            oldItem.variantId?._id ||
-            oldItem.variantId,
+          _id: oldItem.variantId?._id || oldItem.variantId,
 
-          images:
-            oldItem.productImage
-              ? [
-                  {
-                    url:
-                      oldItem.productImage,
-                  },
-                ]
-              : [],
+          images: oldItem.productImage
+            ? [
+                {
+                  url: oldItem.productImage,
+                },
+              ]
+            : [],
 
           size: oldItem.size,
 
@@ -536,40 +383,20 @@ export const getCheckoutAgainPageService = async (
           },
         },
 
-        quantity:
-          Number(
-            selectedItem.quantity,
-          ),
+        quantity: Number(selectedItem.quantity),
 
-        originalPrice:
-          Number(
-            oldItem.originalUnitPrice ||
-            oldItem.unitPrice ||
-            0,
-          ),
+        originalPrice: Number(
+          oldItem.originalUnitPrice || oldItem.unitPrice || 0,
+        ),
 
-        finalPrice:
-          Number(
-            oldItem.unitPrice || 0,
-          ),
+        finalPrice: Number(oldItem.unitPrice || 0),
 
         lineOriginalTotal:
-          Number(
-            oldItem.originalUnitPrice ||
-            oldItem.unitPrice ||
-            0,
-          ) *
-          Number(
-            selectedItem.quantity,
-          ),
+          Number(oldItem.originalUnitPrice || oldItem.unitPrice || 0) *
+          Number(selectedItem.quantity),
 
         lineTotal:
-          Number(
-            oldItem.unitPrice || 0,
-          ) *
-          Number(
-            selectedItem.quantity,
-          ),
+          Number(oldItem.unitPrice || 0) * Number(selectedItem.quantity),
 
         hasOffer: false,
 
@@ -578,20 +405,15 @@ export const getCheckoutAgainPageService = async (
 
         status: "unavailable",
 
-        unavailableReason:
-          "This product variant is no longer available",
+        unavailableReason: "This product variant is no longer available",
       });
 
       continue;
     }
 
-    const product =
-      variant.productId;
+    const product = variant.productId;
 
-    const quantity =
-      Number(
-        selectedItem.quantity,
-      );
+    const quantity = Number(selectedItem.quantity);
 
     let status = "active";
     let unavailableReason = "";
@@ -599,32 +421,20 @@ export const getCheckoutAgainPageService = async (
     if (!variant.isActive) {
       status = "unavailable";
 
-      unavailableReason =
-        "This variant is currently unavailable";
+      unavailableReason = "This variant is currently unavailable";
     } else if (!product?.isActive) {
       status = "unavailable";
 
-      unavailableReason =
-        "This product is currently unavailable";
-    } else if (
-      !product?.categoryId?.isActive
-    ) {
+      unavailableReason = "This product is currently unavailable";
+    } else if (!product?.categoryId?.isActive) {
       status = "unavailable";
 
-      unavailableReason =
-        "This product category is currently unavailable";
-    } else if (
-      !Number.isInteger(quantity) ||
-      quantity < 1
-    ) {
+      unavailableReason = "This product category is currently unavailable";
+    } else if (!Number.isInteger(quantity) || quantity < 1) {
       status = "unavailable";
 
-      unavailableReason =
-        "Invalid product quantity";
-    } else if (
-      Number(variant.stock) <
-      quantity
-    ) {
+      unavailableReason = "Invalid product quantity";
+    } else if (Number(variant.stock) < quantity) {
       status = "stock";
 
       unavailableReason =
@@ -633,26 +443,11 @@ export const getCheckoutAgainPageService = async (
           : "Out of stock";
     }
 
-    const pricing =
-      getBestOfferPricing(
-        product,
-        variant,
-        offerLookup,
-      );
+    const pricing = getBestOfferPricing(product, variant, offerLookup);
 
-    const originalPrice =
-      Number(
-        pricing.originalPrice ??
-        variant.price ??
-        0,
-      );
+    const originalPrice = Number(pricing.originalPrice ?? variant.price ?? 0);
 
-    const finalPrice =
-      Number(
-        pricing.finalPrice ??
-        variant.price ??
-        0,
-      );
+    const finalPrice = Number(pricing.finalPrice ?? variant.price ?? 0);
 
     items.push({
       product,
@@ -662,130 +457,62 @@ export const getCheckoutAgainPageService = async (
       originalPrice,
       finalPrice,
 
-      lineOriginalTotal:
-        originalPrice * quantity,
+      lineOriginalTotal: originalPrice * quantity,
 
-      lineTotal:
-        finalPrice * quantity,
+      lineTotal: finalPrice * quantity,
 
-      discountAmount:
-        Number(
-          pricing.discountAmount || 0,
-        ),
+      discountAmount: Number(pricing.discountAmount || 0),
 
-      hasOffer:
-        Boolean(
-          pricing.hasOffer,
-        ),
+      hasOffer: Boolean(pricing.hasOffer),
 
-      offerId:
-        pricing.offerId || null,
+      offerId: pricing.offerId || null,
 
-      offerTitle:
-        pricing.offerTitle || null,
+      offerTitle: pricing.offerTitle || null,
 
-      offerType:
-        pricing.offerType || null,
+      offerType: pricing.offerType || null,
 
-      discountType:
-        pricing.discountType || null,
+      discountType: pricing.discountType || null,
 
-      discountValue:
-        pricing.discountValue ?? null,
+      discountValue: pricing.discountValue ?? null,
 
       status,
       unavailableReason,
 
-      availableStock:
-        Number(
-          variant.stock,
-        ) || 0,
+      availableStock: Number(variant.stock) || 0,
     });
   }
 
-  const activeItems =
-    items.filter(
-      (item) =>
-        item.status === "active",
-    );
+  const activeItems = items.filter((item) => item.status === "active");
 
-  const originalSubtotal =
-    activeItems.reduce(
-      (total, item) =>
-        total +
-        Number(
-          item.lineOriginalTotal ||
-          0,
-        ),
-      0,
-    );
+  const originalSubtotal = activeItems.reduce(
+    (total, item) => total + Number(item.lineOriginalTotal || 0),
+    0,
+  );
 
-  const subtotal =
-    activeItems.reduce(
-      (total, item) =>
-        total +
-        Number(
-          item.lineTotal || 0,
-        ),
-      0,
-    );
+  const subtotal = activeItems.reduce(
+    (total, item) => total + Number(item.lineTotal || 0),
+    0,
+  );
 
-  const totalDiscount =
-    Math.max(
-      originalSubtotal - subtotal,
-      0,
-    );
+  const totalDiscount = Math.max(originalSubtotal - subtotal, 0);
 
-  const gstAmount =
-    activeItems.reduce(
-      (total, item) => {
-        const amount =
-          Number(
-            item.lineTotal || 0,
-          );
+  const gstAmount = activeItems.reduce((total, item) => {
+    const amount = Number(item.lineTotal || 0);
 
-        const gstRate =
-          Number(
-            item.product?.gstRate ||
-            0,
-          );
+    const gstRate = Number(item.product?.gstRate || 0);
 
-        if (
-          amount <= 0 ||
-          gstRate <= 0
-        ) {
-          return total;
-        }
+    if (amount <= 0 || gstRate <= 0) {
+      return total;
+    }
 
-        const taxableValue =
-          amount /
-          (1 + gstRate / 100);
+    const taxableValue = amount / (1 + gstRate / 100);
 
-        return (
-          total +
-          (amount - taxableValue)
-        );
-      },
-      0,
-    );
+    return total + (amount - taxableValue);
+  }, 0);
 
-  const shipping =
-    calculateShipping(subtotal);
+  const shipping = calculateShipping(subtotal);
 
-  const total =
-    subtotal + shipping;
-
-  const invalidCart =
-    items.some(
-      (item) =>
-        item.status !== "active",
-    );
-
-  const walletBalance =
-    Number(wallet?.balance || 0);
-
-  const canUseWallet =
-    walletBalance >= total;
+  const invalidCart = items.some((item) => item.status !== "active");
 
   const qualifiedCoupons =
     invalidCart || subtotal <= 0
@@ -795,84 +522,103 @@ export const getCheckoutAgainPageService = async (
           subtotal,
         });
 
+  let appliedCoupon = null;
+  let couponDiscount = 0;
+
+  if (!invalidCart && order.coupon?.code) {
+    const oldCouponCode = String(order.coupon.code).toUpperCase();
+
+    const matchedCoupon = qualifiedCoupons.find(
+      (coupon) => String(coupon.code).toUpperCase() === oldCouponCode,
+    );
+
+    if (matchedCoupon?.eligible) {
+      if (matchedCoupon.discountType === "PERCENTAGE") {
+        couponDiscount = subtotal * (Number(matchedCoupon.discountValue) / 100);
+
+        if (matchedCoupon.maximumDiscountAmount) {
+          couponDiscount = Math.min(
+            couponDiscount,
+            Number(matchedCoupon.maximumDiscountAmount),
+          );
+        }
+      } else {
+        couponDiscount = Number(matchedCoupon.discountValue);
+      }
+
+      couponDiscount = Math.min(couponDiscount, subtotal);
+
+      couponDiscount = Number(couponDiscount.toFixed(2));
+
+      appliedCoupon = {
+        _id: matchedCoupon._id,
+        code: matchedCoupon.code,
+        name: matchedCoupon.name,
+        discountAmount: couponDiscount,
+      };
+    }
+  }
+
+  const total = subtotal - couponDiscount + shipping;
+
+  const walletBalance = Number(wallet?.balance || 0);
+
+  const canUseWallet = walletBalance >= total;
+
   return {
     order,
 
     cart: {
       items,
 
-      originalSubtotal:
-        Number(
-          originalSubtotal.toFixed(2),
-        ),
+      originalSubtotal: Number(originalSubtotal.toFixed(2)),
 
-      subtotal:
-        Number(
-          subtotal.toFixed(2),
-        ),
+      subtotal: Number(subtotal.toFixed(2)),
 
-      totalDiscount:
-        Number(
-          totalDiscount.toFixed(2),
-        ),
+      totalDiscount: Number(totalDiscount.toFixed(2)),
 
       invalid: invalidCart,
     },
 
     addresses,
+
+    previousShippingAddress,
+    restoredAddressId,
+
     wallet,
     canUseWallet,
 
     qualifiedCoupons,
 
-    canApplyCoupon:
-      qualifiedCoupons.some(
-        (coupon) => coupon.eligible,
-      ),
+    canApplyCoupon: qualifiedCoupons.some((coupon) => coupon.eligible),
 
-    originalSubtotal:
-      Number(
-        originalSubtotal.toFixed(2),
-      ),
+    appliedCoupon,
 
-    subtotal:
-      Number(
-        subtotal.toFixed(2),
-      ),
+    couponDiscount,
 
-    totalDiscount:
-      Number(
-        totalDiscount.toFixed(2),
-      ),
+    originalSubtotal: Number(originalSubtotal.toFixed(2)),
 
-    gstAmount:
-      Number(
-        gstAmount.toFixed(2),
-      ),
+    subtotal: Number(subtotal.toFixed(2)),
 
-    shipping:
-      Number(
-        shipping.toFixed(2),
-      ),
+    totalDiscount: Number(totalDiscount.toFixed(2)),
 
-    total:
-      Number(
-        total.toFixed(2),
-      ),
+    gstAmount: Number(gstAmount.toFixed(2)),
+
+    shipping: Number(shipping.toFixed(2)),
+
+    total: Number(total.toFixed(2)),
 
     invalidCart,
 
-    message:
-      invalidCart
-        ? "Some items from this order need your attention before checkout."
-        : null,
+    message: invalidCart
+      ? "Some items from this order need your attention before checkout."
+      : null,
 
     isBuyNow: false,
     buyNow: null,
 
     isCheckoutAgain: true,
 
-    checkoutAgainOrderId:
-      order._id,
+    checkoutAgainOrderId: order._id,
   };
 };

@@ -6,69 +6,57 @@ const orderItemSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Product",
   },
-
   variantId: {
     type: Schema.Types.ObjectId,
     ref: "Variant",
   },
-
   productName: String,
   size: String,
   color: String,
   productImage: String,
-
   quantity: {
     type: Number,
     required: true,
     min: 1,
   },
-
   unitPrice: {
     type: Number,
     required: true,
     min: 0,
   },
-
   originalUnitPrice: {
     type: Number,
     required: true,
     min: 0,
   },
-
   couponDiscountAmount: {
     type: Number,
     default: 0,
     min: 0,
   },
-
   offerId: {
     type: Schema.Types.ObjectId,
     ref: "Offer",
     default: undefined,
   },
-
   offerTitle: {
     type: String,
     default: undefined,
   },
-
   offerType: {
     type: String,
     enum: ["PRODUCT", "CATEGORY"],
     default: undefined,
   },
-
   discountType: {
     type: String,
     enum: ["PERCENTAGE", "FLAT"],
     default: undefined,
   },
-
   discountValue: {
     type: Number,
     default: undefined,
   },
-
   status: {
     type: String,
     enum: [
@@ -81,15 +69,15 @@ const orderItemSchema = new Schema({
       "Return Accepted",
       "Returned",
       "Refunded",
+      "Payment Failed",
+      "Pending"
     ],
     default: "Placed",
   },
-
   statusUpdatedAt: {
     type: Date,
     default: Date.now,
   },
-
   gstRate: {
     type: Number,
     required: true,
@@ -104,80 +92,34 @@ const orderSchema = new Schema(
       unique: true,
       required: true,
     },
-
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
     items: [orderItemSchema],
-
     paymentMethod: {
       type: String,
       enum: ["CashOnDelivery", "Razorpay", "Wallet"],
       required: true,
     },
     isBuyNow: {
-    type: Boolean,
-    default: false,
-  },
-  isCheckoutAgain: {
-  type: Boolean,
-  default: false,
-},
-
+      type: Boolean,
+      default: false,
+    },
+    isCheckoutAgain: {
+      type: Boolean,
+      default: false,
+    },
     paymentStatus: {
       type: String,
       enum: ["Pending", "Paid", "Failed", "Refunded"],
       default: "Pending",
     },
-
-    paymentExpiresAt: Date,
-
     razorpayPaymentId: String,
     razorpayOrderId: String,
     razorpaySignature: String,
-    paymentAttempts: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    lastPaymentAttemptAt: {
-      type: Date,
-      default: undefined,
-    },
-
-    paymentFailure: {
-      code: {
-        type: String,
-        default: undefined,
-      },
-
-      description: {
-        type: String,
-        default: undefined,
-      },
-
-      reason: {
-        type: String,
-        default: undefined,
-      },
-
-      source: {
-        type: String,
-        default: undefined,
-      },
-
-      step: {
-        type: String,
-        default: undefined,
-      },
-    },
-
     estimatedDeliveryDate: Date,
-
     shippingAddress: {
       fullName: String,
       phone: String,
@@ -187,53 +129,45 @@ const orderSchema = new Schema(
       state: String,
       pincode: String,
     },
-
     coupon: {
       couponId: {
         type: Schema.Types.ObjectId,
         ref: "Coupon",
         default: undefined,
       },
-
       code: {
         type: String,
         default: undefined,
       },
-
       name: {
         type: String,
         default: undefined,
       },
-
       discountType: {
         type: String,
         enum: ["PERCENTAGE", "FLAT"],
         default: undefined,
       },
-
       discountValue: {
         type: Number,
         default: undefined,
       },
     },
-
     shippingFee: {
       type: Number,
       default: 0,
       min: 0,
     },
-
     total: {
       type: Number,
       required: true,
       min: 0,
     },
-
     orderStatus: {
       type: String,
       enum: [
         "Payment Pending",
-        "Payment Expired",
+        "Payment Failed",
         "Placed",
         "Processing",
         "Shipped",
@@ -246,14 +180,12 @@ const orderSchema = new Schema(
       ],
       default: "Placed",
     },
-
     deliveredAt: Date,
   },
   {
     timestamps: true,
   },
 );
-
 
 orderSchema.index({
   userId: 1,

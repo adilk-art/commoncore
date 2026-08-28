@@ -9,7 +9,7 @@ import {
   createRazorpayOrderService,
   verifyPaymentService,
   recordRazorpayFailureService,
-  prepareCheckoutAgainService
+  prepareCheckoutAgainService,
 } from "../../services/user/order.service.js";
 
 export const loadOrdersPage = async (req,res,next) => {
@@ -29,23 +29,18 @@ export const loadOrdersPage = async (req,res,next) => {
 
 export const placeOrder = async (req,res,next) => {
   try {
+    const checkoutAgain = req.session.checkoutAgain || null;
     const payload = {
       ...req.body,
-      checkoutAgain: req.session.checkoutAgain || null,
+      checkoutAgain,
     };
-
     const order = await placeOrderService(
       req.session.userId,
       payload,
     );
-
-    if (
-      req.session.checkoutAgain &&
-      String(req.session.checkoutAgain.orderId) === String(order._id)
-    ) {
+    if (checkoutAgain) {
       delete req.session.checkoutAgain;
     }
-
     res.json({
       success: true,
       order,
@@ -73,7 +68,6 @@ export const loadOrderDetail = async (req,res,next) => {
       req.params.orderId,
       req.session.userId,
     );
-
     res.render("user/order-detail",data);
   } catch (error) {
     next(error);
@@ -128,16 +122,18 @@ export const downloadInvoice = async (req,res,next) => {
 
 export const createRazorpayOrder = async (req,res,next) => {
   try {
+    const checkoutAgain = req.session.checkoutAgain || null;
     const payload = {
       ...req.body,
-      checkoutAgain: req.session.checkoutAgain || null,
+      checkoutAgain,
     };
-
     const result = await createRazorpayOrderService(
       req.session.userId,
       payload,
     );
-
+    if (checkoutAgain) {
+      delete req.session.checkoutAgain;
+    }
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -150,21 +146,14 @@ export const verifyPaymentController = async (req,res,next) => {
       req.session.userId,
       req.body,
     );
-
-    if (
-      req.session.checkoutAgain &&
-      String(req.session.checkoutAgain.orderId) === String(result.orderId)
-    ) {
+    if (req.session.checkoutAgain) {
       delete req.session.checkoutAgain;
     }
-
     res.json(result);
   } catch (error) {
     next(error);
   }
 };
-
-
 
 export const recordPaymentFailureController = async (req,res,next) => {
   try {
@@ -187,16 +176,12 @@ export const getPaymentFailedPage = async (req,res,next) => {
     const order = data.order;
     if (
       order.paymentMethod !== "Razorpay" ||
-      order.paymentStatus === "Paid"
+      order.paymentStatus !== "Failed" ||
+      order.orderStatus !== "Payment Failed"
     ) {
       return res.redirect(`/user/order/${order._id}`);
     }
-    res.render("user/payment-failed",{
-      ...data,
-      paymentExpired:
-        Boolean(order.paymentExpiresAt) &&
-        new Date(order.paymentExpiresAt) <= new Date(),
-    });
+    res.render("user/payment-failed",data);
   } catch (error) {
     next(error);
   }
@@ -208,12 +193,11 @@ export const prepareCheckoutAgain = async (req,res,next) => {
       req.params.orderId,
       req.session.userId,
     );
-
     req.session.checkoutAgain = {
       orderId: result.orderId,
       items: result.items,
+      shippingAddress: result.shippingAddress,
     };
-
     res.json({
       success: true,
       redirectUrl: "/user/checkout",
@@ -226,36 +210,28 @@ export const prepareCheckoutAgain = async (req,res,next) => {
 export const updateCheckoutAgainItemQuantity = async (req,res,next) => {
   try {
     const checkoutAgain = req.session.checkoutAgain;
-
     if (!checkoutAgain?.orderId || !Array.isArray(checkoutAgain.items)) {
       const error = new Error("Checkout session not found");
       error.status = 400;
       throw error;
     }
-
     const variantId = req.params.variantId;
     const quantity = Number(req.body.quantity);
-
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
       const error = new Error("Invalid quantity");
       error.status = 400;
       throw error;
     }
-
     const item = checkoutAgain.items.find(
       (item) => String(item.variantId) === String(variantId),
     );
-
     if (!item) {
       const error = new Error("Checkout item not found");
       error.status = 404;
       throw error;
     }
-
     item.quantity = quantity;
-
     req.session.checkoutAgain = checkoutAgain;
-
     return res.json({
       success: true,
     });
@@ -267,7 +243,6 @@ export const updateCheckoutAgainItemQuantity = async (req,res,next) => {
 export const exitCheckoutAgain = async (req,res,next) => {
   try {
     delete req.session.checkoutAgain;
-
     res.json({
       success: true,
       redirectUrl: "/user/cart",

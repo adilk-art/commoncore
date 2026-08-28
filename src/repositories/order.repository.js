@@ -140,8 +140,12 @@ export const markRazorpayOrderPaidRepo = async ({
       _id: orderId,
       userId,
       paymentMethod: "Razorpay",
-      paymentStatus: "Pending",
-      orderStatus: "Payment Pending",
+      paymentStatus: {
+        $in: ["Pending", "Failed"],
+      },
+      orderStatus: {
+        $in: ["Payment Pending", "Payment Failed"],
+      },
     },
     {
       $set: {
@@ -269,56 +273,3 @@ export const hasUserUsedCoupon = async ({
   return Boolean(order);
 };
 
-export const expirePendingRazorpayOrdersRepo = async () => {
-  return await Order.updateMany(
-    {
-      paymentMethod: "Razorpay",
-      orderStatus: "Payment Pending",
-
-      paymentStatus: {
-        $ne: "Paid",
-      },
-
-      paymentExpiresAt: {
-        $lte: new Date(),
-      },
-    },
-    {
-      $set: {
-        orderStatus: "Payment Expired",
-        paymentStatus: "Failed",
-      },
-    },
-  );
-};
-
-export const expireOtherPendingRazorpayOrdersRepo = async ({
-  userId,
-  excludeOrderId = null,
-}) => {
-  const filter = {
-    userId,
-    paymentMethod: "Razorpay",
-    orderStatus: "Payment Pending",
-
-    paymentStatus: {
-      $ne: "Paid",
-    },
-  };
-
-  if (excludeOrderId) {
-    filter._id = {
-      $ne: excludeOrderId,
-    };
-  }
-
-  return await Order.updateMany(
-    filter,
-    {
-      $set: {
-        orderStatus: "Payment Expired",
-        paymentStatus: "Failed",
-      },
-    },
-  );
-};

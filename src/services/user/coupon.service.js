@@ -208,8 +208,8 @@ const buildBuyNowCheckoutPricing = async (variantId, quantity) => {
   };
 };
 
-const buildCheckoutAgainPricing = async (userId,orderId) => {
-  const order = await findUserOrderById(orderId,userId);
+const buildCheckoutAgainPricing = async (userId, orderId) => {
+  const order = await findUserOrderById(orderId, userId);
 
   if (!order) {
     const error = new Error("Order not found");
@@ -217,9 +217,24 @@ const buildCheckoutAgainPricing = async (userId,orderId) => {
     throw error;
   }
 
-  if (!["Payment Pending","Payment Expired"].includes(order.orderStatus)) {
+  const validCheckoutAgainState =
+    (
+      order.orderStatus === "Payment Failed" &&
+      order.paymentStatus === "Failed"
+    ) ||
+    (
+      order.orderStatus === "Payment Pending" &&
+      order.paymentStatus === "Pending"
+    ) ||
+    (
+      order.orderStatus === "Payment Expired" &&
+      order.paymentStatus === "Failed"
+    );
+
+  if (!validCheckoutAgainState) {
     const error = new Error("This order cannot be checked out again");
     error.status = 400;
+    error.code = "INVALID_CHECKOUT_AGAIN";
     throw error;
   }
 
@@ -230,9 +245,13 @@ const buildCheckoutAgainPricing = async (userId,orderId) => {
     const variant = await findActiveVariant(oldItem.variantId);
 
     if (!variant) {
-      const error = new Error(`${oldItem.productName} is no longer available`);
+      const error = new Error(
+        `${oldItem.productName} is no longer available`,
+      );
+
       error.status = 400;
       error.code = "INVALID_CHECKOUT_ITEM";
+
       throw error;
     }
 
@@ -244,20 +263,33 @@ const buildCheckoutAgainPricing = async (userId,orderId) => {
       !product?.isActive ||
       !product?.categoryId?.isActive
     ) {
-      const error = new Error(`${oldItem.productName} is no longer available`);
+      const error = new Error(
+        `${oldItem.productName} is no longer available`,
+      );
+
       error.status = 400;
       error.code = "INVALID_CHECKOUT_ITEM";
+
       throw error;
     }
 
     if (quantity < 1 || Number(variant.stock) < quantity) {
-      const error = new Error(`${oldItem.productName} does not have enough stock`);
+      const error = new Error(
+        `${oldItem.productName} does not have enough stock`,
+      );
+
       error.status = 400;
       error.code = "INSUFFICIENT_STOCK";
+
       throw error;
     }
 
-    const pricing = getBestOfferPricing(product,variant,offerLookup);
+    const pricing = getBestOfferPricing(
+      product,
+      variant,
+      offerLookup,
+    );
+
     const unitPrice = Number(pricing.finalPrice);
     const amount = roundMoney(unitPrice * quantity);
 
@@ -271,7 +303,10 @@ const buildCheckoutAgainPricing = async (userId,orderId) => {
   }
 
   const subtotal = roundMoney(
-    items.reduce((total,item) => total + item.amount,0),
+    items.reduce(
+      (total, item) => total + item.amount,
+      0,
+    ),
   );
 
   return {
