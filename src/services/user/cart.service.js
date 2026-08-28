@@ -221,43 +221,68 @@ export const getCartService = async (userId) => {
   };
 };
 
-export const updateCartQuantityService = async ({ userId, itemId, action }) => {
+export const updateCartQuantityService = async ({
+  userId,
+  itemId,
+  action,
+}) => {
   const cart = await findCartByUserId(userId);
 
   if (!cart) {
     throw new Error("Cart not found");
   }
+
   const item = cart.items.id(itemId);
+
   if (!item) {
     throw new Error("Item not found");
   }
 
-  const variant = item.variantId;
+  const variant = await Variant.findById(item.variantId).populate({
+    path: "productId",
+    populate: {
+      path: "categoryId",
+    },
+  });
+
   const product = variant?.productId;
+
   if (!variant || !product) {
     throw new Error("Item unavailable");
   }
+
+  if (!product.categoryId?.isActive) {
+    throw new Error("Category unavailable");
+  }
+
   if (!product.isActive) {
     throw new Error("Product unavailable");
   }
+
   if (!variant.isActive) {
     throw new Error("Variant unavailable");
   }
+
   if (!["increase", "decrease"].includes(action)) {
     throw new Error("Invalid action");
   }
+
   let quantity = Number(item.quantity);
   const stock = Number(variant.stock);
+
   if (action === "increase") {
     if (stock <= 0) {
       throw new Error("Out of stock");
     }
+
     if (quantity >= MAX_QTY) {
       throw new Error(`Maximum ${MAX_QTY} items allowed`);
     }
+
     if (quantity >= stock) {
       throw new Error(`Only ${stock} available`);
     }
+
     quantity += 1;
   }
 
@@ -265,13 +290,16 @@ export const updateCartQuantityService = async ({ userId, itemId, action }) => {
     if (quantity <= 1) {
       throw new Error("Minimum quantity is 1");
     }
+
     quantity -= 1;
   }
+
   item.quantity = quantity;
 
   await saveCart(cart);
 
   const updatedCart = await getCartService(userId);
+
   const updatedItem = updatedCart.items.find(
     (cartItem) => String(cartItem._id) === String(itemId),
   );
@@ -281,14 +309,17 @@ export const updateCartQuantityService = async ({ userId, itemId, action }) => {
   }
 
   const shipping =
-    updatedCart.subtotal >= 999 ? 0 : updatedCart.subtotal > 0 ? 99 : 0;
+    updatedCart.subtotal >= 999
+      ? 0
+      : updatedCart.subtotal > 0
+        ? 99
+        : 0;
 
   const total = updatedCart.subtotal + shipping;
 
   return {
     success: true,
     message: "Cart updated",
-
     item: {
       itemId: updatedItem._id,
       quantity: updatedItem.quantity,
@@ -307,7 +338,6 @@ export const updateCartQuantityService = async ({ userId, itemId, action }) => {
     },
   };
 };
-
 export const removeCartItemService = async ({ userId, itemId }) => {
   const cart = await findCartByUserId(userId);
   cart.items.pull(itemId);

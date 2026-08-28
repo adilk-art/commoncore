@@ -1,3 +1,4 @@
+
 (function () {
   const variants = window.__VARIANTS__ || [];
   let selectedId = window.__SELECTED_ID__ || "";
@@ -16,7 +17,6 @@
   const qtyInput = document.getElementById("qtyInput");
   const plusBtn = document.getElementById("plusBtn");
   const minusBtn = document.getElementById("minusBtn");
-  const errorBox = document.getElementById("errorBox");
 
   const cartForm = document.getElementById("cartForm");
   const cartVariantId = document.getElementById("cartVariantId");
@@ -38,18 +38,6 @@
 
   function getSelectedVariant() {
     return getVariant(selectedId);
-  }
-
-  function showError(message) {
-    if (!errorBox) return;
-
-    errorBox.textContent = message;
-
-    clearTimeout(errorBox._t);
-
-    errorBox._t = setTimeout(() => {
-      errorBox.textContent = "";
-    }, 2500);
   }
 
   function fmt(number) {
@@ -102,7 +90,6 @@
     const rect = zoomContainer.getBoundingClientRect();
 
     const x = ((event.clientX - rect.left) / rect.width) * 100;
-
     const y = ((event.clientY - rect.top) / rect.height) * 100;
 
     mainImage.style.transformOrigin = `${x}% ${y}%`;
@@ -137,14 +124,10 @@
 
     if (quantity > MAX_QTY) {
       quantity = MAX_QTY;
-
-      showError(`Max ${MAX_QTY} per order`);
     }
 
     if (quantity > stock) {
       quantity = stock;
-
-      showError(`Only ${stock} in stock`);
     }
 
     qtyInput.value = quantity;
@@ -165,17 +148,11 @@
     const stock = getSelectedVariant()?.stock ?? 0;
 
     if (stock <= 0) {
-      showError("Out of stock");
+      userToast("Out of stock");
       return;
     }
 
     if (parseInt(qtyInput.value, 10) >= Math.min(MAX_QTY, stock)) {
-      if (stock < MAX_QTY) {
-        showError(`Only ${stock} in stock`);
-      } else {
-        showError(`Max ${MAX_QTY} per order`);
-      }
-
       return;
     }
 
@@ -237,7 +214,6 @@
 
     if (variant.images && variant.images.length) {
       buildThumbs(variant.images);
-
       setMainImage(variant.images[0]);
     }
 
@@ -366,7 +342,7 @@
     const variant = getSelectedVariant();
 
     if (!variant || variant.stock <= 0) {
-      showError("Out of stock");
+      userToast("Out of stock");
       return;
     }
 
@@ -374,7 +350,6 @@
 
     try {
       const variantId = cartVariantId.value;
-
       const quantity = Number(cartQty.value);
 
       cartBtn.disabled = true;
@@ -400,36 +375,26 @@
           cartBadge.textContent = response.data.cartCount;
         }
 
-        if (errorBox) {
-          errorBox.textContent = "";
-        }
-
         userToast(response.data.message || "Added to cart");
 
         cartBtn.textContent = "Added ✓";
 
         setTimeout(() => {
           cartBtn.textContent = originalText;
-
           cartBtn.disabled = false;
         }, 1200);
       }
     } catch (error) {
       const status = error?.response?.status;
-
-      const message = error?.response?.data?.message || "Failed to add to cart";
+      const message =
+        error?.response?.data?.message || "Failed to add to cart";
 
       cartBtn.disabled = false;
       cartBtn.textContent = originalText;
 
       if (status === 401) {
         userToast(message || "Please login first");
-
         return;
-      }
-
-      if (errorBox) {
-        errorBox.textContent = message;
       }
 
       userToast(message);
@@ -442,15 +407,12 @@
     event.preventDefault();
 
     const formData = new FormData(wishlistForm);
-
     const productId = formData.get("productId");
-
     const button = wishlistForm.querySelector(".pd-wishlist-btn");
 
     if (!button) return;
 
     const svg = button.querySelector("svg");
-
     const isActive = button.classList.contains("pd-wishlist-btn--active");
 
     try {
@@ -466,7 +428,6 @@
         });
 
         button.classList.remove("pd-wishlist-btn--active");
-
         svg?.setAttribute("fill", "none");
       } else {
         response = await axios.post(
@@ -482,7 +443,6 @@
         );
 
         button.classList.add("pd-wishlist-btn--active");
-
         svg?.setAttribute("fill", "currentColor");
       }
 
@@ -501,7 +461,6 @@
 
       if (status === 401) {
         userToast(message || "Please login first");
-
         return;
       }
 
@@ -517,7 +476,7 @@
     const variant = getSelectedVariant();
 
     if (!variant || variant.stock <= 0) {
-      showError("Out of stock");
+      userToast("Out of stock");
       return;
     }
 
@@ -531,7 +490,6 @@
         "/user/checkout/buy-now",
         {
           variantId: buyVariantId.value,
-
           quantity: Number(buyQty.value),
         },
         {
@@ -547,18 +505,17 @@
     } catch (error) {
       const status = error?.response?.status;
 
-      const message = error?.response?.data?.message || "Something went wrong";
+      const message =
+        error?.response?.data?.message || "Something went wrong";
 
       buyBtn.disabled = false;
       buyBtn.textContent = originalText;
 
       if (status === 401) {
         userToast(message || "Please login first");
-
         return;
       }
 
-      showError(message);
       userToast(message);
     }
   });
@@ -573,15 +530,12 @@
       event.stopPropagation();
 
       const formData = new FormData(form);
-
       const productId = formData.get("productId");
-
       const button = form.querySelector(".pd-related-wish");
 
       if (!button) return;
 
       const svg = button.querySelector("svg");
-
       const isActive = button.classList.contains("pd-related-wish--active");
 
       try {
@@ -597,7 +551,6 @@
           });
 
           button.classList.remove("pd-related-wish--active");
-
           svg?.setAttribute("fill", "none");
         } else {
           response = await axios.post(
@@ -613,7 +566,6 @@
           );
 
           button.classList.add("pd-related-wish--active");
-
           svg?.setAttribute("fill", "currentColor");
         }
 
@@ -632,7 +584,6 @@
 
         if (status === 401) {
           userToast(message || "Please login first");
-
           return;
         }
 
@@ -644,22 +595,16 @@
   });
 
   const reviewModal = document.getElementById("reviewModal");
-
   const reviewForm = document.getElementById("reviewForm");
-
   const reviewRating = document.getElementById("reviewRating");
-
   const reviewComment = document.getElementById("reviewComment");
-
   const reviewSubmitBtn = document.getElementById("reviewSubmitBtn");
-
   const ratingError = document.getElementById("ratingError");
-
   const commentError = document.getElementById("commentError");
-
   const ratingStars = document.querySelectorAll(".pd-rating-star");
-
-  const reviewCharacterCount = document.getElementById("reviewCharacterCount");
+  const reviewCharacterCount = document.getElementById(
+    "reviewCharacterCount",
+  );
 
   function paintRating(value) {
     ratingStars.forEach((star) => {
@@ -675,7 +620,6 @@
       if (!element) return;
 
       element.textContent = "";
-
       element.classList.remove("pd-review-error--show");
     });
 
@@ -687,7 +631,6 @@
 
     if (element) {
       element.textContent = message;
-
       element.classList.add("pd-review-error--show");
     }
 
@@ -704,7 +647,6 @@
     }
 
     paintRating(0);
-
     clearReviewErrors();
 
     if (reviewCharacterCount) {
@@ -718,7 +660,6 @@
     resetReviewForm();
 
     reviewModal.classList.add("pd-review-modal--open");
-
     reviewModal.setAttribute("aria-hidden", "false");
 
     document.body.classList.add("pd-modal-open");
@@ -728,7 +669,6 @@
     if (!reviewModal) return;
 
     reviewModal.classList.remove("pd-review-modal--open");
-
     reviewModal.setAttribute("aria-hidden", "true");
 
     document.body.classList.remove("pd-modal-open");
@@ -768,7 +708,6 @@
 
       if (ratingError) {
         ratingError.textContent = "";
-
         ratingError.classList.remove("pd-review-error--show");
       }
     });
@@ -783,7 +722,6 @@
 
     if (commentError) {
       commentError.textContent = "";
-
       commentError.classList.remove("pd-review-error--show");
     }
   });
@@ -798,30 +736,24 @@
     clearReviewErrors();
 
     const productId = reviewForm.elements.productId.value;
-
     const rating = Number(reviewRating.value);
-
     const comment = reviewComment.value.trim();
 
     let valid = true;
 
     if (!rating || rating < 1 || rating > 5) {
       showReviewError("rating", "Please select a rating");
-
       valid = false;
     }
 
     if (!comment) {
       showReviewError("comment", "Review is required");
-
       valid = false;
     } else if (comment.length < 10) {
       showReviewError("comment", "Review must be at least 10 characters");
-
       valid = false;
     } else if (comment.length > 500) {
       showReviewError("comment", "Review cannot exceed 500 characters");
-
       valid = false;
     }
 
@@ -831,7 +763,6 @@
 
     try {
       reviewSubmitBtn.disabled = true;
-
       reviewSubmitBtn.textContent = "Submitting...";
 
       const response = await axios.post(
@@ -857,7 +788,6 @@
       }, 500);
     } catch (error) {
       const status = error?.response?.status;
-
       const errors = error?.response?.data?.errors;
 
       if (Array.isArray(errors) && errors.length) {
@@ -877,24 +807,21 @@
 
       if (status === 401) {
         userToast(message || "Please login first");
-
         return;
       }
 
       userToast(message);
     } finally {
       reviewSubmitBtn.disabled = false;
-
       reviewSubmitBtn.textContent = originalText;
     }
   });
 
   const deleteReviewModal = document.getElementById("deleteReviewModal");
-
-  const deleteReviewBackdrop = document.getElementById("deleteReviewBackdrop");
-
+  const deleteReviewBackdrop = document.getElementById(
+    "deleteReviewBackdrop",
+  );
   const cancelDeleteReview = document.getElementById("cancelDeleteReview");
-
   const confirmDeleteReview = document.getElementById("confirmDeleteReview");
 
   let pendingDeleteReviewId = null;
@@ -905,7 +832,6 @@
     pendingDeleteReviewId = reviewId;
 
     deleteReviewModal.classList.add("pd-delete-modal--open");
-
     deleteReviewModal.setAttribute("aria-hidden", "false");
 
     document.body.classList.add("pd-modal-open");
@@ -915,7 +841,6 @@
     if (!deleteReviewModal) return;
 
     deleteReviewModal.classList.remove("pd-delete-modal--open");
-
     deleteReviewModal.setAttribute("aria-hidden", "true");
 
     document.body.classList.remove("pd-modal-open");
@@ -924,7 +849,6 @@
 
     if (confirmDeleteReview) {
       confirmDeleteReview.disabled = false;
-
       confirmDeleteReview.textContent = "Delete Review";
     }
   }
@@ -952,7 +876,6 @@
 
     try {
       confirmDeleteReview.disabled = true;
-
       confirmDeleteReview.textContent = "Deleting...";
 
       const response = await axios.delete(`/user/reviews/${reviewId}`, {
@@ -975,14 +898,11 @@
         error?.response?.data?.message || "Unable to delete review";
 
       confirmDeleteReview.disabled = false;
-
       confirmDeleteReview.textContent = "Delete Review";
 
       if (status === 401) {
         closeDeleteReviewModal();
-
         userToast(message || "Please login first");
-
         return;
       }
 
