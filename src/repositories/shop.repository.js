@@ -137,7 +137,6 @@ export const findProductDetail = async (productId) => {
 
   const variants = await Variant.find({
     productId: product._id,
-    isActive: true,
   })
     .sort({
       isDefault: -1,
@@ -150,7 +149,10 @@ export const findProductDetail = async (productId) => {
   return product;
 };
 
-export const findRelatedProducts = async (categoryId, currentProductId) => {
+export const findRelatedProducts = async (
+  categoryId,
+  currentProductId,
+) => {
   return await Product.aggregate([
     {
       $match: {
@@ -194,24 +196,6 @@ export const findRelatedProducts = async (categoryId, currentProductId) => {
     },
 
     {
-      $addFields: {
-        defaultImage: {
-          $let: {
-            vars: {
-              firstVariant: {
-                $arrayElemAt: ["$activeVariants", 0],
-              },
-            },
-
-            in: {
-              $arrayElemAt: ["$$firstVariant.images.url", 0],
-            },
-          },
-        },
-      },
-    },
-
-    {
       $lookup: {
         from: "categories",
         localField: "categoryId",
@@ -225,8 +209,56 @@ export const findRelatedProducts = async (categoryId, currentProductId) => {
     },
 
     {
+      $match: {
+        "categoryId.isActive": true,
+      },
+    },
+
+    {
+      $addFields: {
+        inStockVariants: {
+          $filter: {
+            input: "$activeVariants",
+            as: "variant",
+            cond: {
+              $gt: ["$$variant.stock", 0],
+            },
+          },
+        },
+      },
+    },
+
+    {
+      $addFields: {
+        previewVariant: {
+          $cond: {
+            if: {
+              $gt: [{ $size: "$inStockVariants" }, 0],
+            },
+            then: {
+              $arrayElemAt: ["$inStockVariants", 0],
+            },
+            else: {
+              $arrayElemAt: ["$activeVariants", 0],
+            },
+          },
+        },
+      },
+    },
+
+    {
+      $addFields: {
+        defaultImage: {
+          $arrayElemAt: ["$previewVariant.images.url", 0],
+        },
+      },
+    },
+
+    {
       $project: {
         variants: 0,
+        activeVariants: 0,
+        inStockVariants: 0,
       },
     },
 

@@ -130,15 +130,94 @@ document.querySelectorAll(".move-wishlist").forEach((button) => {
     const itemId = button.dataset.id;
 
     try {
+      button.disabled = true;
+
       const { data } = await axios.post("/user/cart/move-to-wishlist", {
         itemId,
       });
 
-      userToast(data.message);
+      const cartCount = document.getElementById("cartCount");
 
-      button.closest(".cart-item")?.remove();
+      if (cartCount && data.cartCount !== undefined) {
+        const count = Number(data.cartCount);
+
+        cartCount.textContent = count;
+        cartCount.hidden = count <= 0;
+      }
+
+      const wishlistCount = document.getElementById("wishlistCount");
+
+      if (wishlistCount && data.wishlistCount !== undefined) {
+        const count = Number(data.wishlistCount);
+
+        wishlistCount.textContent = count;
+        wishlistCount.hidden = count <= 0;
+      }
+
+      const cartItem = button.closest(".cart-item");
+
+      if (cartItem) {
+        cartItem.remove();
+      }
+
+      if (data.isEmpty) {
+        const cartLayout = document.querySelector(".cart-layout");
+
+        const cartMain = document.querySelector(".cart-main");
+
+        const cartHead = document.querySelector(".cart-head");
+
+        const cartItems = document.querySelector(".cart-items");
+
+        const cartSummary = document.querySelector(".cart-summary");
+
+        cartItems?.remove();
+
+        cartSummary?.remove();
+
+        cartLayout?.classList.add("cart-layout--empty");
+
+        const cartHeadBody = cartHead?.querySelector(".text-body");
+
+        if (cartHeadBody) {
+          cartHeadBody.textContent = "0 items";
+        }
+
+        if (cartMain && !cartMain.querySelector(".cart-empty")) {
+          const emptyState = document.createElement("div");
+
+          emptyState.className = "cart-empty";
+
+          emptyState.innerHTML = `
+            <div class="cart-empty-icon">
+              🛒
+            </div>
+
+            <h2 class="cart-empty-title">
+              Your cart is empty
+            </h2>
+
+            <p class="cart-empty-text">
+              Looks like you haven't added anything to your cart yet.
+            </p>
+
+            <a
+              href="/user/shop"
+              class="secondary-btn"
+            >
+              Continue Shopping
+            </a>
+          `;
+
+          cartMain.appendChild(emptyState);
+        }
+      }
+
+      userToast(data.message || "Moved to wishlist");
     } catch (error) {
       userToast(error.response?.data?.message || "Something went wrong");
+
+      button.disabled = false;
     }
   });
 });

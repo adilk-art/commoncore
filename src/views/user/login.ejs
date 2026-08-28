@@ -10,6 +10,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
@@ -20,8 +21,10 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
   />
 </head>
+
 <body>
   <div class="page-wrapper">
+
     <header class="navbar">
       <a href="/" class="logo-wrap">
         <img src="/images/logo.png" alt="Common Core" class="logo" />
@@ -30,60 +33,126 @@
 
     <main class="main-content">
       <section class="auth-card">
+
         <h1 class="welcome">WELCOME BACK</h1>
+
         <p class="subtitle">
           Sign in to continue your shopping experience
         </p>
-        <% if(successMessage) { %>
-                <p id="successMsg" class="success-msg"> <%= successMessage || "" %></p>
-        <% } %>
-        </p>
 
-        <form class="auth-form" method="POST" action="/user/login" id="form">
+        <% if (successMessage) { %>
+          <p id="successMsg" class="success-msg">
+            <%= successMessage %>
+          </p>
+        <% } %>
+
+        <form
+          class="auth-form"
+          method="POST"
+          action="/user/login"
+          id="form"
+          novalidate
+        >
+
           <div class="form-group">
             <label for="email">Email Address</label>
-            <input id="email" type="email" name="email"placeholder="name@example.com" value="<%=formData?.email||''%>" />
+
+            <input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="name@example.com"
+              value="<%= formData?.email || '' %>"
+              autocomplete="email"
+            />
+
             <span id="emailError" class="error-msg"></span>
           </div>
 
           <div class="form-group">
+
             <div class="label-row">
               <label for="password">Password</label>
-              <a href="/user/forgot-password" class="forgot-link">Forgot Password?</a>
+
+              <a
+                href="/user/forgot-password"
+                class="forgot-link"
+              >
+                Forgot Password?
+              </a>
             </div>
 
             <div class="input-icon-wrap">
-              <input id="password" type="password" name="password" placeholder="••••••••" />
-              <span class="eye-icon" id="eyeIcon">
+
+              <input
+                id="password"
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+
+              <span
+                class="eye-icon"
+                id="eyeIcon"
+                role="button"
+                tabindex="0"
+                aria-label="Show password"
+              >
                 <i class="fa-regular fa-eye"></i>
               </span>
+
             </div>
+
             <span id="passwordError" class="error-msg"></span>
+
           </div>
-          <%if(error){%>
-            <p class="error-msg" id="serverError"  style="display: block"><%=error%></p>
-          <%}%>
 
+          <% if (error) { %>
+            <p
+              class="error-msg"
+              id="serverError"
+              style="display: block"
+            >
+              <%= error %>
+            </p>
+          <% } %>
 
-          <button type="submit" class="primary-btn">Login</button>
+          <button
+            type="submit"
+            class="primary-btn"
+            id="loginBtn"
+          >
+            Login
+          </button>
 
           <div class="divider">
             <span>OR CONTINUE WITH</span>
           </div>
 
-          <a href="/user/auth/google" class="google-btn">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+          <a
+            href="/user/auth/google"
+            class="google-btn"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              alt="Google"
+            />
             Google
           </a>
 
           <p class="bottom-text">
-            Don’t have an account? <a href="/user/signup">Create Account</a>
+            Don’t have an account?
+            <a href="/user/signup">Create Account</a>
           </p>
+
         </form>
+
       </section>
     </main>
 
     <footer class="footer">
+
       <div class="footer-links">
         <a href="#">ABOUT</a>
         <a href="#">PRIVACY POLICY</a>
@@ -91,14 +160,27 @@
       </div>
 
       <div class="footer-social">
-        <a href="#"><i class="fa-brands fa-twitter"></i></a>
-        <a href="#"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+        <a href="#">
+          <i class="fa-brands fa-twitter"></i>
+        </a>
+
+        <a href="#">
+          <i class="fa-brands fa-instagram"></i>
+        </a>
+
+        <a href="#">
+          <i class="fa-brands fa-youtube"></i>
+        </a>
       </div>
 
-      <p class="footer-copy">© 2026 COMMON CORE. ALL RIGHTS RESERVED.</p>
+      <p class="footer-copy">
+        © 2026 COMMON CORE. ALL RIGHTS RESERVED.
+      </p>
+
     </footer>
+
   </div>
+
   <script src="/js/user/login.js"></script>
 </body>
 </html>

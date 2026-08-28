@@ -43,6 +43,7 @@ export const addToCart = async (req, res) => {
     });
   }
 };
+
 export const loadCart = async (req, res) => {
   try {
     const userId = req.session.userId;

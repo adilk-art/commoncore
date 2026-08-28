@@ -221,11 +221,7 @@ export const getCartService = async (userId) => {
   };
 };
 
-export const updateCartQuantityService = async ({
-  userId,
-  itemId,
-  action,
-}) => {
+export const updateCartQuantityService = async ({ userId, itemId, action }) => {
   const cart = await findCartByUserId(userId);
 
   if (!cart) {
@@ -309,11 +305,7 @@ export const updateCartQuantityService = async ({
   }
 
   const shipping =
-    updatedCart.subtotal >= 999
-      ? 0
-      : updatedCart.subtotal > 0
-        ? 99
-        : 0;
+    updatedCart.subtotal >= 999 ? 0 : updatedCart.subtotal > 0 ? 99 : 0;
 
   const total = updatedCart.subtotal + shipping;
 
@@ -346,30 +338,41 @@ export const removeCartItemService = async ({ userId, itemId }) => {
 
 export const moveCartItemToWishlistService = async ({ userId, itemId }) => {
   const cart = await findCartByUserId(userId);
+
   if (!cart) {
     throw new Error("Cart not found");
   }
+
   const item = cart.items.id(itemId);
 
   if (!item) {
     throw new Error("Item not found");
   }
+
   const variant = await Variant.findById(item.variantId);
 
   if (!variant) {
     throw new Error("Variant not found");
   }
 
-  await addToWishlistService({
+  const wishlistResult = await addToWishlistService({
     userId,
     productId: variant.productId,
   });
+
   cart.items.pull(itemId);
+
   await saveCart(cart);
 
   return {
     success: true,
     message: "Moved to wishlist",
+
+    cartCount: cart.items.length,
+
+    wishlistCount: wishlistResult.wishlistCount,
+
+    isEmpty: cart.items.length === 0,
   };
 };
 

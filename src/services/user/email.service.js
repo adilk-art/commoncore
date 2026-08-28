@@ -15,7 +15,7 @@ export const sendOtpEmail = async ({ email, otp, purpose }) => {
     subject: "Your OTP code",
     html: `
       <h2>Your OTP for ${purpose} is: <strong>${otp}</strong></h2>
-      <p>This code expires in 1 minute.</p>
+      <p>This code expires in 15 minutes.</p>
     `,
   });
 };

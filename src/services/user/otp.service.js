@@ -1,16 +1,22 @@
-import { success } from "zod";
 import generateOtp from "../../utils/generateOtp.js";
 import { sendOtpEmail } from "./email.service.js";
 
 export const createAndSendOtp = async ({ email, purpose, session }) => {
   const otp = generateOtp();
+
+  await sendOtpEmail({
+    email,
+    otp,
+    purpose,
+  });
+
   session.otpData = {
     otp,
     purpose,
-    expiresAt: Date.now() + 60 * 1000,
+    expiresAt: Date.now() + 15 * 60 * 1000,
     attempts: 0,
   };
-  await sendOtpEmail({ email, otp, purpose });
+
   return { success: true };
 };
 
@@ -43,7 +49,11 @@ export const verifyOtpService = async ({ otp, purpose, session }) => {
   return { success: true };
 };
 
-// RESEND
+
 export const resendOtpService = async ({ email, purpose, session }) => {
-  return await createAndSendOtp({ email, purpose, session });
+  return await createAndSendOtp({
+    email,
+    purpose,
+    session,
+  });
 };

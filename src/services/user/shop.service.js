@@ -135,19 +135,23 @@ export const getProductDetailService = async ({ productId, userId }) => {
     (item) => item.isActive,
   );
 
-  if (!activeVariants.length) {
+  const selectedVariant =
+    activeVariants.find((variant) => variant.isDefault) ||
+    activeVariants[0] ||
+    product.variants.find((variant) => variant.isDefault) ||
+    product.variants[0];
+
+  if (!selectedVariant) {
     const error = new Error("Product unavailable");
     error.statusCode = 404;
     throw error;
   }
 
-  let selectedVariant = activeVariants.find(
-    (variant) => variant.isDefault,
-  );
+  const variantUnavailable =
+    !selectedVariant.isActive;
 
-  if (!selectedVariant) {
-    selectedVariant = activeVariants[0];
-  }
+  const finalUnavailable =
+    isUnavailable || variantUnavailable || !activeVariants.length;
 
   const [relatedProducts, reviewData] = await Promise.all([
     findRelatedProducts(
@@ -204,14 +208,15 @@ export const getProductDetailService = async ({ productId, userId }) => {
         ),
       };
     });
-
   return {
     product: productData,
-    variants: activeVariants,
+    variants: activeVariants.length
+      ? activeVariants
+      : [selectedVariant],
     selectedVariant,
     relatedProducts: relatedProductsData,
     isWishlisted,
-    isUnavailable,
+    isUnavailable: finalUnavailable,
     reviews: reviewData.reviews,
     reviewSummary: reviewData.reviewSummary,
     userReview: reviewData.userReview,

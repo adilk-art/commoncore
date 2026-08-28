@@ -1,39 +1,52 @@
+
 const form = document.getElementById("form");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const emailError = document.getElementById("emailError");
 const passwordError = document.getElementById("passwordError");
 const serverErrorMessage = document.getElementById("serverError");
-const eyeIcon=document.getElementById("eyeIcon");
-const successMsg=document.getElementById("successMsg");
+const eyeIcon = document.getElementById("eyeIcon");
+const successMsg = document.getElementById("successMsg");
+const submitButton = form?.querySelector(".primary-btn");
 
+eyeIcon?.addEventListener("click", () => {
+  const isPassword = password.type === "password";
 
-eyeIcon.addEventListener("click",()=>{
-  const isPassword=password.type==="password";
-  password.type=isPassword?"text":"password";
-  eyeIcon.innerHTML=isPassword?`<i class="fa-regular fa-eye-slash"></i>`:`<i class="fa-regular fa-eye"></i>`;
-})
+  password.type = isPassword ? "text" : "password";
 
+  eyeIcon.innerHTML = isPassword
+    ? `<i class="fa-regular fa-eye-slash"></i>`
+    : `<i class="fa-regular fa-eye"></i>`;
+});
 
 const showError = (element, message) => {
+  if (!element) return;
+
   element.textContent = message;
   element.style.display = "block";
 };
+
 function clearError(element) {
+  if (!element) return;
+
   element.textContent = "";
   element.style.display = "none";
 }
+
 function clearServerError() {
-  if(serverErrorMessage)
-  serverErrorMessage.style.display = "none";
+  if (serverErrorMessage) {
+    serverErrorMessage.style.display = "none";
+  }
 }
 
 function validateEmail() {
   const value = email.value.trim();
+
   if (!value) {
     showError(emailError, "Email is required");
     return false;
   }
+
   if (!/^[\w.-]+@[\w.-]+\.\w{2,}$/.test(value)) {
     showError(emailError, "Please enter a valid email address");
     return false;
@@ -45,20 +58,23 @@ function validateEmail() {
 
 function validatePassword() {
   const value = password.value;
+
   if (!value) {
     showError(passwordError, "Password is required");
     return false;
   }
+
   if (value.length < 8) {
-    showError(passwordError, "Password must be atleast 8 characters");
+    showError(passwordError, "Password must be at least 8 characters");
     return false;
   }
+
   clearError(passwordError);
   return true;
 }
 
 [email, password].forEach((element) => {
-  element.addEventListener("input", () => {
+  element?.addEventListener("input", () => {
     clearServerError();
 
     if (successMsg) {
@@ -67,14 +83,19 @@ function validatePassword() {
   });
 });
 
-
-form.addEventListener("submit", (event) => {
+form?.addEventListener("submit", (event) => {
   const isEmailValid = validateEmail();
   const isPasswordValid = validatePassword();
 
   if (!isEmailValid || !isPasswordValid) {
     event.preventDefault();
+    return;
+  }
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Signing in";
+    submitButton.classList.add("loading");
   }
 });
-
 

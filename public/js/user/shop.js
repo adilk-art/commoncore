@@ -97,12 +97,18 @@ document.querySelectorAll(".wish-form").forEach((form) => {
 
       button.classList.toggle("wish-btn--active", !isWishlisted);
       svg.setAttribute("fill", isWishlisted ? "none" : "currentColor");
+const wishlistCount = document.getElementById("wishlistCount");
 
-      const wishlistCount = document.getElementById("wishlistCount");
+if (
+  wishlistCount &&
+  response.data.wishlistCount !== undefined
+) {
+  const count = Number(response.data.wishlistCount);
 
-      if (wishlistCount && response.data.wishlistCount !== undefined) {
-        wishlistCount.textContent = response.data.wishlistCount;
-      }
+  wishlistCount.textContent = count;
+
+  wishlistCount.hidden = count <= 0;
+}
 
       userToast(response.data.message || "Wishlist updated");
     } catch (error) {

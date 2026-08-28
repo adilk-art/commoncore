@@ -51,9 +51,13 @@
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
 
-        <% if (typeof wishlistCount !== "undefined" && wishlistCount > 0) { %>
-          <span class="cart-badge" id="wishlistCount"><%= wishlistCount %></span>
-        <% } %>
+<span
+  class="cart-badge"
+  id="wishlistCount"
+  <%= !wishlistCount || wishlistCount <= 0 ? 'hidden' : '' %>
+>
+  <%= wishlistCount || 0 %>
+</span>
       </a>
 
       <a
@@ -67,9 +71,13 @@
           <path d="M16 10a4 4 0 0 1-8 0"/>
         </svg>
 
-        <% if (typeof cartCount !== "undefined" && cartCount > 0) { %>
-          <span class="cart-badge" id="cartCount"><%= cartCount %></span>
-        <% } %>
+     <span
+  class="cart-badge"
+  id="cartCount"
+  <%= (!cartCount || cartCount <= 0) ? "hidden" : "" %>
+>
+  <%= cartCount || 0 %>
+</span>
       </a>
 
       <a

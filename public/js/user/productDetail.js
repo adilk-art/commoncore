@@ -368,22 +368,30 @@
         },
       );
 
-      if (response.data.success) {
-        const cartBadge = document.querySelector(".cart-btn .cart-badge");
+if (response.data.success) {
+  const cartBadge = document.getElementById("cartCount");
 
-        if (cartBadge && response.data.cartCount !== undefined) {
-          cartBadge.textContent = response.data.cartCount;
-        }
+  if (cartBadge) {
+    const cartCount = Number(response.data.cartCount || 0);
 
-        userToast(response.data.message || "Added to cart");
+    cartBadge.textContent = cartCount;
 
-        cartBtn.textContent = "Added ✓";
+    if (cartCount > 0) {
+      cartBadge.removeAttribute("hidden");
+    } else {
+      cartBadge.setAttribute("hidden", "");
+    }
+  }
 
-        setTimeout(() => {
-          cartBtn.textContent = originalText;
-          cartBtn.disabled = false;
-        }, 1200);
-      }
+  userToast(response.data.message || "Added to cart");
+
+  cartBtn.textContent = "Added ✓";
+
+  setTimeout(() => {
+    cartBtn.textContent = originalText;
+    cartBtn.disabled = false;
+  }, 1200);
+}
     } catch (error) {
       const status = error?.response?.status;
       const message =
