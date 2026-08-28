@@ -99,6 +99,7 @@ router.post("/order/:orderId/checkout-again",isAuthenticated,orderController.pre
 router.delete("/order/checkout-again/item/:variantId",isAuthenticated,checkoutController.removeCheckoutAgainItem);
 router.patch("/order/checkout-again/item/:variantId/quantity",isAuthenticated,orderController.updateCheckoutAgainItemQuantity);
 router.post("/order/checkout-again/exit",isAuthenticated, orderController.exitCheckoutAgain);
+router.post("/order/razorpay/dismiss",isAuthenticated,orderController.dismissRazorpayOrderController);
 
 router.get("/returns/request/:orderId/:itemId", isAuthenticated, returnController.loadReturnRequestPage);
 router.post("/returns/request", isAuthenticated, returnController.requestReturn);

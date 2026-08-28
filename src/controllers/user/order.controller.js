@@ -7,6 +7,7 @@ import {
   cancelOrderService,
   downloadInvoiceService,
   createRazorpayOrderService,
+  dismissRazorpayOrderService,
   verifyPaymentService,
   recordRazorpayFailureService,
   prepareCheckoutAgainService,
@@ -135,6 +136,19 @@ export const createRazorpayOrder = async (req,res,next) => {
       delete req.session.checkoutAgain;
     }
     res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const dismissRazorpayOrderController = async (req, res, next) => {
+  try {
+    const result = await dismissRazorpayOrderService(
+      req.session.userId,
+      req.body.databaseOrderId,
+    );
+
+    res.json(result);
   } catch (error) {
     next(error);
   }

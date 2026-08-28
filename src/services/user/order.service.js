@@ -1585,6 +1585,29 @@ export const createRazorpayOrderService = async (userId, payload) => {
   }
 };
 
+export const dismissRazorpayOrderService = async (
+  userId,
+  databaseOrderId,
+) => {
+  console.log("service");
+
+  if (!databaseOrderId) {
+    const error = new Error("Order ID is required");
+    error.status = 400;
+    throw error;
+  }
+
+  const result = await deleteIncompletePendingOrderRepo(
+    databaseOrderId,
+    userId,
+  );
+
+  return {
+    success: true,
+    deleted: result.deletedCount > 0,
+  };
+};
+
 export const verifyPaymentService = async (
   userId,
   paymentData,
@@ -1808,17 +1831,9 @@ export const recordRazorpayFailureService = async (userId, payload) => {
     };
   }
 
+
   order.paymentStatus = "Failed";
-
   order.orderStatus = "Payment Failed";
-
-  const failedAt = new Date();
-
-  order.items.forEach((item) => {
-    item.status = "Payment Failed";
-
-    item.statusUpdatedAt = failedAt;
-  });
 
   await saveOrder(order);
 
@@ -1859,17 +1874,18 @@ export const prepareCheckoutAgainService = async (orderId, userId) => {
     throw error;
   }
 
-  const checkoutItems = order.items
-    .filter((item) => ["Pending", "Payment Failed"].includes(item.status))
-    .map((item) => ({
-      variantId: item.variantId?._id || item.variantId,
-
-      quantity: Number(item.quantity),
-    }))
-    .filter(
-      (item) =>
-        item.variantId && Number.isInteger(item.quantity) && item.quantity > 0,
-    );
+const checkoutItems = order.items
+  .filter((item) => item.status === "Pending")
+  .map((item) => ({
+    variantId: item.variantId?._id || item.variantId,
+    quantity: Number(item.quantity),
+  }))
+  .filter(
+    (item) =>
+      item.variantId &&
+      Number.isInteger(item.quantity) &&
+      item.quantity > 0,
+  );
 
   if (checkoutItems.length === 0) {
     const error = new Error("No items are available for checkout");

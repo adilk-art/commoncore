@@ -694,23 +694,35 @@ placeOrderBtn?.addEventListener("click", async (event) => {
       },
 
       modal: {
-        ondismiss: () => {
-          if (
-            paymentCompleted ||
-            paymentVerificationStarted ||
-            paymentFailureRecorded ||
-            paymentFailureInProgress
-          ) {
-            return;
-          }
+  ondismiss: async () => {
+    if (
+      paymentCompleted ||
+      paymentVerificationStarted ||
+      paymentFailureRecorded ||
+      paymentFailureInProgress
+    ) {
+      return;
+    }
 
-          resetPlaceOrderButton();
+    try {
+      await axios.post("/user/order/razorpay/dismiss", {
+        databaseOrderId,
+      });
 
-          orderSubmissionInProgress = false;
+      userToast("Payment window closed");
+    } catch (error) {
+      console.error(
+        "Unable to cleanup Razorpay order:",
+        error.response?.data?.message || error.message,
+      );
 
-          userToast("Payment window closed");
-        },
-      },
+      userToast("Payment window closed");
+    } finally {
+      resetPlaceOrderButton();
+      orderSubmissionInProgress = false;
+    }
+  },
+},
 
       theme: {
         color: "#000000",

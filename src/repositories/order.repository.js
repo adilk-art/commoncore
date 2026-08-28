@@ -212,26 +212,11 @@ export const deleteIncompletePendingOrderRepo = async (
   orderId,
   userId,
 ) => {
-  return Order.deleteOne({
+  return Order.findOneAndDelete({
     _id: orderId,
     userId,
-    paymentMethod: "Razorpay",
     paymentStatus: "Pending",
     orderStatus: "Payment Pending",
-
-    $or: [
-      {
-        razorpayOrderId: {
-          $exists: false,
-        },
-      },
-      {
-        razorpayOrderId: null,
-      },
-      {
-        razorpayOrderId: "",
-      },
-    ],
   });
 };
 
