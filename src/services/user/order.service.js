@@ -402,19 +402,16 @@ export const placeOrderService = async (userId, payload) => {
 
   if (!shippingAddress) {
     const error = new Error("Please select address");
-
     error.status = 400;
-
     throw error;
   }
 
   if (!paymentMethod) {
     const error = new Error("Please select payment method");
-
     error.status = 400;
-
     throw error;
   }
+
 
   if (paymentMethod === "Razorpay") {
     return createRazorpayOrderService(userId, payload);
@@ -424,14 +421,9 @@ export const placeOrderService = async (userId, payload) => {
 
   if (!address) {
     const error = new Error("Address not found");
-
     error.status = 404;
-
     throw error;
   }
-
-
-
 
   if (checkoutAgainOrderId) {
     if (
@@ -446,13 +438,15 @@ export const placeOrderService = async (userId, payload) => {
       throw error;
     }
 
-    const order = await findUserOrderById(checkoutAgainOrderId, userId);
+    const order = await findUserOrderById(
+      checkoutAgainOrderId,
+      userId,
+    );
 
     if (!order) {
       const error = new Error("Order not found");
 
       error.status = 404;
-
       throw error;
     }
 
@@ -460,7 +454,9 @@ export const placeOrderService = async (userId, payload) => {
       order.orderStatus !== "Payment Failed" ||
       order.paymentStatus !== "Failed"
     ) {
-      const error = new Error("This order can no longer be checked out again");
+      const error = new Error(
+        "This order can no longer be checked out again",
+      );
 
       error.status = 400;
       error.code = "INVALID_CHECKOUT_AGAIN";
@@ -468,13 +464,18 @@ export const placeOrderService = async (userId, payload) => {
       throw error;
     }
 
-    const { items, coupon, total, shippingFee } = await buildOrderPricing({
+    const {
+      items,
+      coupon,
+      total,
+      shippingFee,
+    } = await buildOrderPricing({
       userId,
       couponCode,
       checkoutAgain,
     });
 
-  validateCodEligibility(paymentMethod, total);
+    validateCodEligibility(paymentMethod, total);
 
     if (paymentMethod === "Wallet") {
       const wallet = await findWalletByUserId(userId);
@@ -483,7 +484,6 @@ export const placeOrderService = async (userId, payload) => {
         const error = new Error("Wallet not found");
 
         error.status = 400;
-
         throw error;
       }
 
@@ -498,12 +498,20 @@ export const placeOrderService = async (userId, payload) => {
     }
 
     const estimatedDeliveryDate = new Date();
+    estimatedDeliveryDate.setDate(
+      estimatedDeliveryDate.getDate() + 5,
+    );
 
-    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
-    order.items = items.map((item) => ({ ...item, status: "Placed", }));
+    order.items = items.map((item) => ({
+      ...item,
+      status: "Placed",
+    }));
+
     order.paymentMethod = paymentMethod;
-    order.paymentStatus = paymentMethod === "Wallet" ? "Paid" : "Pending";
+    order.paymentStatus =
+      paymentMethod === "Wallet" ? "Paid" : "Pending";
     order.orderStatus = "Placed";
+
     order.isCheckoutAgain = true;
     order.estimatedDeliveryDate = estimatedDeliveryDate;
 
@@ -520,6 +528,7 @@ export const placeOrderService = async (userId, payload) => {
     order.coupon = coupon || undefined;
     order.shippingFee = shippingFee;
     order.total = total;
+
     order.razorpayOrderId = undefined;
     order.razorpayPaymentId = undefined;
     order.razorpaySignature = undefined;
@@ -533,15 +542,22 @@ export const placeOrderService = async (userId, payload) => {
       });
     }
 
-    for (const item of items) {
-      await reduceVariantStock(item.variantId, item.quantity);
+    for (const item of order.items) {
+      await reduceVariantStock(
+        item.variantId,
+        item.quantity,
+      );
     }
 
     if (coupon?.couponId) {
-      const updatedCoupon = await incrementCouponUsage(coupon.couponId);
+      const updatedCoupon = await incrementCouponUsage(
+        coupon.couponId,
+      );
 
       if (!updatedCoupon) {
-        const error = new Error("This coupon is no longer available");
+        const error = new Error(
+          "This coupon is no longer available",
+        );
 
         error.status = 400;
         error.code = "INVALID_COUPON";
@@ -552,12 +568,20 @@ export const placeOrderService = async (userId, payload) => {
 
     await saveOrder(order);
 
+    if (!order.isBuyNow) {
+      await clearCart(userId);
+    }
+
     return order;
   }
 
 
-
-  const { items, coupon, total, shippingFee } = await buildOrderPricing({
+  const {
+    items,
+    coupon,
+    total,
+    shippingFee,
+  } = await buildOrderPricing({
     userId,
     isBuyNow,
     variantId,
@@ -574,7 +598,6 @@ export const placeOrderService = async (userId, payload) => {
       const error = new Error("Wallet not found");
 
       error.status = 400;
-
       throw error;
     }
 
@@ -590,13 +613,21 @@ export const placeOrderService = async (userId, payload) => {
 
   const estimatedDeliveryDate = new Date();
 
-  estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+  estimatedDeliveryDate.setDate(
+    estimatedDeliveryDate.getDate() + 5,
+  );
+
+  const orderItems = items.map((item) => ({
+    ...item,
+    status: "Placed",
+  }));
 
   const order = await createOrderRepo({
     orderNumber: generateOrderNumber(),
     userId,
-    items,
+    items: orderItems,
     isBuyNow,
+    isCheckoutAgain: false,
     paymentMethod,
     estimatedDeliveryDate,
     shippingAddress: {
@@ -611,7 +642,8 @@ export const placeOrderService = async (userId, payload) => {
     coupon: coupon || undefined,
     shippingFee,
     total,
-    paymentStatus: paymentMethod === "Wallet" ? "Paid" : "Pending",
+    paymentStatus:
+      paymentMethod === "Wallet" ? "Paid" : "Pending",
     orderStatus: "Placed",
   });
 
@@ -624,15 +656,22 @@ export const placeOrderService = async (userId, payload) => {
     });
   }
 
-  for (const item of items) {
-    await reduceVariantStock(item.variantId, item.quantity);
+  for (const item of order.items) {
+    await reduceVariantStock(
+      item.variantId,
+      item.quantity,
+    );
   }
 
   if (coupon?.couponId) {
-    const updatedCoupon = await incrementCouponUsage(coupon.couponId);
+    const updatedCoupon = await incrementCouponUsage(
+      coupon.couponId,
+    );
 
     if (!updatedCoupon) {
-      const error = new Error("This coupon is no longer available");
+      const error = new Error(
+        "This coupon is no longer available",
+      );
 
       error.status = 400;
       error.code = "INVALID_COUPON";
@@ -1685,9 +1724,7 @@ export const verifyPaymentService = async (
   }
 
   if (order.paymentMethod !== "Razorpay") {
-    const error = new Error(
-      "Invalid payment method",
-    );
+    const error = new Error("Invalid payment method");
     error.status = 400;
     throw error;
   }
@@ -1802,10 +1839,7 @@ export const verifyPaymentService = async (
     }
   }
 
-  if (
-    !paidOrder.isBuyNow &&
-    !paidOrder.isCheckoutAgain
-  ) {
+  if (!paidOrder.isBuyNow) {
     await clearCart(userId);
   }
 
@@ -1863,8 +1897,14 @@ export const recordRazorpayFailureService = async (userId, payload) => {
   };
 };
 
-export const prepareCheckoutAgainService = async (orderId, userId) => {
-  const order = await findUserOrderById(orderId, userId);
+export const prepareCheckoutAgainService = async (
+  orderId,
+  userId,
+) => {
+  const order = await findUserOrderById(
+    orderId,
+    userId,
+  );
 
   if (!order) {
     const error = new Error("Order not found");
@@ -1886,7 +1926,9 @@ export const prepareCheckoutAgainService = async (orderId, userId) => {
     order.paymentStatus !== "Failed" ||
     order.orderStatus !== "Payment Failed"
   ) {
-    const error = new Error("This order is not eligible for checkout again");
+    const error = new Error(
+      "This order is not eligible for checkout again",
+    );
 
     error.status = 400;
     error.code = "INVALID_CHECKOUT_AGAIN";
@@ -1894,21 +1936,26 @@ export const prepareCheckoutAgainService = async (orderId, userId) => {
     throw error;
   }
 
-const checkoutItems = order.items
-  .filter((item) => item.status === "Pending")
-  .map((item) => ({
-    variantId: item.variantId?._id || item.variantId,
-    quantity: Number(item.quantity),
-  }))
-  .filter(
-    (item) =>
-      item.variantId &&
-      Number.isInteger(item.quantity) &&
-      item.quantity > 0,
-  );
+  const checkoutItems = order.items
+    .filter((item) => item.status === "Pending")
+    .map((item) => ({
+      variantId:
+        item.variantId?._id ||
+        item.variantId,
+
+      quantity: Number(item.quantity),
+    }))
+    .filter(
+      (item) =>
+        item.variantId &&
+        Number.isInteger(item.quantity) &&
+        item.quantity > 0,
+    );
 
   if (checkoutItems.length === 0) {
-    const error = new Error("No items are available for checkout");
+    const error = new Error(
+      "No items are available for checkout",
+    );
 
     error.status = 400;
     error.code = "INVALID_CHECKOUT_AGAIN";
@@ -1923,20 +1970,31 @@ const checkoutItems = order.items
 
     shippingAddress: order.shippingAddress
       ? {
-          fullName: order.shippingAddress.fullName,
+          fullName:
+            order.shippingAddress.fullName,
 
-          phone: order.shippingAddress.phone,
+          phone:
+            order.shippingAddress.phone,
 
-          line1: order.shippingAddress.line1,
+          line1:
+            order.shippingAddress.line1,
 
-          line2: order.shippingAddress.line2 || "",
+          line2:
+            order.shippingAddress.line2 || "",
 
-          city: order.shippingAddress.city,
+          city:
+            order.shippingAddress.city,
 
-          state: order.shippingAddress.state,
+          state:
+            order.shippingAddress.state,
 
-          pincode: order.shippingAddress.pincode,
+          pincode:
+            order.shippingAddress.pincode,
         }
       : null,
+
+    isCheckoutAgain: true,
+
+    isBuyNow: Boolean(order.isBuyNow),
   };
 };
