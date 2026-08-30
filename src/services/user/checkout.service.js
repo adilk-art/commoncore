@@ -11,6 +11,7 @@ import {
 import { getQualifiedCouponsService } from "./coupon.service.js";
 
 const MAX_QTY = 5;
+const MAX_COD_AMOUNT = 5000;
 
 const createServiceError = (message, status = 400) => {
   const error = new Error(message);
@@ -82,9 +83,12 @@ export const getCheckoutPageService = async (userId) => {
   const walletBalance = Number(wallet?.balance || 0);
 
   const canUseWallet = walletBalance >= total;
+  const canUseCod=total<=MAX_COD_AMOUNT;
+
 
   return {
     canUseWallet,
+    canUseCod,
     wallet,
     cart,
     addresses,
@@ -235,11 +239,12 @@ export const getBuyNowCheckoutService = async (userId, variantId, quantity) => {
   const walletBalance = Number(wallet?.balance || 0);
 
   const canUseWallet = walletBalance >= total;
-
+  const canUseCod=total<=MAX_COD_AMOUNT;
   const gstAmount = calculateIncludedGst(subtotal, product.gstRate);
 
   return {
     canUseWallet,
+    canUseCod,
     wallet,
 
     cart: {
@@ -564,6 +569,7 @@ export const getCheckoutAgainPageService = async (userId, checkoutAgain) => {
   const walletBalance = Number(wallet?.balance || 0);
 
   const canUseWallet = walletBalance >= total;
+  const canUseCod=total<=MAX_COD_AMOUNT;
 
   return {
     order,
@@ -587,7 +593,7 @@ export const getCheckoutAgainPageService = async (userId, checkoutAgain) => {
 
     wallet,
     canUseWallet,
-
+    canUseCod,
     qualifiedCoupons,
 
     canApplyCoupon: qualifiedCoupons.some((coupon) => coupon.eligible),

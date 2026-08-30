@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -17,6 +18,7 @@
     typeof isCheckoutAgain !== "undefined" &&
     isCheckoutAgain
   ) { %>
+
     <div class="checkout-again-bar">
       <div class="checkout-again-icon">
         <i class="fa-solid fa-circle-info"></i>
@@ -32,16 +34,21 @@
         </p>
       </div>
     </div>
+
   <% } %>
 
   <% if (invalidCart) { %>
+
     <div class="checkout-warning card card-md">
+
       <div class="checkout-warning-content">
+
         <div class="checkout-warning-icon">
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
 
         <div>
+
           <h2 class="text-section-title">
             <%= typeof isCheckoutAgain !== "undefined" && isCheckoutAgain
               ? "Some items need your attention"
@@ -51,18 +58,24 @@
           <p class="text-body">
             <%= message %>
           </p>
+
         </div>
+
       </div>
 
       <% if (
         typeof isCheckoutAgain === "undefined" ||
         !isCheckoutAgain
       ) { %>
+
         <a href="/user/cart" class="primary-btn">
           Review Cart
         </a>
+
       <% } %>
+
     </div>
+
   <% } %>
 
   <div class="checkout-layout <%= invalidCart ? 'checkout-disabled' : '' %>">
@@ -72,184 +85,200 @@
       <section class="checkout-section">
 
         <div class="checkout-section-head">
-          <div class="checkout-step">1</div>
+
+          <div class="checkout-step">
+            1
+          </div>
 
           <h2 class="text-section-title">
             Shipping Address
           </h2>
+
         </div>
 
-<div class="checkout-address-grid">
+        <div class="checkout-address-grid">
 
-  <%
-    const checkoutAgainActive =
-      typeof isCheckoutAgain !== "undefined" &&
-      isCheckoutAgain;
+          <%
+            const checkoutAgainActive =
+              typeof isCheckoutAgain !== "undefined" &&
+              isCheckoutAgain;
 
-    const hasRestoredSavedAddress =
-      checkoutAgainActive &&
-      typeof restoredAddressId !== "undefined" &&
-      restoredAddressId;
+            const hasRestoredSavedAddress =
+              checkoutAgainActive &&
+              typeof restoredAddressId !== "undefined" &&
+              restoredAddressId;
 
-    const hasPreviousOrderAddress =
-      checkoutAgainActive &&
-      typeof previousShippingAddress !== "undefined" &&
-      previousShippingAddress;
+            const hasPreviousOrderAddress =
+              checkoutAgainActive &&
+              typeof previousShippingAddress !== "undefined" &&
+              previousShippingAddress;
 
-    const showPreviousAddressCard =
-      hasPreviousOrderAddress &&
-      !hasRestoredSavedAddress;
-  %>
+            const showPreviousAddressCard =
+              hasPreviousOrderAddress &&
+              !hasRestoredSavedAddress;
+          %>
 
-  <% if (showPreviousAddressCard) { %>
+          <% if (showPreviousAddressCard) { %>
 
-    <label class="checkout-address active">
+            <label class="checkout-address active">
 
-      <input
-        type="radio"
-        name="address"
-        value="previous-order-address"
-        class="hidden address-radio"
-        checked
-      >
+              <input
+                type="radio"
+                name="address"
+                value="previous-order-address"
+                class="hidden address-radio"
+                checked
+              >
 
-      <h3 class="address-name">
-        <%= previousShippingAddress.fullName %>
-      </h3>
+              <h3 class="address-name">
+                <%= previousShippingAddress.fullName %>
+              </h3>
 
-      <p class="address-text">
-        <%= previousShippingAddress.line1 %>
-      </p>
+              <p class="address-text">
+                <%= previousShippingAddress.line1 %>
+              </p>
 
-      <% if (previousShippingAddress.line2) { %>
-        <p class="address-text">
-          <%= previousShippingAddress.line2 %>
-        </p>
-      <% } %>
+              <% if (previousShippingAddress.line2) { %>
 
-      <p class="address-text">
-        <%= previousShippingAddress.city %>,
-        <%= previousShippingAddress.state %>
-      </p>
+                <p class="address-text">
+                  <%= previousShippingAddress.line2 %>
+                </p>
 
-      <p class="address-text">
-        <%= previousShippingAddress.pincode %>
-      </p>
+              <% } %>
 
-      <p class="address-phone">
-        +91 <%= previousShippingAddress.phone %>
-      </p>
+              <p class="address-text">
+                <%= previousShippingAddress.city %>,
+                <%= previousShippingAddress.state %>
+              </p>
 
-    </label>
+              <p class="address-text">
+                <%= previousShippingAddress.pincode %>
+              </p>
 
-  <% } %>
+              <p class="address-phone">
+                +91 <%= previousShippingAddress.phone %>
+              </p>
 
-  <% addresses.forEach(address => { %>
+            </label>
 
-    <%
-      const isRestoredAddress =
-        checkoutAgainActive &&
-        hasRestoredSavedAddress &&
-        String(restoredAddressId) ===
-          String(address._id);
-
-      const shouldSelectAddress =
-        checkoutAgainActive
-          ? isRestoredAddress
-          : address.isDefault;
-    %>
-
-    <label
-      class="checkout-address <%= shouldSelectAddress ? 'active' : '' %>"
-    >
-
-      <input
-        type="radio"
-        name="address"
-        value="<%= address._id %>"
-        class="hidden address-radio"
-        <%= shouldSelectAddress ? 'checked' : '' %>
-      >
-
-      <div class="checkout-address-top">
-
-        <div>
-          <% if (address.isDefault) { %>
-            <span class="address-badge">
-              Default
-            </span>
           <% } %>
+
+          <% addresses.forEach(address => { %>
+
+            <%
+              const isRestoredAddress =
+                checkoutAgainActive &&
+                hasRestoredSavedAddress &&
+                String(restoredAddressId) ===
+                  String(address._id);
+
+              const shouldSelectAddress =
+                checkoutAgainActive
+                  ? isRestoredAddress
+                  : address.isDefault;
+            %>
+
+            <label
+              class="checkout-address <%= shouldSelectAddress ? 'active' : '' %>"
+            >
+
+              <input
+                type="radio"
+                name="address"
+                value="<%= address._id %>"
+                class="hidden address-radio"
+                <%= shouldSelectAddress ? 'checked' : '' %>
+              >
+
+              <div class="checkout-address-top">
+
+                <div>
+
+                  <% if (address.isDefault) { %>
+
+                    <span class="address-badge">
+                      Default
+                    </span>
+
+                  <% } %>
+
+                </div>
+
+                <button
+                  type="button"
+                  class="checkout-edit-address-btn"
+                  data-id="<%= address._id %>"
+                  data-fullname="<%= address.fullName %>"
+                  data-phone="<%= address.phone %>"
+                  data-line1="<%= address.line1 %>"
+                  data-line2="<%= address.line2 || '' %>"
+                  data-city="<%= address.city %>"
+                  data-state="<%= address.state %>"
+                  data-pincode="<%= address.pincode %>"
+                  data-default="<%= address.isDefault %>"
+                >
+                  Edit
+                </button>
+
+              </div>
+
+              <h3 class="address-name">
+                <%= address.fullName %>
+              </h3>
+
+              <p class="address-text">
+                <%= address.line1 %>
+              </p>
+
+              <% if (address.line2) { %>
+
+                <p class="address-text">
+                  <%= address.line2 %>
+                </p>
+
+              <% } %>
+
+              <p class="address-text">
+                <%= address.city %>,
+                <%= address.state %>
+              </p>
+
+              <p class="address-text">
+                <%= address.pincode %>
+              </p>
+
+              <p class="address-phone">
+                +91 <%= address.phone %>
+              </p>
+
+            </label>
+
+          <% }) %>
+
+          <button
+            type="button"
+            class="add-address-card"
+            id="openAddAddressModal"
+          >
+            <span>+ Add Address</span>
+          </button>
+
         </div>
-
-        <button
-          type="button"
-          class="checkout-edit-address-btn"
-          data-id="<%= address._id %>"
-          data-fullname="<%= address.fullName %>"
-          data-phone="<%= address.phone %>"
-          data-line1="<%= address.line1 %>"
-          data-line2="<%= address.line2 || '' %>"
-          data-city="<%= address.city %>"
-          data-state="<%= address.state %>"
-          data-pincode="<%= address.pincode %>"
-          data-default="<%= address.isDefault %>"
-        >
-          Edit
-        </button>
-
-      </div>
-
-      <h3 class="address-name">
-        <%= address.fullName %>
-      </h3>
-
-      <p class="address-text">
-        <%= address.line1 %>
-      </p>
-
-      <% if (address.line2) { %>
-        <p class="address-text">
-          <%= address.line2 %>
-        </p>
-      <% } %>
-
-      <p class="address-text">
-        <%= address.city %>,
-        <%= address.state %>
-      </p>
-
-      <p class="address-text">
-        <%= address.pincode %>
-      </p>
-
-      <p class="address-phone">
-        +91 <%= address.phone %>
-      </p>
-
-    </label>
-
-  <% }) %>
-
-  <button
-    type="button"
-    class="add-address-card"
-    id="openAddAddressModal"
-  >
-    <span>+ Add Address</span>
-  </button>
-
-</div>
 
       </section>
 
       <section class="checkout-section">
 
         <div class="checkout-section-head">
-          <div class="checkout-step">2</div>
+
+          <div class="checkout-step">
+            2
+          </div>
 
           <h2 class="text-section-title">
             Payment Method
           </h2>
+
         </div>
 
         <div class="payment-options">
@@ -265,6 +294,7 @@
             >
 
             <div>
+
               <h3 class="payment-title">
                 Pay Now (Razorpay)
               </h3>
@@ -272,6 +302,7 @@
               <p class="text-muted">
                 UPI, Cards
               </p>
+
             </div>
 
           </label>
@@ -300,32 +331,52 @@
               </p>
 
               <% if (!canUseWallet) { %>
+
                 <p class="wallet-warning">
                   Insufficient wallet balance
                 </p>
+
               <% } %>
 
             </div>
 
           </label>
 
-          <label class="payment-option">
+          <label
+            class="payment-option <%= !canUseCod ? 'disabled' : '' %>"
+            id="codPaymentOption"
+          >
 
             <input
               type="radio"
               name="payment"
               value="CashOnDelivery"
               class="hidden payment-radio"
+              <%= !canUseCod ? 'disabled' : '' %>
             >
 
-            <div>
+            <div class="payment-info">
+
               <h3 class="payment-title">
                 Cash on Delivery
               </h3>
 
-              <p class="text-muted">
+              <p
+                class="text-muted cod-available-message"
+                id="codAvailableMessage"
+                <%= !canUseCod ? 'hidden' : '' %>
+              >
                 Pay after delivery
               </p>
+
+              <p
+                class="wallet-warning cod-warning-message"
+                id="codWarningMessage"
+                <%= canUseCod ? 'hidden' : '' %>
+              >
+                Cash on Delivery is not available for this order.
+              </p>
+
             </div>
 
           </label>
@@ -378,7 +429,7 @@
                   <% } else { %>
 
                     ₹<%= Number(
-                      item.discountValue,
+                      item.discountValue
                     ).toLocaleString("en-IN") %> OFF
 
                   <% } %>
@@ -423,6 +474,7 @@
                       <span>
                         Change to <%= item.availableStock %>
                       </span>
+
                     </button>
 
                   <% } %>
@@ -437,6 +489,7 @@
                     <span>
                       Remove Item
                     </span>
+
                   </button>
 
                 </div>
@@ -449,7 +502,7 @@
 
               <span class="summary-product-current">
                 ₹<%= Number(
-                  item.lineTotal,
+                  item.lineTotal
                 ).toLocaleString("en-IN") %>
               </span>
 
@@ -457,7 +510,7 @@
 
                 <span class="summary-product-old">
                   ₹<%= Number(
-                    item.lineOriginalTotal,
+                    item.lineOriginalTotal
                   ).toLocaleString("en-IN") %>
                 </span>
 
@@ -496,6 +549,7 @@
           <div class="checkout-coupon-head">
 
             <div>
+
               <h3>
                 Apply Coupon
               </h3>
@@ -503,6 +557,7 @@
               <p>
                 Select or enter an eligible coupon code
               </p>
+
             </div>
 
             <i class="fa-solid fa-ticket"></i>
@@ -570,13 +625,13 @@
                       ) { %>
 
                         <%= Number(
-                          coupon.discountValue,
+                          coupon.discountValue
                         ) %>% OFF
 
                       <% } else { %>
 
                         ₹<%= Number(
-                          coupon.discountValue,
+                          coupon.discountValue
                         ).toLocaleString('en-IN') %> OFF
 
                       <% } %>
@@ -606,7 +661,7 @@
 
                       <small>
                         Maximum discount ₹<%= Number(
-                          coupon.maximumDiscountAmount,
+                          coupon.maximumDiscountAmount
                         ).toLocaleString('en-IN') %>
                       </small>
 
@@ -615,14 +670,14 @@
                     <small>
                       Valid until
                       <%= new Date(
-                        coupon.validUntil,
+                        coupon.validUntil
                       ).toLocaleDateString(
                         'en-IN',
                         {
-                          day:'2-digit',
-                          month:'short',
-                          year:'numeric',
-                        },
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        }
                       ) %>
                     </small>
 
@@ -639,9 +694,7 @@
                 </div>
 
                 <span class="qualified-coupon-select">
-                  <%= coupon.eligible
-                    ? 'Select'
-                    : 'Locked' %>
+                  <%= coupon.eligible ? 'Select' : 'Locked' %>
                 </span>
 
               </button>
@@ -674,7 +727,7 @@
                 <p id="appliedCouponMessage">
                   <%= typeof appliedCoupon !== 'undefined' && appliedCoupon
                     ? `You saved ₹${Number(
-                        appliedCoupon.discountAmount,
+                        appliedCoupon.discountAmount
                       ).toLocaleString('en-IN')}`
                     : '' %>
                 </p>
@@ -706,7 +759,7 @@
 
         <span id="checkoutOriginalSubtotal">
           ₹<%= Number(
-            cart.originalSubtotal,
+            cart.originalSubtotal
           ).toLocaleString('en-IN') %>
         </span>
 
@@ -723,7 +776,7 @@
 
         <span id="checkoutDiscount">
           −₹<%= Number(
-            cart.totalDiscount,
+            cart.totalDiscount
           ).toLocaleString('en-IN') %>
         </span>
 
@@ -737,7 +790,7 @@
 
         <span id="checkoutSubtotal">
           ₹<%= Number(
-            cart.subtotal,
+            cart.subtotal
           ).toLocaleString('en-IN') %>
         </span>
 
@@ -784,7 +837,7 @@
           <%= shipping === 0
             ? 'Free'
             : `₹${Number(
-                shipping,
+                shipping
               ).toLocaleString('en-IN')}` %>
         </span>
 
@@ -795,11 +848,13 @@
       <div class="summary-row summary-total">
 
         <span>
+
           Total
 
           <span class="text-muted gst-note">
             Inclusive of GST
           </span>
+
         </span>
 
         <span id="checkoutTotal">
@@ -1015,3 +1070,4 @@
 
 </body>
 </html>
+

@@ -308,7 +308,7 @@ const buildOrderPricing = async ({
     ),
   );
 
-  const subtotal = roundMoney(
+const subtotal = roundMoney(
     items.reduce(
       (sum, item) =>
         sum + Number(item.unitPrice || 0) * Number(item.quantity || 0),
@@ -375,6 +375,19 @@ const buildOrderPricing = async ({
   };
 };
 
+const validateCodEligibility = (paymentMethod, total) => {
+  if (paymentMethod === "CashOnDelivery" && Number(total) > 5000) {
+    const error = new Error(
+      "Cash on Delivery is available only for orders up to ₹5,000",
+    );
+
+    error.status = 400;
+    error.code = "COD_LIMIT_EXCEEDED";
+
+    throw error;
+  }
+};
+
 export const placeOrderService = async (userId, payload) => {
   const {
     shippingAddress,
@@ -417,6 +430,9 @@ export const placeOrderService = async (userId, payload) => {
     throw error;
   }
 
+
+
+
   if (checkoutAgainOrderId) {
     if (
       !checkoutAgain ||
@@ -458,6 +474,8 @@ export const placeOrderService = async (userId, payload) => {
       checkoutAgain,
     });
 
+  validateCodEligibility(paymentMethod, total);
+
     if (paymentMethod === "Wallet") {
       const wallet = await findWalletByUserId(userId);
 
@@ -482,8 +500,7 @@ export const placeOrderService = async (userId, payload) => {
     const estimatedDeliveryDate = new Date();
 
     estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
-
-    order.items = items;
+    order.items = items.map((item) => ({ ...item, status: "Placed", }));
     order.paymentMethod = paymentMethod;
     order.paymentStatus = paymentMethod === "Wallet" ? "Paid" : "Pending";
     order.orderStatus = "Placed";
@@ -538,6 +555,8 @@ export const placeOrderService = async (userId, payload) => {
     return order;
   }
 
+
+
   const { items, coupon, total, shippingFee } = await buildOrderPricing({
     userId,
     isBuyNow,
@@ -545,6 +564,8 @@ export const placeOrderService = async (userId, payload) => {
     quantity,
     couponCode,
   });
+
+  validateCodEligibility(paymentMethod, total);
 
   if (paymentMethod === "Wallet") {
     const wallet = await findWalletByUserId(userId);
@@ -1589,7 +1610,6 @@ export const dismissRazorpayOrderService = async (
   userId,
   databaseOrderId,
 ) => {
-  console.log("service");
 
   if (!databaseOrderId) {
     const error = new Error("Order ID is required");
