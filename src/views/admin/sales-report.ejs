@@ -425,139 +425,150 @@
 
           </div>
 
+<div class="table-responsive">
 
-          <div class="table-responsive">
+  <table class="report-table">
 
-            <table class="report-table">
+    <thead>
 
-              <thead>
+      <tr>
+        <th>Date</th>
+        <th>Order ID</th>
+        <th>Username</th>
+        <th>Payment Method</th>
+        <th>Items</th>
+        <th>Gross Amount</th>
+        <th>Offer Discount</th>
+        <th>Coupon Discount</th>
+        <th>Total Discount</th>
+        <th>Net Amount</th>
+      </tr>
 
-                <tr>
-                  <th>Date</th>
-                  <th>Order ID</th>
-                  <th>Items</th>
-                  <th>Gross Amount</th>
-                  <th>Offer Discount</th>
-                  <th>Coupon Discount</th>
-                  <th>Total Discount</th>
-                  <th>Net Amount</th>
-                </tr>
+    </thead>
 
-              </thead>
+    <tbody>
 
-              <tbody>
+      <% if (rows.length) { %>
 
-                <% if (rows.length) { %>
+        <% rows.forEach(row => { %>
 
-                  <% rows.forEach(row => { %>
+          <tr>
 
-                    <tr>
+            <td>
+              <%= new Date(
+                row.createdAt
+              ).toLocaleDateString(
+                "en-IN",
+                {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric"
+                }
+              ) %>
+            </td>
 
-                      <td>
+            <td class="order-number">
+              <%= row.orderNumber %>
+            </td>
 
-                        <%= new Date(
-                          row.createdAt
-                        ).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric"
-                          }
-                        ) %>
+            <td>
+              <%= row.userName || "Unknown User" %>
+            </td>
 
-                      </td>
+            <td>
+              <%= row.paymentMethod === "CashOnDelivery"
+                ? "Cash On Delivery"
+                : row.paymentMethod === "Razorpay"
+                  ? "Razorpay"
+                  : row.paymentMethod === "Wallet"
+                    ? "Wallet"
+                    : row.paymentMethod || "Not specified" %>
+            </td>
 
-                      <td class="order-number">
-                        <%= row.orderNumber %>
-                      </td>
+            <td>
+              <%= row.itemsSold %>
+            </td>
 
-                      <td>
-                        <%= row.itemsSold %>
-                      </td>
+            <td>
+              ₹<%= row.grossAmount.toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </td>
 
-                      <td>
-                        ₹<%= row.grossAmount.toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }
-                        ) %>
-                      </td>
+            <td>
+              ₹<%= row.offerDiscount.toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </td>
 
-                      <td>
-                        ₹<%= row.offerDiscount.toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }
-                        ) %>
-                      </td>
+            <td>
+              ₹<%= row.couponDiscount.toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </td>
 
-                      <td>
-                        ₹<%= row.couponDiscount.toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }
-                        ) %>
-                      </td>
+            <td>
+              ₹<%= row.totalDiscount.toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </td>
 
-                      <td>
-                        ₹<%= row.totalDiscount.toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }
-                        ) %>
-                      </td>
+            <td class="net-amount">
+              ₹<%= row.netAmount.toLocaleString(
+                "en-IN",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }
+              ) %>
+            </td>
 
-                      <td class="net-amount">
+          </tr>
 
-                        ₹<%= row.netAmount.toLocaleString(
-                          "en-IN",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          }
-                        ) %>
+        <% }) %>
 
-                      </td>
+      <% } else { %>
 
-                    </tr>
+        <tr>
 
-                  <% }) %>
+          <td
+            colspan="10"
+            class="empty-report"
+          >
 
-                <% } else { %>
+            <i class="fa-solid fa-chart-column"></i>
 
-                  <tr>
+            <span>
+              No sales found for this period.
+            </span>
 
-                    <td
-                      colspan="8"
-                      class="empty-report"
-                    >
+          </td>
 
-                      <i class="fa-solid fa-chart-column"></i>
+        </tr>
 
-                      <span>
-                        No sales found for this period.
-                      </span>
+      <% } %>
 
-                    </td>
+    </tbody>
 
-                  </tr>
+  </table>
 
-                <% } %>
-
-              </tbody>
-
-            </table>
-
-          </div>
+</div>
 
 
           <% if (pagination.totalPages > 1) { %>

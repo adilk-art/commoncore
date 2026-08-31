@@ -308,7 +308,7 @@ const buildOrderPricing = async ({
     ),
   );
 
-const subtotal = roundMoney(
+  const subtotal = roundMoney(
     items.reduce(
       (sum, item) =>
         sum + Number(item.unitPrice || 0) * Number(item.quantity || 0),
@@ -412,7 +412,6 @@ export const placeOrderService = async (userId, payload) => {
     throw error;
   }
 
-
   if (paymentMethod === "Razorpay") {
     return createRazorpayOrderService(userId, payload);
   }
@@ -438,10 +437,7 @@ export const placeOrderService = async (userId, payload) => {
       throw error;
     }
 
-    const order = await findUserOrderById(
-      checkoutAgainOrderId,
-      userId,
-    );
+    const order = await findUserOrderById(checkoutAgainOrderId, userId);
 
     if (!order) {
       const error = new Error("Order not found");
@@ -454,9 +450,7 @@ export const placeOrderService = async (userId, payload) => {
       order.orderStatus !== "Payment Failed" ||
       order.paymentStatus !== "Failed"
     ) {
-      const error = new Error(
-        "This order can no longer be checked out again",
-      );
+      const error = new Error("This order can no longer be checked out again");
 
       error.status = 400;
       error.code = "INVALID_CHECKOUT_AGAIN";
@@ -464,12 +458,7 @@ export const placeOrderService = async (userId, payload) => {
       throw error;
     }
 
-    const {
-      items,
-      coupon,
-      total,
-      shippingFee,
-    } = await buildOrderPricing({
+    const { items, coupon, total, shippingFee } = await buildOrderPricing({
       userId,
       couponCode,
       checkoutAgain,
@@ -498,9 +487,7 @@ export const placeOrderService = async (userId, payload) => {
     }
 
     const estimatedDeliveryDate = new Date();
-    estimatedDeliveryDate.setDate(
-      estimatedDeliveryDate.getDate() + 5,
-    );
+    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
 
     order.items = items.map((item) => ({
       ...item,
@@ -508,8 +495,7 @@ export const placeOrderService = async (userId, payload) => {
     }));
 
     order.paymentMethod = paymentMethod;
-    order.paymentStatus =
-      paymentMethod === "Wallet" ? "Paid" : "Pending";
+    order.paymentStatus = paymentMethod === "Wallet" ? "Paid" : "Pending";
     order.orderStatus = "Placed";
 
     order.isCheckoutAgain = true;
@@ -543,21 +529,14 @@ export const placeOrderService = async (userId, payload) => {
     }
 
     for (const item of order.items) {
-      await reduceVariantStock(
-        item.variantId,
-        item.quantity,
-      );
+      await reduceVariantStock(item.variantId, item.quantity);
     }
 
     if (coupon?.couponId) {
-      const updatedCoupon = await incrementCouponUsage(
-        coupon.couponId,
-      );
+      const updatedCoupon = await incrementCouponUsage(coupon.couponId);
 
       if (!updatedCoupon) {
-        const error = new Error(
-          "This coupon is no longer available",
-        );
+        const error = new Error("This coupon is no longer available");
 
         error.status = 400;
         error.code = "INVALID_COUPON";
@@ -575,13 +554,7 @@ export const placeOrderService = async (userId, payload) => {
     return order;
   }
 
-
-  const {
-    items,
-    coupon,
-    total,
-    shippingFee,
-  } = await buildOrderPricing({
+  const { items, coupon, total, shippingFee } = await buildOrderPricing({
     userId,
     isBuyNow,
     variantId,
@@ -613,9 +586,7 @@ export const placeOrderService = async (userId, payload) => {
 
   const estimatedDeliveryDate = new Date();
 
-  estimatedDeliveryDate.setDate(
-    estimatedDeliveryDate.getDate() + 5,
-  );
+  estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
 
   const orderItems = items.map((item) => ({
     ...item,
@@ -642,8 +613,7 @@ export const placeOrderService = async (userId, payload) => {
     coupon: coupon || undefined,
     shippingFee,
     total,
-    paymentStatus:
-      paymentMethod === "Wallet" ? "Paid" : "Pending",
+    paymentStatus: paymentMethod === "Wallet" ? "Paid" : "Pending",
     orderStatus: "Placed",
   });
 
@@ -657,21 +627,14 @@ export const placeOrderService = async (userId, payload) => {
   }
 
   for (const item of order.items) {
-    await reduceVariantStock(
-      item.variantId,
-      item.quantity,
-    );
+    await reduceVariantStock(item.variantId, item.quantity);
   }
 
   if (coupon?.couponId) {
-    const updatedCoupon = await incrementCouponUsage(
-      coupon.couponId,
-    );
+    const updatedCoupon = await incrementCouponUsage(coupon.couponId);
 
     if (!updatedCoupon) {
-      const error = new Error(
-        "This coupon is no longer available",
-      );
+      const error = new Error("This coupon is no longer available");
 
       error.status = 400;
       error.code = "INVALID_COUPON";
@@ -754,9 +717,7 @@ export const getOrderDetailService = async (orderId, userId) => {
 
   if (!order) {
     const error = new Error("Order not found");
-
     error.status = 404;
-
     throw error;
   }
 
@@ -784,17 +745,16 @@ export const getOrderDetailService = async (orderId, userId) => {
       ? "Payment Failed"
       : order.orderStatus || "Placed";
 
-  const paymentDisplayStatus = order.paymentStatus;
+  const paymentDisplayStatus = order.paymentStatus || "Pending";
 
   const isPaymentFailed =
-    order.paymentStatus === "Failed" && order.orderStatus === "Payment Failed";
+    order.paymentStatus === "Failed" &&
+    order.orderStatus === "Payment Failed";
 
   const RETURN_WINDOW_DAYS = 14;
 
-  const formatReturnDate = (date) => {
-    if (!date) {
-      return "";
-    }
+  const formatDate = (date) => {
+    if (!date) return "";
 
     const parsedDate = new Date(date);
 
@@ -811,7 +771,7 @@ export const getOrderDetailService = async (orderId, userId) => {
 
   order.items.forEach((item) => {
     item.canCancel =
-      order.paymentStatus !== "Failed" &&
+      !isPaymentFailed &&
       ["Placed", "Processing"].includes(item.status);
 
     item.canReturn = false;
@@ -830,75 +790,79 @@ export const getOrderDetailService = async (orderId, userId) => {
 
     if (deliveredAt && !Number.isNaN(deliveredAt.getTime())) {
       diffDays = Math.floor(
-        (Date.now() - deliveredAt.getTime()) / (1000 * 60 * 60 * 24),
+        (Date.now() - deliveredAt.getTime()) /
+          (1000 * 60 * 60 * 24),
       );
 
-      item.returnDaysLeft = Math.max(RETURN_WINDOW_DAYS - diffDays, 0);
+      item.returnDaysLeft = Math.max(
+        RETURN_WINDOW_DAYS - diffDays,
+        0,
+      );
     }
 
     if (
       item.status === "Delivered" &&
       !itemReturn &&
       diffDays !== null &&
+      diffDays >= 0 &&
       diffDays <= RETURN_WINDOW_DAYS
     ) {
       item.canReturn = true;
     }
 
-    if (itemReturn) {
-      item.returnRequest = itemReturn;
+    item.returnRequest = itemReturn || null;
 
+    if (itemReturn) {
       item.showReturnStatusBtn = [
         "REQUESTED",
         "PROCESSING",
         "APPROVED",
         "REJECTED",
       ].includes(itemReturn.status);
-    } else {
-      item.returnRequest = null;
     }
 
     const userReview = reviewMap.get(String(item.productId));
 
     item.userReview = userReview || null;
-
     item.hasReview = Boolean(userReview);
 
-    item.canReview = item.status === "Delivered" && !userReview;
+    item.canReview =
+      item.status === "Delivered" && !userReview;
 
     if (item.status === "Delivered") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Delivered on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Delivered on ${formatDate(item.statusUpdatedAt)}`
         : "";
     } else if (item.status === "Cancelled") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Cancelled on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Cancelled on ${formatDate(item.statusUpdatedAt)}`
         : "";
     } else if (item.status === "Return Requested") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Return requested on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Return requested on ${formatDate(item.statusUpdatedAt)}`
         : "";
     } else if (item.status === "Return Accepted") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Return accepted on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Return accepted on ${formatDate(item.statusUpdatedAt)}`
         : "";
     } else if (item.status === "Returned") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Returned on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Returned on ${formatDate(item.statusUpdatedAt)}`
         : "";
     } else if (item.status === "Refunded") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Refunded on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Refunded on ${formatDate(item.statusUpdatedAt)}`
         : "";
     } else if (item.status === "Payment Failed") {
       item.statusMetaText = item.statusUpdatedAt
-        ? `Payment failed on ${formatReturnDate(item.statusUpdatedAt)}`
+        ? `Payment failed on ${formatDate(item.statusUpdatedAt)}`
         : "";
     }
   });
 
   const activeItems = order.items.filter(
-    (item) => !["Cancelled", "Returned", "Refunded"].includes(item.status),
+    (item) =>
+      !["Cancelled", "Returned", "Refunded"].includes(item.status),
   );
 
   const cancelledItems = order.items.filter(
@@ -910,10 +874,9 @@ export const getOrderDetailService = async (orderId, userId) => {
   );
 
   const calculateItemAmounts = (item) => {
-    const quantity = Number(item.quantity) || 0;
+    const quantity = Math.max(Number(item.quantity) || 0, 0);
 
     const originalUnitPrice = Number(item.originalUnitPrice);
-
     const unitPrice = Number(item.unitPrice);
 
     const safeOriginalUnitPrice = Number.isFinite(originalUnitPrice)
@@ -922,29 +885,44 @@ export const getOrderDetailService = async (orderId, userId) => {
         ? unitPrice
         : 0;
 
-    const safeUnitPrice = Number.isFinite(unitPrice) ? unitPrice : 0;
+    const safeUnitPrice = Number.isFinite(unitPrice)
+      ? unitPrice
+      : 0;
 
-    const originalAmount = roundMoney(safeOriginalUnitPrice * quantity);
-
-    const offerAmount = roundMoney(safeUnitPrice * quantity);
-
-    const offerDiscount = roundMoney(Math.max(originalAmount - offerAmount, 0));
-
-    const couponDiscount = roundMoney(
-      Math.min(Number(item.couponDiscountAmount || 0), offerAmount),
+    const originalAmount = roundMoney(
+      safeOriginalUnitPrice * quantity,
     );
 
-    const finalAmount = roundMoney(Math.max(offerAmount - couponDiscount, 0));
+    const offerAmount = roundMoney(
+      safeUnitPrice * quantity,
+    );
 
-    const gstRate = Number(item.gstRate) || 0;
+    const offerDiscount = roundMoney(
+      Math.max(originalAmount - offerAmount, 0),
+    );
 
-    let gstAmount = 0;
+    const couponDiscount = roundMoney(
+      Math.min(
+        Math.max(Number(item.couponDiscountAmount) || 0, 0),
+        offerAmount,
+      ),
+    );
+
+    const finalAmount = roundMoney(
+      Math.max(offerAmount - couponDiscount, 0),
+    );
+
+    const gstRate = Math.max(Number(item.gstRate) || 0, 0);
+
     let taxableValue = finalAmount;
+    let gstAmount = 0;
 
     if (finalAmount > 0 && gstRate > 0) {
-      taxableValue = finalAmount / (1 + gstRate / 100);
+      taxableValue =
+        finalAmount / (1 + gstRate / 100);
 
-      gstAmount = finalAmount - taxableValue;
+      gstAmount =
+        finalAmount - taxableValue;
     }
 
     return {
@@ -960,23 +938,18 @@ export const getOrderDetailService = async (orderId, userId) => {
   };
 
   const calculateTotals = (items) => {
-    return items.reduce(
-      (totals, item) => {
+    const totals = items.reduce(
+      (result, item) => {
         const amounts = calculateItemAmounts(item);
 
-        totals.originalSubtotal += amounts.originalAmount;
+        result.originalSubtotal += amounts.originalAmount;
+        result.offerDiscountTotal += amounts.offerDiscount;
+        result.subtotal += amounts.offerAmount;
+        result.couponDiscountTotal += amounts.couponDiscount;
+        result.finalSubtotal += amounts.finalAmount;
+        result.gstAmount += amounts.gstAmount;
 
-        totals.offerDiscountTotal += amounts.offerDiscount;
-
-        totals.subtotal += amounts.offerAmount;
-
-        totals.couponDiscountTotal += amounts.couponDiscount;
-
-        totals.finalSubtotal += amounts.finalAmount;
-
-        totals.gstAmount += amounts.gstAmount;
-
-        return totals;
+        return result;
       },
       {
         originalSubtotal: 0,
@@ -987,69 +960,126 @@ export const getOrderDetailService = async (orderId, userId) => {
         gstAmount: 0,
       },
     );
+
+    return {
+      originalSubtotal: roundMoney(totals.originalSubtotal),
+      offerDiscountTotal: roundMoney(
+        totals.offerDiscountTotal,
+      ),
+      subtotal: roundMoney(totals.subtotal),
+      couponDiscountTotal: roundMoney(
+        totals.couponDiscountTotal,
+      ),
+      finalSubtotal: roundMoney(totals.finalSubtotal),
+      gstAmount: roundMoney(totals.gstAmount),
+    };
   };
 
   const orderTotals = calculateTotals(order.items);
-
   const activeTotals = calculateTotals(activeItems);
-
   const cancelledTotals = calculateTotals(cancelledItems);
-
   const returnedTotals = calculateTotals(returnedItems);
 
   const fullyCancelled =
     order.items.length > 0 &&
-    order.items.every((item) => item.status === "Cancelled");
+    order.items.every(
+      (item) => item.status === "Cancelled",
+    );
 
-  const partiallyCancelled = cancelledItems.length > 0 && !fullyCancelled;
+  const partiallyCancelled =
+    cancelledItems.length > 0 &&
+    !fullyCancelled;
 
   const fullyReturned =
     order.items.length > 0 &&
-    order.items.every((item) => ["Returned", "Refunded"].includes(item.status));
+    order.items.every((item) =>
+      ["Returned", "Refunded"].includes(item.status),
+    );
 
-  const partiallyReturned = returnedItems.length > 0 && !fullyReturned;
+  const partiallyReturned =
+    returnedItems.length > 0 &&
+    !fullyReturned;
 
-  const originalShippingFee = roundMoney(Number(order.shippingFee) || 0);
+  const originalShippingFee = roundMoney(
+    Number(order.shippingFee) || 0,
+  );
 
-  const shippingFee = fullyCancelled ? 0 : originalShippingFee;
+  const shippingFee =
+    activeItems.length > 0
+      ? originalShippingFee
+      : 0;
 
-  const total = roundMoney(activeTotals.finalSubtotal + shippingFee);
+  const originalOrderTotal = roundMoney(
+    Number(order.total) || 0,
+  );
 
-  const currentValue = total;
+  const activeSubtotal = roundMoney(
+    activeTotals.finalSubtotal,
+  );
 
-  const originalOrderTotal = roundMoney(Number(order.total) || 0);
+  const activeTotal = roundMoney(
+    activeSubtotal + shippingFee,
+  );
+
+  const cancelledAmount = roundMoney(
+    cancelledTotals.finalSubtotal,
+  );
+
+  const returnedAmount = roundMoney(
+    returnedTotals.finalSubtotal,
+  );
+
+  const refundedAmount = roundMoney(
+    cancelledAmount + returnedAmount,
+  );
 
   const paymentCollected =
-    order.paymentStatus === "Paid" ? originalOrderTotal : 0;
+    order.paymentStatus === "Paid"
+      ? originalOrderTotal
+      : 0;
 
   const cancellationRefundAmount =
-    fullyCancelled && order.paymentStatus === "Paid" ? originalOrderTotal : 0;
+    fullyCancelled &&
+    order.paymentStatus === "Paid"
+      ? originalOrderTotal
+      : 0;
 
-  const refundRequired = fullyCancelled && order.paymentStatus === "Paid";
+  const refundRequired =
+    fullyCancelled &&
+    order.paymentStatus === "Paid";
 
   const hasDeliverableItems =
     !isPaymentFailed &&
     order.items.some((item) =>
-      ["Placed", "Processing", "Shipped"].includes(item.status),
+      ["Placed", "Processing", "Shipped"].includes(
+        item.status,
+      ),
     );
 
   const canCancelOrder =
-    order.paymentStatus !== "Failed" &&
+    !isPaymentFailed &&
     order.items.length > 0 &&
-    order.items.every((item) => ["Placed", "Processing"].includes(item.status));
+    order.items.every((item) =>
+      ["Placed", "Processing"].includes(item.status),
+    );
 
   const canCancelAnyItem =
-    order.paymentStatus !== "Failed" &&
-    order.items.some((item) => ["Placed", "Processing"].includes(item.status));
+    !isPaymentFailed &&
+    order.items.some((item) =>
+      ["Placed", "Processing"].includes(item.status),
+    );
 
   const canDownloadInvoice =
-    order.paymentStatus === "Paid" || order.paymentMethod === "CashOnDelivery";
+    order.paymentStatus === "Paid" ||
+    order.paymentMethod === "CashOnDelivery";
 
   const showEstimatedDelivery =
     !isPaymentFailed &&
     !fullyCancelled &&
     activeItems.some((item) =>
-      ["Placed", "Processing", "Shipped"].includes(item.status),
+      ["Placed", "Processing", "Shipped"].includes(
+        item.status,
+      ),
     );
 
   const canReturnToCheckout =
@@ -1057,97 +1087,81 @@ export const getOrderDetailService = async (orderId, userId) => {
     order.paymentStatus === "Failed" &&
     order.orderStatus === "Payment Failed";
 
-  const roundedOrderTotals = {
-    originalSubtotal: roundMoney(orderTotals.originalSubtotal),
-    offerDiscountTotal: roundMoney(orderTotals.offerDiscountTotal),
-    subtotal: roundMoney(orderTotals.subtotal),
-    couponDiscountTotal: roundMoney(orderTotals.couponDiscountTotal),
-    discountedSubtotal: roundMoney(orderTotals.finalSubtotal),
-    gstAmount: roundMoney(orderTotals.gstAmount),
-  };
-
-  const roundedActiveTotals = {
-    originalSubtotal: roundMoney(activeTotals.originalSubtotal),
-    offerDiscountTotal: roundMoney(activeTotals.offerDiscountTotal),
-    subtotal: roundMoney(activeTotals.subtotal),
-    couponDiscountTotal: roundMoney(activeTotals.couponDiscountTotal),
-    discountedSubtotal: roundMoney(activeTotals.finalSubtotal),
-    gstAmount: roundMoney(activeTotals.gstAmount),
-  };
-
   return {
     order,
+
     displayStatus,
     paymentDisplayStatus,
+    isPaymentFailed,
+
     canCancelOrder,
     canCancelAnyItem,
     canDownloadInvoice,
     hasDeliverableItems,
     showEstimatedDelivery,
+    canReturnToCheckout,
 
     activeItems,
     cancelledItems,
     returnedItems,
 
-    originalSubtotal: roundedOrderTotals.originalSubtotal,
+    originalSubtotal: orderTotals.originalSubtotal,
+    offerDiscountTotal: orderTotals.offerDiscountTotal,
+    subtotal: orderTotals.subtotal,
+    couponDiscountTotal: orderTotals.couponDiscountTotal,
+    discountedSubtotal: orderTotals.finalSubtotal,
+    gstAmount: orderTotals.gstAmount,
 
-    offerDiscountTotal: roundedOrderTotals.offerDiscountTotal,
+    activeOriginalSubtotal: activeTotals.originalSubtotal,
+    activeOfferDiscountTotal:
+      activeTotals.offerDiscountTotal,
+    activeSubtotal: activeTotals.subtotal,
+    activeCouponDiscountTotal:
+      activeTotals.couponDiscountTotal,
+    activeDiscountedSubtotal:
+      activeTotals.finalSubtotal,
+    activeGstAmount: activeTotals.gstAmount,
 
-    subtotal: roundedOrderTotals.subtotal,
+    cancelledOriginalAmount:
+      cancelledTotals.originalSubtotal,
+    cancelledAmount,
+    cancelledItemsAmount: cancelledAmount,
 
-    couponDiscountTotal: roundedOrderTotals.couponDiscountTotal,
+    returnedOriginalAmount:
+      returnedTotals.originalSubtotal,
+    returnedAmount,
 
-    discountedSubtotal: roundedOrderTotals.discountedSubtotal,
+    refundedAmount,
+    refundedItemsAmount: returnedAmount,
 
-    gstAmount: roundedOrderTotals.gstAmount,
+    returnedOfferDiscountTotal:
+      returnedTotals.offerDiscountTotal,
 
-    activeOriginalSubtotal: roundedActiveTotals.originalSubtotal,
+    returnedCouponDiscountTotal:
+      returnedTotals.couponDiscountTotal,
 
-    activeOfferDiscountTotal: roundedActiveTotals.offerDiscountTotal,
-
-    activeSubtotal: roundedActiveTotals.subtotal,
-
-    activeCouponDiscountTotal: roundedActiveTotals.couponDiscountTotal,
-
-    activeDiscountedSubtotal: roundedActiveTotals.discountedSubtotal,
-
-    activeGstAmount: roundedActiveTotals.gstAmount,
-
-    cancelledOriginalAmount: roundMoney(cancelledTotals.originalSubtotal),
-
-    cancelledAmount: roundMoney(cancelledTotals.finalSubtotal),
-
-    returnedOriginalAmount: roundMoney(returnedTotals.originalSubtotal),
-
-    returnedAmount: roundMoney(returnedTotals.finalSubtotal),
+    returnedGstAmount:
+      returnedTotals.gstAmount,
 
     originalShippingFee,
-
     shippingFee,
 
-    total,
-
-    currentValue,
+    total: activeTotal,
+    currentValue: activeTotal,
 
     originalOrderTotal,
-
     paymentCollected,
 
     cancellationRefundAmount,
-
     refundRequired,
 
     fullyCancelled,
     partiallyCancelled,
+
     fullyReturned,
     partiallyReturned,
-
-    isPaymentFailed,
-
-    canReturnToCheckout,
   };
 };
-
 export const cancelOrderService = async ({ userId, orderId }) => {
   const order = await findOrderById(orderId);
 
@@ -1445,10 +1459,7 @@ export const createRazorpayOrderService = async (userId, payload) => {
     throw error;
   }
 
-  const address = await getUserAddressById(
-    shippingAddress,
-    userId,
-  );
+  const address = await getUserAddressById(shippingAddress, userId);
 
   if (!address) {
     const error = new Error("Shipping address not found");
@@ -1457,28 +1468,20 @@ export const createRazorpayOrderService = async (userId, payload) => {
   }
 
   const estimatedDeliveryDate = new Date();
-  estimatedDeliveryDate.setDate(
-    estimatedDeliveryDate.getDate() + 5,
-  );
+  estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
 
   if (checkoutAgainOrderId) {
     if (
       !checkoutAgain ||
-      String(checkoutAgain.orderId) !==
-        String(checkoutAgainOrderId)
+      String(checkoutAgain.orderId) !== String(checkoutAgainOrderId)
     ) {
-      const error = new Error(
-        "Checkout session is no longer valid",
-      );
+      const error = new Error("Checkout session is no longer valid");
       error.status = 400;
       error.code = "INVALID_CHECKOUT_AGAIN";
       throw error;
     }
 
-    const order = await findUserOrderById(
-      checkoutAgainOrderId,
-      userId,
-    );
+    const order = await findUserOrderById(checkoutAgainOrderId, userId);
 
     if (!order) {
       const error = new Error("Order not found");
@@ -1490,9 +1493,7 @@ export const createRazorpayOrderService = async (userId, payload) => {
       order.orderStatus !== "Payment Failed" ||
       order.paymentStatus !== "Failed"
     ) {
-      const error = new Error(
-        "This order can no longer be checked out again",
-      );
+      const error = new Error("This order can no longer be checked out again");
       error.status = 400;
       error.code = "INVALID_CHECKOUT_AGAIN";
       throw error;
@@ -1562,9 +1563,7 @@ export const createRazorpayOrderService = async (userId, payload) => {
 
       await saveOrder(order);
 
-      const serviceError = new Error(
-        "Unable to initialize Razorpay payment",
-      );
+      const serviceError = new Error("Unable to initialize Razorpay payment");
 
       serviceError.status = 500;
       throw serviceError;
@@ -1631,25 +1630,16 @@ export const createRazorpayOrderService = async (userId, payload) => {
       order: razorpayOrder,
     };
   } catch (error) {
-    await deleteIncompletePendingOrderRepo(
-      order._id,
-      userId,
-    );
+    await deleteIncompletePendingOrderRepo(order._id, userId);
 
-    const serviceError = new Error(
-      "Unable to initialize Razorpay payment",
-    );
+    const serviceError = new Error("Unable to initialize Razorpay payment");
 
     serviceError.status = 500;
     throw serviceError;
   }
 };
 
-export const dismissRazorpayOrderService = async (
-  userId,
-  databaseOrderId,
-) => {
-
+export const dismissRazorpayOrderService = async (userId, databaseOrderId) => {
   if (!databaseOrderId) {
     const error = new Error("Order ID is required");
     error.status = 400;
@@ -1667,10 +1657,7 @@ export const dismissRazorpayOrderService = async (
   };
 };
 
-export const verifyPaymentService = async (
-  userId,
-  paymentData,
-) => {
+export const verifyPaymentService = async (userId, paymentData) => {
   const {
     databaseOrderId,
     razorpay_order_id,
@@ -1679,46 +1666,33 @@ export const verifyPaymentService = async (
   } = paymentData;
 
   if (!databaseOrderId) {
-    const error = new Error(
-      "Database order ID is required",
-    );
+    const error = new Error("Database order ID is required");
     error.status = 400;
     throw error;
   }
 
   if (!razorpay_order_id) {
-    const error = new Error(
-      "Razorpay order ID is required",
-    );
+    const error = new Error("Razorpay order ID is required");
     error.status = 400;
     throw error;
   }
 
   if (!razorpay_payment_id) {
-    const error = new Error(
-      "Razorpay payment ID is required",
-    );
+    const error = new Error("Razorpay payment ID is required");
     error.status = 400;
     throw error;
   }
 
   if (!razorpay_signature) {
-    const error = new Error(
-      "Razorpay signature is required",
-    );
+    const error = new Error("Razorpay signature is required");
     error.status = 400;
     throw error;
   }
 
-  const order = await findUserOrderById(
-    databaseOrderId,
-    userId,
-  );
+  const order = await findUserOrderById(databaseOrderId, userId);
 
   if (!order) {
-    const error = new Error(
-      "Payment order not found",
-    );
+    const error = new Error("Payment order not found");
     error.status = 404;
     throw error;
   }
@@ -1736,45 +1710,26 @@ export const verifyPaymentService = async (
     };
   }
 
-  if (
-    !["Pending", "Failed"].includes(
-      order.paymentStatus,
-    )
-  ) {
-    const error = new Error(
-      "Payment is no longer available",
-    );
+  if (!["Pending", "Failed"].includes(order.paymentStatus)) {
+    const error = new Error("Payment is no longer available");
     error.status = 400;
     throw error;
   }
 
-  if (
-    !["Payment Pending", "Payment Failed"].includes(
-      order.orderStatus,
-    )
-  ) {
-    const error = new Error(
-      "Order is no longer available for payment",
-    );
+  if (!["Payment Pending", "Payment Failed"].includes(order.orderStatus)) {
+    const error = new Error("Order is no longer available for payment");
     error.status = 400;
     throw error;
   }
 
   if (!order.razorpayOrderId) {
-    const error = new Error(
-      "Razorpay payment session not found",
-    );
+    const error = new Error("Razorpay payment session not found");
     error.status = 400;
     throw error;
   }
 
-  if (
-    String(order.razorpayOrderId) !==
-    String(razorpay_order_id)
-  ) {
-    const error = new Error(
-      "Razorpay order does not match",
-    );
+  if (String(order.razorpayOrderId) !== String(razorpay_order_id)) {
+    const error = new Error("Razorpay order does not match");
     error.status = 400;
     throw error;
   }
@@ -1785,29 +1740,21 @@ export const verifyPaymentService = async (
     razorpay_signature,
   });
 
-  const paidOrder =
-    await markRazorpayOrderPaidRepo({
-      orderId: order._id,
-      userId,
-      razorpayPaymentId:
-        razorpay_payment_id,
-      razorpaySignature:
-        razorpay_signature,
-    });
+  const paidOrder = await markRazorpayOrderPaidRepo({
+    orderId: order._id,
+    userId,
+    razorpayPaymentId: razorpay_payment_id,
+    razorpaySignature: razorpay_signature,
+  });
 
   if (!paidOrder) {
-    const error = new Error(
-      "Unable to update payment status",
-    );
+    const error = new Error("Unable to update payment status");
     error.status = 400;
     throw error;
   }
 
   for (const item of paidOrder.items) {
-    await reduceVariantStock(
-      item.variantId,
-      item.quantity,
-    );
+    await reduceVariantStock(item.variantId, item.quantity);
 
     item.status = "Placed";
   }
@@ -1822,15 +1769,10 @@ export const verifyPaymentService = async (
   await saveOrder(paidOrder);
 
   if (paidOrder.coupon?.couponId) {
-    const updatedCoupon =
-      await incrementCouponUsage(
-        paidOrder.coupon.couponId,
-      );
+    const updatedCoupon = await incrementCouponUsage(paidOrder.coupon.couponId);
 
     if (!updatedCoupon) {
-      const error = new Error(
-        "Coupon usage could not be updated",
-      );
+      const error = new Error("Coupon usage could not be updated");
 
       error.status = 400;
       error.code = "INVALID_COUPON";
@@ -1885,7 +1827,6 @@ export const recordRazorpayFailureService = async (userId, payload) => {
     };
   }
 
-
   order.paymentStatus = "Failed";
   order.orderStatus = "Payment Failed";
 
@@ -1897,14 +1838,8 @@ export const recordRazorpayFailureService = async (userId, payload) => {
   };
 };
 
-export const prepareCheckoutAgainService = async (
-  orderId,
-  userId,
-) => {
-  const order = await findUserOrderById(
-    orderId,
-    userId,
-  );
+export const prepareCheckoutAgainService = async (orderId, userId) => {
+  const order = await findUserOrderById(orderId, userId);
 
   if (!order) {
     const error = new Error("Order not found");
@@ -1926,9 +1861,7 @@ export const prepareCheckoutAgainService = async (
     order.paymentStatus !== "Failed" ||
     order.orderStatus !== "Payment Failed"
   ) {
-    const error = new Error(
-      "This order is not eligible for checkout again",
-    );
+    const error = new Error("This order is not eligible for checkout again");
 
     error.status = 400;
     error.code = "INVALID_CHECKOUT_AGAIN";
@@ -1939,23 +1872,17 @@ export const prepareCheckoutAgainService = async (
   const checkoutItems = order.items
     .filter((item) => item.status === "Pending")
     .map((item) => ({
-      variantId:
-        item.variantId?._id ||
-        item.variantId,
+      variantId: item.variantId?._id || item.variantId,
 
       quantity: Number(item.quantity),
     }))
     .filter(
       (item) =>
-        item.variantId &&
-        Number.isInteger(item.quantity) &&
-        item.quantity > 0,
+        item.variantId && Number.isInteger(item.quantity) && item.quantity > 0,
     );
 
   if (checkoutItems.length === 0) {
-    const error = new Error(
-      "No items are available for checkout",
-    );
+    const error = new Error("No items are available for checkout");
 
     error.status = 400;
     error.code = "INVALID_CHECKOUT_AGAIN";
@@ -1970,26 +1897,19 @@ export const prepareCheckoutAgainService = async (
 
     shippingAddress: order.shippingAddress
       ? {
-          fullName:
-            order.shippingAddress.fullName,
+          fullName: order.shippingAddress.fullName,
 
-          phone:
-            order.shippingAddress.phone,
+          phone: order.shippingAddress.phone,
 
-          line1:
-            order.shippingAddress.line1,
+          line1: order.shippingAddress.line1,
 
-          line2:
-            order.shippingAddress.line2 || "",
+          line2: order.shippingAddress.line2 || "",
 
-          city:
-            order.shippingAddress.city,
+          city: order.shippingAddress.city,
 
-          state:
-            order.shippingAddress.state,
+          state: order.shippingAddress.state,
 
-          pincode:
-            order.shippingAddress.pincode,
+          pincode: order.shippingAddress.pincode,
         }
       : null,
 

@@ -1040,9 +1040,7 @@
   color: #d1d5db;
   font-size: 24px;
   cursor: pointer;
-  transition:
-    color 0.15s ease,
-    transform 0.15s ease;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .review-star:hover {
@@ -1097,9 +1095,7 @@
   font-size: 13px;
   line-height: 1.55;
   box-sizing: border-box;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .review-comment::placeholder {

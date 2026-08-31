@@ -5,14 +5,27 @@ const formatMoney = (value) => {
 };
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    },
-  );
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatPaymentMethod = (paymentMethod) => {
+  if (paymentMethod === "CashOnDelivery") {
+    return "Cash On Delivery";
+  }
+
+  if (paymentMethod === "Razorpay") {
+    return "Razorpay";
+  }
+
+  if (paymentMethod === "Wallet") {
+    return "Wallet";
+  }
+
+  return paymentMethod || "Not specified";
 };
 
 export const generateSalesReportExcel = async ({
@@ -25,13 +38,11 @@ export const generateSalesReportExcel = async ({
 }) => {
   const workbook = new ExcelJS.Workbook();
 
-  const worksheet =
-    workbook.addWorksheet("Sales Report");
+  const worksheet = workbook.addWorksheet("Sales Report");
 
-  worksheet.mergeCells("A1:H1");
+  worksheet.mergeCells("A1:J1");
 
-  worksheet.getCell("A1").value =
-    "COMMON CORE - SALES REPORT";
+  worksheet.getCell("A1").value = "COMMON CORE - SALES REPORT";
 
   worksheet.getCell("A1").font = {
     bold: true,
@@ -42,7 +53,7 @@ export const generateSalesReportExcel = async ({
     horizontal: "center",
   };
 
-  worksheet.mergeCells("A2:H2");
+  worksheet.mergeCells("A2:J2");
 
   worksheet.getCell("A2").value =
     `Period: ${formatDate(startDate)} - ${formatDate(endDate)}`;
@@ -51,10 +62,9 @@ export const generateSalesReportExcel = async ({
     horizontal: "center",
   };
 
-  worksheet.mergeCells("A3:H3");
+  worksheet.mergeCells("A3:J3");
 
-  worksheet.getCell("A3").value =
-    `Filter: ${String(filter).toUpperCase()}`;
+  worksheet.getCell("A3").value = `Filter: ${String(filter).toUpperCase()}`;
 
   worksheet.getCell("A3").alignment = {
     horizontal: "center",
@@ -84,17 +94,18 @@ export const generateSalesReportExcel = async ({
 
   worksheet.addRow([]);
 
-  const headerRow =
-    worksheet.addRow([
-      "Date",
-      "Order ID",
-      "Items",
-      "Gross Amount",
-      "Offer Discount",
-      "Coupon Discount",
-      "Total Discount",
-      "Net Amount",
-    ]);
+  const headerRow = worksheet.addRow([
+    "Date",
+    "Order ID",
+    "Username",
+    "Payment Method",
+    "Items",
+    "Gross Amount",
+    "Offer Discount",
+    "Coupon Discount",
+    "Total Discount",
+    "Net Amount",
+  ]);
 
   headerRow.font = {
     bold: true,
@@ -109,6 +120,8 @@ export const generateSalesReportExcel = async ({
     worksheet.addRow([
       formatDate(row.createdAt),
       row.orderNumber,
+      row.userName || "Unknown User",
+      formatPaymentMethod(row.paymentMethod),
       row.itemsSold,
       formatMoney(row.grossAmount),
       formatMoney(row.offerDiscount),
@@ -126,6 +139,14 @@ export const generateSalesReportExcel = async ({
     {
       key: "order",
       width: 24,
+    },
+    {
+      key: "username",
+      width: 22,
+    },
+    {
+      key: "payment",
+      width: 20,
     },
     {
       key: "items",
@@ -154,27 +175,17 @@ export const generateSalesReportExcel = async ({
   ];
 
   ["F5", "H5"].forEach((cell) => {
-    worksheet.getCell(cell).numFmt =
-      '₹#,##0.00';
+    worksheet.getCell(cell).numFmt = "₹#,##0.00";
   });
 
   ["B6", "D6", "F6"].forEach((cell) => {
-    worksheet.getCell(cell).numFmt =
-      '₹#,##0.00';
+    worksheet.getCell(cell).numFmt = "₹#,##0.00";
   });
 
-  for (
-    let rowNumber = 8;
-    rowNumber <= worksheet.rowCount;
-    rowNumber++
-  ) {
-    ["D", "E", "F", "G", "H"].forEach(
-      (column) => {
-        worksheet.getCell(
-          `${column}${rowNumber}`,
-        ).numFmt = '₹#,##0.00';
-      },
-    );
+  for (let rowNumber = 8; rowNumber <= worksheet.rowCount; rowNumber++) {
+    ["F", "G", "H", "I", "J"].forEach((column) => {
+      worksheet.getCell(`${column}${rowNumber}`).numFmt = "₹#,##0.00";
+    });
   }
 
   worksheet.views = [

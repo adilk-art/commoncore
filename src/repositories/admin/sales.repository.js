@@ -1,123 +1,134 @@
 import Order from "../../models/order.model.js";
 
-export const getSalesReportData = async ({
-  startDate,
-  endDate,
-}) => {
-  return await Order.aggregate([
-    {
-      $match: {
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-        orderStatus: {
-          $nin: [
-            "Payment Pending",
-            "Payment Expired",
-          ],
-        },
+const salesMatch = (startDate, endDate) => ({
+  createdAt: {
+    $gte: startDate,
+    $lte: endDate,
+  },
+  orderStatus: {
+    $nin: ["Payment Pending", "Payment Expired"],
+  },
+});
+
+const salesItemMatch = {
+  "items.status": {
+    $nin: ["Cancelled", "Refunded"],
+  },
+};
+
+const salesAmountStages = [
+  {
+    $addFields: {
+      itemOriginalAmount: {
+        $multiply: ["$items.originalUnitPrice", "$items.quantity"],
+      },
+      itemOfferAmount: {
+        $multiply: ["$items.unitPrice", "$items.quantity"],
+      },
+      itemCouponDiscount: {
+        $ifNull: ["$items.couponDiscountAmount", 0],
       },
     },
+  },
+  {
+    $addFields: {
+      itemOfferDiscount: {
+        $max: [
+          {
+            $subtract: ["$itemOriginalAmount", "$itemOfferAmount"],
+          },
+          0,
+        ],
+      },
+      itemNetAmount: {
+        $max: [
+          {
+            $subtract: ["$itemOfferAmount", "$itemCouponDiscount"],
+          },
+          0,
+        ],
+      },
+    },
+  },
+];
+
+const userLookupStages = [
+  {
+    $lookup: {
+      from: "users",
+      localField: "userId",
+      foreignField: "_id",
+      as: "user",
+    },
+  },
+  {
+    $unwind: {
+      path: "$user",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+];
+
+export const getSalesReportData = async ({ startDate, endDate }) => {
+  return await Order.aggregate([
+    {
+      $match: salesMatch(startDate, endDate),
+    },
+
     {
       $unwind: "$items",
     },
+
     {
-      $match: {
-        "items.status": {
-          $nin: [
-            "Cancelled",
-            "Refunded",
-          ],
-        },
-      },
+      $match: salesItemMatch,
     },
-    {
-      $addFields: {
-        itemOriginalAmount: {
-          $multiply: [
-            "$items.originalUnitPrice",
-            "$items.quantity",
-          ],
-        },
-        itemOfferAmount: {
-          $multiply: [
-            "$items.unitPrice",
-            "$items.quantity",
-          ],
-        },
-        itemCouponDiscount: {
-          $ifNull: [
-            "$items.couponDiscountAmount",
-            0,
-          ],
-        },
-        
-      },
-    },
-    {
-      $addFields: {
-        itemOfferDiscount: {
-          $max: [
-            {
-              $subtract: [
-                "$itemOriginalAmount",
-                "$itemOfferAmount",
-              ],
-            },
-            0,
-          ],
-        },
-        itemNetAmount: {
-          $max: [
-            {
-              $subtract: [
-                "$itemOfferAmount",
-                "$itemCouponDiscount",
-              ],
-            },
-            0,
-          ],
-        },
-      },
-    },
+
+    ...salesAmountStages,
+
     {
       $group: {
         _id: null,
+
         grossSales: {
           $sum: "$itemOriginalAmount",
         },
+
         offerDiscount: {
           $sum: "$itemOfferDiscount",
         },
+
         couponDiscount: {
           $sum: "$itemCouponDiscount",
         },
+
         netSales: {
           $sum: "$itemNetAmount",
         },
+
         salesQuantity: {
           $sum: "$items.quantity",
         },
+
         orderIds: {
           $addToSet: "$_id",
         },
       },
     },
+
     {
       $project: {
         _id: 0,
+
         grossSales: 1,
         offerDiscount: 1,
         couponDiscount: 1,
         netSales: 1,
         salesQuantity: 1,
+
         totalDiscount: {
-          $add: [
-            "$offerDiscount",
-            "$couponDiscount",
-          ],
+          $add: ["$offerDiscount", "$couponDiscount"],
         },
+
         orderCount: {
           $size: "$orderIds",
         },
@@ -147,9 +158,29 @@ export const getSalesReportRows = async ({
         },
       },
     },
+
+    // Get the user who placed the order
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+
+    // user is an array after $lookup
+    {
+      $unwind: {
+        path: "$user",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
     {
       $unwind: "$items",
     },
+
     {
       $match: {
         "items.status": {
@@ -160,6 +191,7 @@ export const getSalesReportRows = async ({
         },
       },
     },
+
     {
       $addFields: {
         itemOriginalAmount: {
@@ -168,12 +200,14 @@ export const getSalesReportRows = async ({
             "$items.quantity",
           ],
         },
+
         itemOfferAmount: {
           $multiply: [
             "$items.unitPrice",
             "$items.quantity",
           ],
         },
+
         itemCouponDiscount: {
           $ifNull: [
             "$items.couponDiscountAmount",
@@ -182,6 +216,7 @@ export const getSalesReportRows = async ({
         },
       },
     },
+
     {
       $addFields: {
         itemOfferDiscount: {
@@ -195,6 +230,7 @@ export const getSalesReportRows = async ({
             0,
           ],
         },
+
         itemNetAmount: {
           $max: [
             {
@@ -208,32 +244,56 @@ export const getSalesReportRows = async ({
         },
       },
     },
+
     {
       $group: {
         _id: "$_id",
+
         orderNumber: {
           $first: "$orderNumber",
         },
+
         createdAt: {
           $first: "$createdAt",
         },
+
+        // Username from Users collection
+        userName: {
+          $first: {
+            $ifNull: [
+              "$user.name",
+              "Unknown User",
+            ],
+          },
+        },
+
+        // Payment method directly from Order
+        paymentMethod: {
+          $first: "$paymentMethod",
+        },
+
         itemsSold: {
           $sum: "$items.quantity",
         },
+
         grossAmount: {
           $sum: "$itemOriginalAmount",
         },
+
         offerDiscount: {
           $sum: "$itemOfferDiscount",
         },
+
         couponDiscount: {
           $sum: "$itemCouponDiscount",
         },
+
         netAmount: {
           $sum: "$itemNetAmount",
         },
       },
     },
+
     {
       $addFields: {
         totalDiscount: {
@@ -244,22 +304,28 @@ export const getSalesReportRows = async ({
         },
       },
     },
+
     {
       $sort: {
         createdAt: -1,
       },
     },
+
     {
       $skip: skip,
     },
+
     {
       $limit: limit,
     },
+
     {
       $project: {
         _id: 0,
         orderNumber: 1,
         createdAt: 1,
+        userName: 1,
+        paymentMethod: 1,
         itemsSold: 1,
         grossAmount: 1,
         offerDiscount: 1,
@@ -271,43 +337,26 @@ export const getSalesReportRows = async ({
   ]);
 };
 
-export const countSalesReportOrders = async ({
-  startDate,
-  endDate,
-}) => {
+export const countSalesReportOrders = async ({ startDate, endDate }) => {
   const result = await Order.aggregate([
     {
-      $match: {
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-        orderStatus: {
-          $nin: [
-            "Payment Pending",
-            "Payment Expired",
-          ],
-        },
-      },
+      $match: salesMatch(startDate, endDate),
     },
+
     {
       $unwind: "$items",
     },
+
     {
-      $match: {
-        "items.status": {
-          $nin: [
-            "Cancelled",
-            "Refunded",
-          ],
-        },
-      },
+      $match: salesItemMatch,
     },
+
     {
       $group: {
         _id: "$_id",
       },
     },
+
     {
       $count: "count",
     },
@@ -335,9 +384,28 @@ export const getSalesReportExportRows = async ({
         },
       },
     },
+
+    // Get user information
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$user",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
     {
       $unwind: "$items",
     },
+
     {
       $match: {
         "items.status": {
@@ -348,6 +416,7 @@ export const getSalesReportExportRows = async ({
         },
       },
     },
+
     {
       $addFields: {
         itemOriginalAmount: {
@@ -356,12 +425,14 @@ export const getSalesReportExportRows = async ({
             "$items.quantity",
           ],
         },
+
         itemOfferAmount: {
           $multiply: [
             "$items.unitPrice",
             "$items.quantity",
           ],
         },
+
         itemCouponDiscount: {
           $ifNull: [
             "$items.couponDiscountAmount",
@@ -370,6 +441,7 @@ export const getSalesReportExportRows = async ({
         },
       },
     },
+
     {
       $addFields: {
         itemOfferDiscount: {
@@ -383,6 +455,7 @@ export const getSalesReportExportRows = async ({
             0,
           ],
         },
+
         itemNetAmount: {
           $max: [
             {
@@ -396,32 +469,54 @@ export const getSalesReportExportRows = async ({
         },
       },
     },
+
     {
       $group: {
         _id: "$_id",
+
         orderNumber: {
           $first: "$orderNumber",
         },
+
         createdAt: {
           $first: "$createdAt",
         },
+
+        userName: {
+          $first: {
+            $ifNull: [
+              "$user.name",
+              "Unknown User",
+            ],
+          },
+        },
+
+        paymentMethod: {
+          $first: "$paymentMethod",
+        },
+
         itemsSold: {
           $sum: "$items.quantity",
         },
+
         grossAmount: {
           $sum: "$itemOriginalAmount",
         },
+
         offerDiscount: {
           $sum: "$itemOfferDiscount",
         },
+
         couponDiscount: {
           $sum: "$itemCouponDiscount",
         },
+
         netAmount: {
           $sum: "$itemNetAmount",
         },
       },
     },
+
     {
       $addFields: {
         totalDiscount: {
@@ -432,16 +527,20 @@ export const getSalesReportExportRows = async ({
         },
       },
     },
+
     {
       $sort: {
         createdAt: -1,
       },
     },
+
     {
       $project: {
         _id: 0,
         orderNumber: 1,
         createdAt: 1,
+        userName: 1,
+        paymentMethod: 1,
         itemsSold: 1,
         grossAmount: 1,
         offerDiscount: 1,
