@@ -118,7 +118,7 @@ export const getShopPageService = async (query, userId) => {
   };
 };
 
-export const getProductDetailService = async ({ productId, userId }) => {
+export const getProductDetailService = async ({ productId, userId,variantId }) => {
   if (!mongoose.Types.ObjectId.isValid(productId)) {
     const error = new Error("Invalid product");
     error.statusCode = 404;
@@ -148,11 +148,19 @@ export const getProductDetailService = async ({ productId, userId }) => {
     (variant) => variant.stock > 0,
   );
 
-  const selectedVariant =
-    defaultInStockVariant ||
-    inStockVariants[0] ||
-    activeVariants[0];
+const cartVariant = variantId
+  ? activeVariants.find(
+      (variant) => String(variant._id) === String(variantId),
+    )
+  : null;
 
+const selectedVariant =
+  cartVariant ||
+  defaultInStockVariant ||
+  inStockVariants[0] ||
+  activeVariants[0];
+
+  
   if (!selectedVariant) {
     const error = new Error("Product unavailable");
     error.statusCode = 404;

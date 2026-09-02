@@ -25,7 +25,8 @@ const editIsActive = document.getElementById("editIsActive");
 const editNameError = document.getElementById("editNameError");
 const editSizeTypeError = document.getElementById("editSizeTypeError");
 const editValidationError = document.getElementById("editValidationError");
-
+const sizeTypeWarning = document.getElementById("sizeTypeWarning");
+let originalSizeType = null;
 function clearAllErrors() {
   document.querySelectorAll(".error").forEach((el) => {
     el.textContent = "";
@@ -124,6 +125,9 @@ document.querySelectorAll(".edit-btn").forEach((btn) => {
     editName.value = btn.dataset.name;
     editSizeType.value = btn.dataset.sizetype;
     editIsActive.value = btn.dataset.active;
+
+    originalSizeType = btn.dataset.sizetype;
+    sizeTypeWarning.classList.add("hidden");
 
     editNameError.textContent = "";
     editSizeTypeError.textContent = "";
@@ -237,4 +241,16 @@ document.querySelectorAll(".toggle-status-btn").forEach((btn) => {
       }
     });
   });
+});
+
+editSizeType.addEventListener("change", () => {
+  editSizeTypeError.textContent = "";
+  editValidationError.textContent = "";
+  editSizeType.classList.remove("input-error");
+
+  if (editSizeType.value !== originalSizeType) {
+    sizeTypeWarning.classList.remove("hidden");
+  } else {
+    sizeTypeWarning.classList.add("hidden");
+  }
 });

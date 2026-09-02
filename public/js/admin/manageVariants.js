@@ -325,7 +325,10 @@ const changeVariantStatus = async (id) => {
       }, 1000);
     }
   } catch (err) {
-    utils.showToast("Something went wrong");
+    utils.showToast(
+      err.response?.data?.message || "Something went wrong",
+      "error"
+    );
   }
 };
 

@@ -24,6 +24,7 @@ import {
   getProductTotalVariantsCount,
   getProductActiveVariantsCount,
   getProductInactiveVariantsCount,
+  getAllVariantsByProductId
 } from "../../repositories/admin/variant.repository.js";
 import { generateSku } from "../../utils/generateSku.js";
 import { formatTitleCase } from "../../utils/formatText.js";
@@ -148,6 +149,33 @@ export const editProductService = async (id, data) => {
     throw err;
   }
 
+  const currentProduct = await getProductById(id);
+
+  if (!currentProduct) {
+    const err = new Error("Product not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const currentBasePrice = Number(currentProduct.basePrice);
+  const newBasePrice = Number(basePrice);
+
+  if (newBasePrice > currentBasePrice) {
+    const variants = await getAllVariantsByProductId(id);
+
+    const invalidVariant = variants.find(
+      (variant) => Number(variant.price) < newBasePrice,
+    );
+
+    if (invalidVariant) {
+      const err = new Error(
+        `Cannot increase base price to ${newBasePrice}. Please update all variant prices to at least ${newBasePrice} first.`,
+      );
+      err.status = 400;
+      throw err;
+    }
+  }
+
   await updateProductById(id, {
     name,
     description,
@@ -197,13 +225,21 @@ export const loadManageVariantsPageService = async (productId,page,search) => {
   const totalVariants=await countVariants(filter)
   const totalPages= Math.ceil(totalVariants / limit);
 
-  const product = await getProductById(productId);
-  let sizes = [];
-  if (product.categoryId.sizeType === "Alpha") {
-    sizes = ["XS", "S", "M", "L", "XL"];
-  } else if (product.categoryId.sizeType === "Numeric") {
-    sizes = ["28", "30", "32", "34", "36"];
-  }
+const product = await getProductById(productId);
+
+if (!product) {
+  const err = new Error("Product not found");
+  err.status = 404;
+  throw err;
+}
+
+let sizes = [];
+
+if (product.categoryId.sizeType === "Alpha") {
+  sizes = ["XS", "S", "M", "L", "XL"];
+} else if (product.categoryId.sizeType === "Numeric") {
+  sizes = ["28", "30", "32", "34", "36"];
+}
 
   if (!product) {
     const err = new Error("Product not found");
@@ -410,7 +446,47 @@ export const getVariantsStatsService = async (productId) => {
   };
 };
 
-export const changeVariantStatusService=async(variantId)=>{
-  const variant=await findVariantById(variantId);
- return await updateVariantById(variantId,{isActive:!variant.isActive})
-}
+export const changeVariantStatusService = async (variantId) => {
+  const variant = await findVariantById(variantId);
+
+  if (!variant) {
+    const err = new Error("Variant not found");
+    err.status = 404;
+    throw err;
+  }
+
+  if (!variant.isActive) {
+    const product = await getProductById(variant.productId);
+
+    if (!product) {
+      const err = new Error("Product not found");
+      err.status = 404;
+      throw err;
+    }
+
+    const sizeType = product.categoryId.sizeType;
+
+    const validSizes =
+      sizeType === "Alpha"
+        ? ["XS", "S", "M", "L", "XL"]
+        : ["28", "30", "32", "34", "36"];
+
+    if (!validSizes.includes(String(variant.size))) {
+      const err = new Error(
+        `Please update the variant size to a valid ${sizeType} size before activating`,
+      );
+      err.status = 400;
+      throw err;
+    }
+  }
+
+  const updatedStatus = !variant.isActive;
+
+  await updateVariantById(variantId, {
+    isActive: updatedStatus,
+  });
+
+  return updatedStatus
+    ? "Variant enabled successfully"
+    : "Variant disabled successfully";
+};

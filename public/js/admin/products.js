@@ -248,3 +248,18 @@ const changeProductStatus = async (id) => {
   }
 
 };
+
+
+const basePriceWarning = document.getElementById("basePriceWarning");
+
+const originalBasePrice = Number(basePriceInput.value);
+
+basePriceInput.addEventListener("input", () => {
+  const newBasePrice = Number(basePriceInput.value);
+
+  if (newBasePrice > originalBasePrice) {
+    basePriceWarning.classList.remove("hidden");
+  } else {
+    basePriceWarning.classList.add("hidden");
+  }
+});

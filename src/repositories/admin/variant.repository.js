@@ -1,4 +1,5 @@
 import Variant from "../../models/variant.model.js";
+import Product from "../../models/product.model.js";
 
 export const getVariants = async (filter, skip, limit) => {
   return await Variant.find(filter)
@@ -87,4 +88,15 @@ export const findActiveVariant = async (variantId) => {
       path: "categoryId",
     },
   });
+};
+
+export const deactivateVariantsByCategoryId = async (categoryId) => {
+  return await Variant.updateMany(
+    { productId: { $in: await Product.find({ categoryId }).distinct("_id") } },
+    { $set: { isActive: false } }
+  );
+};
+
+export const getAllVariantsByProductId = async (productId) => {
+  return await Variant.find({ productId });
 };

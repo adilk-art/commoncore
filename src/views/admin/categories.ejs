@@ -330,14 +330,23 @@
           <span class="error" id="editNameError"></span>
         </div>
 
-        <div class="form-group">
-          <label>Size Type</label>
-          <select id="editSizeType">
-            <option value="Alpha">Alpha</option>
-            <option value="Numeric">Numeric</option>
-          </select>
-          <span class="error" id="editSizeTypeError"></span>
-        </div>
+<div class="form-group">
+  <label>Size Type</label>
+  <select id="editSizeType">
+    <option value="Alpha">Alpha</option>
+    <option value="Numeric">Numeric</option>
+  </select>
+  <span class="error" id="editSizeTypeError"></span>
+</div>
+
+<div class="size-type-warning hidden" id="sizeTypeWarning">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <span>
+    Changing the size type will deactivate all existing variants under this
+    category. You will need to update their sizes to match the new size type
+    before activating them again.
+  </span>
+</div>
 
         <div class="form-group">
           <label>Status</label>

@@ -89,10 +89,10 @@
 
               <% if (!unavailable && hasProduct) { %>
 
-                <a
-                  href="/user/product/<%= item.product._id %>"
-                  class="cart-item-image-wrap"
-                >
+            <a
+              href="/user/product/<%= item.product._id %>?variant=<%= item.variant._id %>"
+              class="cart-item-image-wrap"
+            >
                   <img
                     src="<%= productImage %>"
                     class="cart-item-image"

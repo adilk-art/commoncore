@@ -21,6 +21,7 @@ export const getProductDetail = async (req, res, next) => {
     const data = await getProductDetailService({
       productId: req.params.id,
       userId: req.session.userId,
+       variantId: req.query.variant,
     });
     return res.render(
       "user/product-detail.ejs",

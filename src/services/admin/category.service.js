@@ -12,7 +12,7 @@ import {
 } from "../../repositories/category.repository.js";
 import Category from "../../models/category.model.js";
 import { categorySchema } from "../../validators/category.validation.js";
-
+import { deactivateVariantsByCategoryId } from "../../repositories/admin/variant.repository.js";
 
 export const getAllCategoriesService = async (page = 1, search, sort) => {
   const limit = 5; //limit per page;
@@ -89,7 +89,19 @@ export const updateCategoryService = async (id, data) => {
     err.status = 409;
     throw err;
   }
- 
+
+  const category = await Category.findById(id);
+
+  if (!category) {
+    const err = new Error("Category not found");
+    err.status = 404;
+    throw err;
+  }
+
+  if (category.sizeType !== sizeType) {
+    await deactivateVariantsByCategoryId(id);
+  }
+
   return await updateCategoryById(id, {
     name,
     sizeType,

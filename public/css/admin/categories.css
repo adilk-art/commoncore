@@ -722,6 +722,28 @@ th:last-child {
 .hidden {
   display: none !important;
 }
+.size-type-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #f0c36d;
+  border-radius: 8px;
+  background: #fff8e7;
+  color: #8a5a00;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.size-type-warning i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.size-type-warning.hidden {
+  display: none;
+}
 
 /* ANIMATION */
 @keyframes modalFade {
