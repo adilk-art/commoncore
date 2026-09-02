@@ -224,39 +224,68 @@ export const loadManageVariantsPageService = async (productId,page,search) => {
 
 export const addVariantService = async (productId, data, imgFiles) => {
   const validated = variantSchema.safeParse(data);
+
   if (!validated.success) {
     const err = new Error(validated.error.issues[0].message);
     err.status = 400;
     throw err;
   }
+
   if (!imgFiles || imgFiles.length < 3) {
     const err = new Error("Minimum 3 images required");
     err.status = 400;
     throw err;
   }
 
+  const product = await getProductById(productId);
+
+  if (!product) {
+    const err = new Error("Product not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const basePrice = Number(product.basePrice);
+  const variantPrice =
+    data.price === "" || data.price == null
+      ? basePrice
+      : Number(data.price);
+
+  if (variantPrice < basePrice) {
+    const err = new Error(
+      `Variant price cannot be lower than the product base price of ${basePrice}`,
+    );
+    err.status = 400;
+    throw err;
+  }
+
   const isDefault = data.isDefault === "true";
 
-  if (data.isDefault) {
+  if (isDefault) {
     await clearDefaultVariant(productId);
   }
+
   const formattedColor = formatTitleCase(data.colorName);
   const sku = generateSku(productId, data.size, formattedColor);
+
   const existing = await findVariantBySku(sku);
+
   if (existing) {
     const error = new Error("The variant already exists");
     error.status = 409;
     throw error;
   }
+
   const images = imgFiles.map((file) => ({
     url: file.path,
     publicId: file.fileName,
   }));
+
   const variantData = {
     productId,
     size: data.size,
     stock: data.stock,
-    price: data.price,
+    price: variantPrice,
     sku,
     color: {
       name: formattedColor,
@@ -264,60 +293,99 @@ export const addVariantService = async (productId, data, imgFiles) => {
     },
     images,
     isActive: data.isActive,
-    isDefault: data.isDefault === "true",
+    isDefault,
   };
+
   return await createVariant(variantData);
 };
 
 export const editVariantService = async (variantId, data, imgFiles) => {
   const validated = variantSchema.safeParse(data);
+
   if (!validated.success) {
     const err = new Error(validated.error.issues[0].message);
     err.status = 400;
     throw err;
   }
+
   const existingImages = JSON.parse(data.existingImages);
-  const newImages = (imgFiles||[]).map((file) => ({
+
+  const newImages = (imgFiles || []).map((file) => ({
     url: file.path,
     publicId: file.fileName,
   }));
+
   const finalImages = [...existingImages, ...newImages];
+
   if (finalImages.length < 3) {
     const err = new Error("Minimum 3 images required");
     err.status = 400;
     throw err;
   }
+
   const variant = await findVariantById(variantId);
-  const productId=variant.productId.toString();
+
+  if (!variant) {
+    const err = new Error("Variant not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const productId = variant.productId.toString();
+  const product = await getProductById(productId);
+
+  if (!product) {
+    const err = new Error("Product not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const basePrice = Number(product.basePrice);
+
+  const variantPrice =
+    data.price === "" || data.price == null
+      ? basePrice
+      : Number(data.price);
+
+  if (variantPrice < basePrice) {
+    const err = new Error(
+      `Variant price cannot be lower than the product base price of ${basePrice}`,
+    );
+    err.status = 400;
+    throw err;
+  }
+
   const formattedColor = formatTitleCase(data.colorName);
   const sku = generateSku(productId, data.size, formattedColor);
+
   const existing = await findVariantBySkuExceptCurrent(sku, variantId);
+
   if (existing) {
     const error = new Error("Same variant already exists");
     error.status = 409;
     throw error;
   }
 
-
-
   const existingPublicIds = existingImages.map((img) => img.publicId);
+
   const removedImages = variant.images.filter((img) => {
     return !existingPublicIds.includes(img.publicId);
   });
 
   for (const image of removedImages) {
-  await cloudinary.uploader.destroy(image.publicId);
-}
+    await cloudinary.uploader.destroy(image.publicId);
+  }
 
- const isDefault = data.isDefault === "true";
-  if (data.isDefault) {
+  const isDefault = data.isDefault === "true";
+
+  if (isDefault) {
     await clearDefaultVariant(variant.productId);
   }
 
   const updateData = {
     size: data.size,
     stock: data.stock,
-    price: data.price,
+    price: variantPrice,
     sku,
     color: {
       name: formattedColor,
@@ -325,11 +393,10 @@ export const editVariantService = async (variantId, data, imgFiles) => {
     },
     images: finalImages,
     isActive: data.isActive === "true",
-    isDefault: data.isDefault === "true",
+    isDefault,
   };
 
- return await updateVariantById(variantId, updateData);
-
+  return await updateVariantById(variantId, updateData);
 };
 
 export const getVariantsStatsService = async (productId) => {

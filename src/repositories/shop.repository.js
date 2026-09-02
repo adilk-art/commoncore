@@ -33,12 +33,31 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
 
     {
       $match: {
-        "activeVariants.0": { $exists: true },
+        "activeVariants.0": {
+          $exists: true,
+        },
       },
     },
 
     {
       $addFields: {
+        defaultInStockVariants: {
+          $filter: {
+            input: "$activeVariants",
+            as: "variant",
+            cond: {
+              $and: [
+                {
+                  $eq: ["$$variant.isDefault", true],
+                },
+                {
+                  $gt: ["$$variant.stock", 0],
+                },
+              ],
+            },
+          },
+        },
+
         inStockVariants: {
           $filter: {
             input: "$activeVariants",
@@ -54,17 +73,37 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
     {
       $addFields: {
         previewVariant: {
-          $cond: {
-            if: {
-              $gt: [{ $size: "$inStockVariants" }, 0],
+          $cond: [
+            {
+              $gt: [
+                {
+                  $size: "$defaultInStockVariants",
+                },
+                0,
+              ],
             },
-            then: {
-              $arrayElemAt: ["$inStockVariants", 0],
+            {
+              $arrayElemAt: ["$defaultInStockVariants", 0],
             },
-            else: {
-              $arrayElemAt: ["$activeVariants", 0],
+            {
+              $cond: [
+                {
+                  $gt: [
+                    {
+                      $size: "$inStockVariants",
+                    },
+                    0,
+                  ],
+                },
+                {
+                  $arrayElemAt: ["$inStockVariants", 0],
+                },
+                {
+                  $arrayElemAt: ["$activeVariants", 0],
+                },
+              ],
             },
-          },
+          ],
         },
       },
     },
@@ -76,7 +115,12 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
         },
 
         inStock: {
-          $gt: [{ $size: "$inStockVariants" }, 0],
+          $gt: [
+            {
+              $size: "$inStockVariants",
+            },
+            0,
+          ],
         },
       },
     },
@@ -103,6 +147,8 @@ export const getShopProducts = async (filter, sort, skip, limit) => {
     {
       $project: {
         variants: 0,
+        defaultInStockVariants: 0,
+        inStockVariants: 0,
       },
     },
 
@@ -125,7 +171,11 @@ export const countShopProducts = async (filter) => {
 };
 
 export const getShopCategories = async () => {
-  return await Category.find({ isActive: true }).sort({ name: 1 });
+  return await Category.find({
+    isActive: true,
+  }).sort({
+    name: 1,
+  });
 };
 
 export const findProductDetail = async (productId) => {
@@ -149,10 +199,7 @@ export const findProductDetail = async (productId) => {
   return product;
 };
 
-export const findRelatedProducts = async (
-  categoryId,
-  currentProductId,
-) => {
+export const findRelatedProducts = async (categoryId, currentProductId) => {
   return await Product.aggregate([
     {
       $match: {
@@ -216,6 +263,23 @@ export const findRelatedProducts = async (
 
     {
       $addFields: {
+        defaultInStockVariants: {
+          $filter: {
+            input: "$activeVariants",
+            as: "variant",
+            cond: {
+              $and: [
+                {
+                  $eq: ["$$variant.isDefault", true],
+                },
+                {
+                  $gt: ["$$variant.stock", 0],
+                },
+              ],
+            },
+          },
+        },
+
         inStockVariants: {
           $filter: {
             input: "$activeVariants",
@@ -231,17 +295,37 @@ export const findRelatedProducts = async (
     {
       $addFields: {
         previewVariant: {
-          $cond: {
-            if: {
-              $gt: [{ $size: "$inStockVariants" }, 0],
+          $cond: [
+            {
+              $gt: [
+                {
+                  $size: "$defaultInStockVariants",
+                },
+                0,
+              ],
             },
-            then: {
-              $arrayElemAt: ["$inStockVariants", 0],
+            {
+              $arrayElemAt: ["$defaultInStockVariants", 0],
             },
-            else: {
-              $arrayElemAt: ["$activeVariants", 0],
+            {
+              $cond: [
+                {
+                  $gt: [
+                    {
+                      $size: "$inStockVariants",
+                    },
+                    0,
+                  ],
+                },
+                {
+                  $arrayElemAt: ["$inStockVariants", 0],
+                },
+                {
+                  $arrayElemAt: ["$activeVariants", 0],
+                },
+              ],
             },
-          },
+          ],
         },
       },
     },
@@ -258,6 +342,7 @@ export const findRelatedProducts = async (
       $project: {
         variants: 0,
         activeVariants: 0,
+        defaultInStockVariants: 0,
         inStockVariants: 0,
       },
     },

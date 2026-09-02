@@ -83,6 +83,7 @@ export const getCheckoutPageService = async (userId) => {
   const walletBalance = Number(wallet?.balance || 0);
 
   const canUseWallet = walletBalance >= total;
+  
   const canUseCod=total<=MAX_COD_AMOUNT;
 
 

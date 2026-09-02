@@ -19,7 +19,7 @@ const editIsActive = document.getElementById("editIsActive");
 const editIsDefault = document.getElementById("editIsDefault");
 const editVariantId = document.getElementById("editVariantId");
 const cancelEditBtn = document.getElementById("cancelEditBtn");
-
+const editBasePrice = Number(editPrice.dataset.basePrice);
 let editSelectedFiles = [];
 let editCroppedFiles = [];
 let editCurrentIndex = 0;
@@ -177,10 +177,20 @@ editForm.addEventListener("submit", async (e) => {
     valid = false;
   }
 
-  if (!editPrice.value || Number(editPrice.value) <= 0) {
-    setEditError("editPriceError", "Enter valid price");
+if (editPrice.value !== "") {
+  const enteredPrice = Number(editPrice.value);
+
+  if (!Number.isFinite(enteredPrice) || enteredPrice <= 0) {
+    setEditError("editPriceError", "Enter a valid price");
+    valid = false;
+  } else if (enteredPrice < editBasePrice) {
+    setEditError(
+      "editPriceError",
+      `Price cannot be lower than the base price of ₹${editBasePrice}`,
+    );
     valid = false;
   }
+}
 
   if (!editColorName.value.trim()) {
     setEditError("editColorNameError", "Enter color name");
@@ -273,4 +283,28 @@ cancelEditBtn.addEventListener("click", () => {
   editPreviewGrid.innerHTML = "";
   existingImages = [];
   editCroppedFiles = [];
+});
+
+editPrice.addEventListener("input", () => {
+  const enteredPrice = Number(editPrice.value);
+
+  if (editPrice.value === "") {
+    setEditError("editPriceError", "");
+    return;
+  }
+
+  if (!Number.isFinite(enteredPrice) || enteredPrice <= 0) {
+    setEditError("editPriceError", "Enter a valid price");
+    return;
+  }
+
+  if (enteredPrice < editBasePrice) {
+    setEditError(
+      "editPriceError",
+      `Price cannot be lower than the base price of ₹${editBasePrice}`,
+    );
+    return;
+  }
+
+  setEditError("editPriceError", "");
 });

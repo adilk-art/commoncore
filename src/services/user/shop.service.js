@@ -6,18 +6,20 @@ import {
   countShopProducts,
   findProductDetail,
   findRelatedProducts,
-  
 } from "../../repositories/shop.repository.js";
 
 import { findWishlistByUserId } from "../../repositories/wishlist.repository.js";
-import {buildActiveOfferLookup, getBestOfferPricing} from "../../services/shared/pricing.service.js"
+import {
+  buildActiveOfferLookup,
+  getBestOfferPricing,
+} from "../../services/shared/pricing.service.js";
 import { getProductReviewsService } from "./review.service.js";
 
 export const getShopPageService = async (query, userId) => {
-
   const page = Number(query.page) || 1;
   const limit = 8;
   const skip = (page - 1) * limit;
+
   const {
     search = "",
     category = "",
@@ -74,25 +76,31 @@ export const getShopPageService = async (query, userId) => {
   }
 
   const data = await getShopProducts(filter, sortOption, skip, limit);
+
   let wishlistProductIds = [];
 
   if (userId) {
     const wishlist = await findWishlistByUserId(userId);
-    wishlistProductIds = wishlist?.products?.map((item) => String(item)) || [];
+
+    wishlistProductIds =
+      wishlist?.products?.map((item) => String(item)) || [];
   }
 
-  const offerLookup = await buildActiveOfferLookup();     //cat and prod offer - 2 objs 
+  const offerLookup = await buildActiveOfferLookup();
 
- const products = data.map((product) => {
- 
-        const pricing = getBestOfferPricing(product,product.previewVariant,offerLookup); //the fn attached best offer related data
+  const products = data.map((product) => {
+    const pricing = getBestOfferPricing(
+      product,
+      product.previewVariant,
+      offerLookup,
+    );
 
-          return {
-            ...product,
-            ...pricing,
-            isWishlisted: wishlistProductIds.includes(String(product._id)),
-          };
-        });
+    return {
+      ...product,
+      ...pricing,
+      isWishlisted: wishlistProductIds.includes(String(product._id)),
+    };
+  });
 
   const total = await countShopProducts(filter);
   const categories = await getShopCategories();
@@ -110,8 +118,6 @@ export const getShopPageService = async (query, userId) => {
   };
 };
 
-
-
 export const getProductDetailService = async ({ productId, userId }) => {
   if (!mongoose.Types.ObjectId.isValid(productId)) {
     const error = new Error("Invalid product");
@@ -128,18 +134,24 @@ export const getProductDetailService = async ({ productId, userId }) => {
   }
 
   const isUnavailable =
-    !product.isActive ||
-    !product.categoryId?.isActive;
+    !product.isActive || !product.categoryId?.isActive;
 
   const activeVariants = product.variants.filter(
     (item) => item.isActive,
   );
 
+  const defaultInStockVariant = activeVariants.find(
+    (variant) => variant.isDefault && variant.stock > 0,
+  );
+
+  const inStockVariants = activeVariants.filter(
+    (variant) => variant.stock > 0,
+  );
+
   const selectedVariant =
-    activeVariants.find((variant) => variant.isDefault) ||
-    activeVariants[0] ||
-    product.variants.find((variant) => variant.isDefault) ||
-    product.variants[0];
+    defaultInStockVariant ||
+    inStockVariants[0] ||
+    activeVariants[0];
 
   if (!selectedVariant) {
     const error = new Error("Product unavailable");
@@ -148,20 +160,20 @@ export const getProductDetailService = async ({ productId, userId }) => {
   }
 
   const variantUnavailable =
-    !selectedVariant.isActive;
+    !selectedVariant.isActive ||
+    selectedVariant.stock <= 0;
 
   const finalUnavailable =
-    isUnavailable || variantUnavailable || !activeVariants.length;
+    isUnavailable ||
+    variantUnavailable ||
+    !activeVariants.length;
 
   const [relatedProducts, reviewData] = await Promise.all([
     findRelatedProducts(
       product.categoryId._id,
       product._id,
     ),
-    getProductReviewsService(
-      productId,
-      userId,
-    ),
+    getProductReviewsService(productId, userId),
   ]);
 
   let isWishlisted = false;
@@ -191,6 +203,19 @@ export const getProductDetailService = async ({ productId, userId }) => {
     ...pricing,
   };
 
+  const variantsWithPricing = activeVariants.map((variant) => {
+  const variantPricing = getBestOfferPricing(
+    product,
+    variant,
+    offerLookup,
+  );
+
+  return {
+    ...variant,
+    ...variantPricing,
+  };
+});
+
   const relatedProductsData = relatedProducts
     .filter((item) => item.previewVariant)
     .map((item) => {
@@ -208,11 +233,10 @@ export const getProductDetailService = async ({ productId, userId }) => {
         ),
       };
     });
+
   return {
     product: productData,
-    variants: activeVariants.length
-      ? activeVariants
-      : [selectedVariant],
+    variants: variantsWithPricing,
     selectedVariant,
     relatedProducts: relatedProductsData,
     isWishlisted,
@@ -223,4 +247,3 @@ export const getProductDetailService = async ({ productId, userId }) => {
     canReview: reviewData.canReview,
   };
 };
-

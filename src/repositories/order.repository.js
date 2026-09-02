@@ -1,5 +1,10 @@
 import Order from "../models/order.model.js";
 
+export const findTotalOrdersByUserId=async(id)=>{
+  return Order.find({userId:id});
+};
+
+
 export const findOrdersByUser = async ({
   userId,
   search = "",

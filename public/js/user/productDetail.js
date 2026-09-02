@@ -1,4 +1,3 @@
-
 (function () {
   const variants = window.__VARIANTS__ || [];
   let selectedId = window.__SELECTED_ID__ || "";
@@ -12,6 +11,10 @@
   const sizeLabel = document.getElementById("sizeLabel");
   const sizesWrap = document.getElementById("sizesWrap");
   const displayPrice = document.getElementById("displayPrice");
+  const displayOldPrice = document.getElementById("displayOldPrice");
+  const offerPills = document.getElementById("offerPills");
+  const discountPill = document.getElementById("discountPill");
+  const offerName = document.getElementById("offerName");
   const stockRow = document.getElementById("stockRow");
 
   const qtyInput = document.getElementById("qtyInput");
@@ -90,6 +93,7 @@
     const rect = zoomContainer.getBoundingClientRect();
 
     const x = ((event.clientX - rect.left) / rect.width) * 100;
+
     const y = ((event.clientY - rect.top) / rect.height) * 100;
 
     mainImage.style.transformOrigin = `${x}% ${y}%`;
@@ -110,8 +114,13 @@
       if (cartQty) cartQty.value = 1;
       if (buyQty) buyQty.value = 1;
 
-      if (minusBtn) minusBtn.disabled = true;
-      if (plusBtn) plusBtn.disabled = true;
+      if (minusBtn) {
+        minusBtn.disabled = true;
+      }
+
+      if (plusBtn) {
+        plusBtn.disabled = true;
+      }
 
       return;
     }
@@ -132,8 +141,13 @@
 
     qtyInput.value = quantity;
 
-    if (cartQty) cartQty.value = quantity;
-    if (buyQty) buyQty.value = quantity;
+    if (cartQty) {
+      cartQty.value = quantity;
+    }
+
+    if (buyQty) {
+      buyQty.value = quantity;
+    }
 
     if (minusBtn) {
       minusBtn.disabled = quantity <= 1;
@@ -177,7 +191,53 @@
     selectedId = String(variant._id);
 
     if (displayPrice) {
-      displayPrice.textContent = fmt(variant.price);
+      displayPrice.textContent = fmt(variant.finalPrice ?? variant.price);
+    }
+
+    if (displayOldPrice) {
+      if (
+        variant.hasOffer &&
+        Number(variant.originalPrice) > Number(variant.finalPrice)
+      ) {
+        displayOldPrice.textContent = fmt(variant.originalPrice);
+        displayOldPrice.style.display = "";
+      } else {
+        displayOldPrice.style.display = "none";
+      }
+    }
+
+    if (offerPills) {
+      offerPills.style.display = variant.hasOffer ? "" : "none";
+    }
+
+    if (discountPill) {
+      if (variant.hasOffer) {
+        if (variant.discountType === "PERCENTAGE") {
+          let text = `${Number(variant.discountValue)}% OFF`;
+
+          if (variant.maxDiscountAmount != null) {
+            text += ` · Max ₹${Number(variant.maxDiscountAmount).toLocaleString(
+              "en-IN",
+            )}`;
+          }
+
+          discountPill.textContent = text;
+        } else {
+          discountPill.textContent = `₹${Number(
+            variant.discountValue,
+          ).toLocaleString("en-IN")} OFF`;
+        }
+      }
+    }
+
+    if (offerName) {
+      if (variant.hasOffer && variant.offerTitle) {
+        offerName.textContent = variant.offerTitle;
+        offerName.style.display = "";
+      } else {
+        offerName.textContent = "";
+        offerName.style.display = "none";
+      }
     }
 
     if (stockRow) {
@@ -249,6 +309,7 @@
   document.querySelectorAll(".pd-color").forEach((button) => {
     button.addEventListener("click", () => {
       const code = button.dataset.colorCode;
+
       const name = button.dataset.colorName;
 
       document.querySelectorAll(".pd-color").forEach((item) => {
@@ -350,6 +411,7 @@
 
     try {
       const variantId = cartVariantId.value;
+
       const quantity = Number(cartQty.value);
 
       cartBtn.disabled = true;
@@ -368,34 +430,35 @@
         },
       );
 
-if (response.data.success) {
-  const cartBadge = document.getElementById("cartCount");
+      if (response.data.success) {
+        const cartBadge = document.getElementById("cartCount");
 
-  if (cartBadge) {
-    const cartCount = Number(response.data.cartCount || 0);
+        if (cartBadge) {
+          const cartCount = Number(response.data.cartCount || 0);
 
-    cartBadge.textContent = cartCount;
+          cartBadge.textContent = cartCount;
 
-    if (cartCount > 0) {
-      cartBadge.removeAttribute("hidden");
-    } else {
-      cartBadge.setAttribute("hidden", "");
-    }
-  }
+          if (cartCount > 0) {
+            cartBadge.removeAttribute("hidden");
+          } else {
+            cartBadge.setAttribute("hidden", "");
+          }
+        }
 
-  userToast(response.data.message || "Added to cart");
+        userToast(response.data.message || "Added to cart");
 
-  cartBtn.textContent = "Added ✓";
+        cartBtn.textContent = "Added ✓";
 
-  setTimeout(() => {
-    cartBtn.textContent = originalText;
-    cartBtn.disabled = false;
-  }, 1200);
-}
+        setTimeout(() => {
+          cartBtn.textContent = originalText;
+
+          cartBtn.disabled = false;
+        }, 1200);
+      }
     } catch (error) {
       const status = error?.response?.status;
-      const message =
-        error?.response?.data?.message || "Failed to add to cart";
+
+      const message = error?.response?.data?.message || "Failed to add to cart";
 
       cartBtn.disabled = false;
       cartBtn.textContent = originalText;
@@ -415,12 +478,15 @@ if (response.data.success) {
     event.preventDefault();
 
     const formData = new FormData(wishlistForm);
+
     const productId = formData.get("productId");
+
     const button = wishlistForm.querySelector(".pd-wishlist-btn");
 
     if (!button) return;
 
     const svg = button.querySelector("svg");
+
     const isActive = button.classList.contains("pd-wishlist-btn--active");
 
     try {
@@ -436,6 +502,7 @@ if (response.data.success) {
         });
 
         button.classList.remove("pd-wishlist-btn--active");
+
         svg?.setAttribute("fill", "none");
       } else {
         response = await axios.post(
@@ -451,6 +518,7 @@ if (response.data.success) {
         );
 
         button.classList.add("pd-wishlist-btn--active");
+
         svg?.setAttribute("fill", "currentColor");
       }
 
@@ -513,8 +581,7 @@ if (response.data.success) {
     } catch (error) {
       const status = error?.response?.status;
 
-      const message =
-        error?.response?.data?.message || "Something went wrong";
+      const message = error?.response?.data?.message || "Something went wrong";
 
       buyBtn.disabled = false;
       buyBtn.textContent = originalText;
@@ -538,12 +605,15 @@ if (response.data.success) {
       event.stopPropagation();
 
       const formData = new FormData(form);
+
       const productId = formData.get("productId");
+
       const button = form.querySelector(".pd-related-wish");
 
       if (!button) return;
 
       const svg = button.querySelector("svg");
+
       const isActive = button.classList.contains("pd-related-wish--active");
 
       try {
@@ -559,6 +629,7 @@ if (response.data.success) {
           });
 
           button.classList.remove("pd-related-wish--active");
+
           svg?.setAttribute("fill", "none");
         } else {
           response = await axios.post(
@@ -574,6 +645,7 @@ if (response.data.success) {
           );
 
           button.classList.add("pd-related-wish--active");
+
           svg?.setAttribute("fill", "currentColor");
         }
 
@@ -603,16 +675,22 @@ if (response.data.success) {
   });
 
   const reviewModal = document.getElementById("reviewModal");
+
   const reviewForm = document.getElementById("reviewForm");
+
   const reviewRating = document.getElementById("reviewRating");
+
   const reviewComment = document.getElementById("reviewComment");
+
   const reviewSubmitBtn = document.getElementById("reviewSubmitBtn");
+
   const ratingError = document.getElementById("ratingError");
+
   const commentError = document.getElementById("commentError");
+
   const ratingStars = document.querySelectorAll(".pd-rating-star");
-  const reviewCharacterCount = document.getElementById(
-    "reviewCharacterCount",
-  );
+
+  const reviewCharacterCount = document.getElementById("reviewCharacterCount");
 
   function paintRating(value) {
     ratingStars.forEach((star) => {
@@ -628,6 +706,7 @@ if (response.data.success) {
       if (!element) return;
 
       element.textContent = "";
+
       element.classList.remove("pd-review-error--show");
     });
 
@@ -639,6 +718,7 @@ if (response.data.success) {
 
     if (element) {
       element.textContent = message;
+
       element.classList.add("pd-review-error--show");
     }
 
@@ -668,6 +748,7 @@ if (response.data.success) {
     resetReviewForm();
 
     reviewModal.classList.add("pd-review-modal--open");
+
     reviewModal.setAttribute("aria-hidden", "false");
 
     document.body.classList.add("pd-modal-open");
@@ -677,6 +758,7 @@ if (response.data.success) {
     if (!reviewModal) return;
 
     reviewModal.classList.remove("pd-review-modal--open");
+
     reviewModal.setAttribute("aria-hidden", "true");
 
     document.body.classList.remove("pd-modal-open");
@@ -716,6 +798,7 @@ if (response.data.success) {
 
       if (ratingError) {
         ratingError.textContent = "";
+
         ratingError.classList.remove("pd-review-error--show");
       }
     });
@@ -730,6 +813,7 @@ if (response.data.success) {
 
     if (commentError) {
       commentError.textContent = "";
+
       commentError.classList.remove("pd-review-error--show");
     }
   });
@@ -744,24 +828,30 @@ if (response.data.success) {
     clearReviewErrors();
 
     const productId = reviewForm.elements.productId.value;
+
     const rating = Number(reviewRating.value);
+
     const comment = reviewComment.value.trim();
 
     let valid = true;
 
     if (!rating || rating < 1 || rating > 5) {
       showReviewError("rating", "Please select a rating");
+
       valid = false;
     }
 
     if (!comment) {
       showReviewError("comment", "Review is required");
+
       valid = false;
     } else if (comment.length < 10) {
       showReviewError("comment", "Review must be at least 10 characters");
+
       valid = false;
     } else if (comment.length > 500) {
       showReviewError("comment", "Review cannot exceed 500 characters");
+
       valid = false;
     }
 
@@ -771,6 +861,7 @@ if (response.data.success) {
 
     try {
       reviewSubmitBtn.disabled = true;
+
       reviewSubmitBtn.textContent = "Submitting...";
 
       const response = await axios.post(
@@ -796,6 +887,7 @@ if (response.data.success) {
       }, 500);
     } catch (error) {
       const status = error?.response?.status;
+
       const errors = error?.response?.data?.errors;
 
       if (Array.isArray(errors) && errors.length) {
@@ -821,15 +913,17 @@ if (response.data.success) {
       userToast(message);
     } finally {
       reviewSubmitBtn.disabled = false;
+
       reviewSubmitBtn.textContent = originalText;
     }
   });
 
   const deleteReviewModal = document.getElementById("deleteReviewModal");
-  const deleteReviewBackdrop = document.getElementById(
-    "deleteReviewBackdrop",
-  );
+
+  const deleteReviewBackdrop = document.getElementById("deleteReviewBackdrop");
+
   const cancelDeleteReview = document.getElementById("cancelDeleteReview");
+
   const confirmDeleteReview = document.getElementById("confirmDeleteReview");
 
   let pendingDeleteReviewId = null;
@@ -840,6 +934,7 @@ if (response.data.success) {
     pendingDeleteReviewId = reviewId;
 
     deleteReviewModal.classList.add("pd-delete-modal--open");
+
     deleteReviewModal.setAttribute("aria-hidden", "false");
 
     document.body.classList.add("pd-modal-open");
@@ -849,6 +944,7 @@ if (response.data.success) {
     if (!deleteReviewModal) return;
 
     deleteReviewModal.classList.remove("pd-delete-modal--open");
+
     deleteReviewModal.setAttribute("aria-hidden", "true");
 
     document.body.classList.remove("pd-modal-open");
@@ -857,6 +953,7 @@ if (response.data.success) {
 
     if (confirmDeleteReview) {
       confirmDeleteReview.disabled = false;
+
       confirmDeleteReview.textContent = "Delete Review";
     }
   }
@@ -884,6 +981,7 @@ if (response.data.success) {
 
     try {
       confirmDeleteReview.disabled = true;
+
       confirmDeleteReview.textContent = "Deleting...";
 
       const response = await axios.delete(`/user/reviews/${reviewId}`, {
@@ -906,11 +1004,14 @@ if (response.data.success) {
         error?.response?.data?.message || "Unable to delete review";
 
       confirmDeleteReview.disabled = false;
+
       confirmDeleteReview.textContent = "Delete Review";
 
       if (status === 401) {
         closeDeleteReviewModal();
+
         userToast(message || "Please login first");
+
         return;
       }
 

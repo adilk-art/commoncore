@@ -69,63 +69,67 @@
           <%= product.name %>
         </h1>
 
-        <div class="pd-price-wrap">
+<div class="pd-price-wrap">
 
-          <span class="pd-price" id="displayPrice">
-            ₹<%= product.finalPrice.toLocaleString("en-IN") %>
-          </span>
+  <span class="pd-price" id="displayPrice">
+    ₹<%= product.finalPrice.toLocaleString("en-IN") %>
+  </span>
 
-          <% if (product.hasOffer) { %>
+  <span
+    class="pd-old-price"
+    id="displayOldPrice"
+    style="<%= product.hasOffer ? '' : 'display: none;' %>"
+  >
+    ₹<%= product.originalPrice.toLocaleString("en-IN") %>
+  </span>
 
-            <span class="pd-old-price">
-              ₹<%= product.originalPrice.toLocaleString("en-IN") %>
-            </span>
+  <div
+    class="pd-offer-pills"
+    id="offerPills"
+    style="<%= product.hasOffer ? '' : 'display: none;' %>"
+  >
 
-            <div class="pd-offer-pills">
+    <div class="pd-offer-meta">
 
-              <div class="pd-offer-meta">
+      <span class="pd-discount-pill" id="discountPill">
 
-                <span class="pd-discount-pill">
+        <% if (product.discountType === "PERCENTAGE") { %>
 
-                  <% if (product.discountType === "PERCENTAGE") { %>
+          <%= Number(product.discountValue) %>% OFF
 
-                    <%= Number(product.discountValue) %>% OFF
+          <% if (product.maxDiscountAmount != null) { %>
 
-                    <% if (product.maxDiscountAmount != null) { %>
+            <span class="pd-cap-separator">·</span>
 
-                      <span class="pd-cap-separator">·</span>
-
-                      Max ₹<%= Number(
-                        product.maxDiscountAmount,
-                      ).toLocaleString("en-IN") %>
-
-                    <% } %>
-
-                  <% } else { %>
-
-                    ₹<%= Number(
-                      product.discountValue,
-                    ).toLocaleString("en-IN") %> OFF
-
-                  <% } %>
-
-                </span>
-
-                <% if (product.offerTitle) { %>
-
-                  <span class="pd-offer-name">
-                    <%= product.offerTitle %>
-                  </span>
-
-                <% } %>
-
-              </div>
-
-            </div>
+            Max ₹<%= Number(
+              product.maxDiscountAmount
+            ).toLocaleString("en-IN") %>
 
           <% } %>
 
-        </div>
+        <% } else { %>
+
+          ₹<%= Number(
+            product.discountValue
+          ).toLocaleString("en-IN") %> OFF
+
+        <% } %>
+
+      </span>
+
+      <span
+        class="pd-offer-name"
+        id="offerName"
+        style="<%= product.offerTitle ? '' : 'display: none;' %>"
+      >
+        <%= product.offerTitle || "" %>
+      </span>
+
+    </div>
+
+  </div>
+
+</div>
 
         <p class="pd-desc">
           <%= product.description %>
@@ -210,20 +214,30 @@
 
           <div class="pd-sizes" id="sizesWrap">
 
-            <%
-              const variantsJson = JSON.stringify(
-                variants.map((variant) => ({
-                  _id: variant._id,
-                  size: variant.size,
-                  colorCode: variant.color.code,
-                  colorName: variant.color.name,
-                  stock: variant.stock,
-                  price: variant.price,
-                  images: variant.images.map((image) => image.url),
-                  isDefault: variant.isDefault,
-                })),
-              );
-            %>
+<%
+  const variantsJson = JSON.stringify(
+    variants.map((variant) => ({
+      _id: variant._id,
+      size: variant.size,
+      colorCode: variant.color.code,
+      colorName: variant.color.name,
+      stock: variant.stock,
+      price: variant.price,
+      originalPrice: variant.originalPrice,
+      finalPrice: variant.finalPrice,
+      discountAmount: variant.discountAmount,
+      hasOffer: variant.hasOffer,
+      offerId: variant.offerId,
+      offerTitle: variant.offerTitle,
+      offerType: variant.offerType,
+      discountType: variant.discountType,
+      discountValue: variant.discountValue,
+      maxDiscountAmount: variant.maxDiscountAmount,
+      images: variant.images.map((image) => image.url),
+      isDefault: variant.isDefault,
+    })),
+  );
+%>
 
             <% variants
               .filter(

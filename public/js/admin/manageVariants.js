@@ -16,17 +16,17 @@ const previewGrid = document.getElementById("previewGrid");
 const isActive = document.getElementById("isActive");
 const isDefault = document.getElementById("isDefault");
 
+const basePrice = Number(price.dataset.basePrice);
+
 const cropModal = document.getElementById("cropModal");
 const cropImageEl = document.getElementById("cropImage");
 const cropBtn = document.getElementById("cropBtn");
 const cancelCropBtn = document.getElementById("cancelCropBtn");
 
 let cropper = null;
-let selectedFiles = []; //all selected files from input
-
-let croppedFiles = []; //final cropped files.only these are uploaded
-
-let currentIndex = 0; // current image index while cropping one by one
+let selectedFiles = [];
+let croppedFiles = [];
+let currentIndex = 0;
 
 function setError(id, msg) {
   document.getElementById(id).textContent = msg;
@@ -39,7 +39,7 @@ function clearErrors() {
 }
 
 function closeCropModal() {
-   cropModal.classList.remove("active");
+  cropModal.classList.remove("active");
 
   if (cropper) {
     cropper.destroy();
@@ -47,9 +47,7 @@ function closeCropModal() {
   }
 }
 
-async function loadNextImage() {  //opens next selected image in cropper.one image at a time.*/
-  
-
+async function loadNextImage() {
   if (currentIndex >= selectedFiles.length) {
     closeCropModal();
     return;
@@ -85,13 +83,12 @@ imageInput.addEventListener("change", async (e) => {
 });
 
 cropBtn.addEventListener("click", async () => {
-  
   if (!cropper) return;
-  const file = await cropToFile(
-    cropper,
-    currentIndex,
-  ); //convert cropper result to file*/
-  croppedFiles.push(file); //store final cropped image*/
+
+  const file = await cropToFile(cropper, currentIndex);
+
+  croppedFiles.push(file);
+
   const wrapper = document.createElement("div");
   wrapper.className = "preview-item";
 
@@ -117,7 +114,8 @@ cropBtn.addEventListener("click", async () => {
   wrapper.appendChild(img);
   wrapper.appendChild(removeBtn);
   previewGrid.appendChild(wrapper);
-  currentIndex++;                      //move to next image*/
+
+  currentIndex++;
   await loadNextImage();
 });
 
@@ -142,7 +140,29 @@ cancelCropBtn.addEventListener("click", () => {
   previewGrid.innerHTML = "";
 });
 
+price.addEventListener("input", () => {
+  const enteredPrice = Number(price.value);
 
+  if (price.value === "") {
+    setError("priceError", "");
+    return;
+  }
+
+  if (!Number.isFinite(enteredPrice) || enteredPrice <= 0) {
+    setError("priceError", "Enter a valid price");
+    return;
+  }
+
+  if (enteredPrice < basePrice) {
+    setError(
+      "priceError",
+      `Price cannot be lower than the base price of ₹${basePrice}`,
+    );
+    return;
+  }
+
+  setError("priceError", "");
+});
 
 const submitBtn = form.querySelector(".save-btn");
 
@@ -163,9 +183,19 @@ form.addEventListener("submit", async (e) => {
     valid = false;
   }
 
-  if (!price.value || Number(price.value) <= 0) {
-    setError("priceError", "Enter valid price");
-    valid = false;
+  if (price.value !== "") {
+    const enteredPrice = Number(price.value);
+
+    if (!Number.isFinite(enteredPrice) || enteredPrice <= 0) {
+      setError("priceError", "Enter a valid price");
+      valid = false;
+    } else if (enteredPrice < basePrice) {
+      setError(
+        "priceError",
+        `Price cannot be lower than the base price of ₹${basePrice}`,
+      );
+      valid = false;
+    }
   }
 
   if (!isActive.value) {
@@ -212,41 +242,30 @@ form.addEventListener("submit", async (e) => {
   const originalText = submitBtn.innerHTML;
 
   try {
-
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
       <span class="btn-loader"></span>
       Saving...
     `;
 
-    const res = await axios.post(
-      window.location.pathname,
-      formData,
-    );
+    const res = await axios.post(window.location.pathname, formData);
 
     if (res.data.success) {
-
       utils.showToast(res.data.message);
-
       submitBtn.innerHTML = "Saved ✓";
 
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-
     }
-
   } catch (error) {
-
     setError(
       "validationError",
-      error.response?.data?.message ||
-      "Something went wrong",
+      error.response?.data?.message || "Something went wrong",
     );
 
     submitBtn.disabled = false;
     submitBtn.innerHTML = originalText;
-
   }
 });
 
@@ -294,17 +313,17 @@ const changeVariantStatus = async (id) => {
     if (res.data.success) {
       const content = document.querySelector(".content");
 
-  if (content) {
-    sessionStorage.setItem("contentScroll", content.scrollTop);
-    sessionStorage.setItem("contentScrollIntent", "true");
-  }
+      if (content) {
+        sessionStorage.setItem("contentScroll", content.scrollTop);
+        sessionStorage.setItem("contentScrollIntent", "true");
+      }
+
       utils.showToast(res.data.message);
 
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     }
-
   } catch (err) {
     utils.showToast("Something went wrong");
   }
@@ -335,8 +354,8 @@ function preserveScroll() {
     .querySelectorAll(".pagination a, .search-box button, .clear-btn")
     .forEach((el) => {
       el.addEventListener("click", () => {
-        sessionStorage.setItem(SCROLL_KEY, content.scrollTop);
-        sessionStorage.setItem(INTENT_KEY, "true");
+        sessionStorage.setItem("contentScroll", content.scrollTop);
+        sessionStorage.setItem("contentScrollIntent", "true");
       });
     });
 }

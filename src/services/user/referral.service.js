@@ -18,6 +18,7 @@ import {
 } from "../../repositories/referral.repository.js";
 import {
   findOrderById,
+  findTotalOrdersByUserId
 } from "../../repositories/order.repository.js";
 
 
@@ -95,6 +96,12 @@ export const rewardReferralService = async ({
     await findPendingReferralByReferredUser(
       userId,
     );
+
+//   const purchases=await findTotalOrdersByUserId(referral.referrerId);
+
+//  const  totalAmount=purchases.reduce(acc,curr)=>{
+//   return curr.total+=acc.total
+//  }
 
   if (!referral) {
     return null;
