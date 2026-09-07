@@ -199,14 +199,14 @@ form?.addEventListener("submit", async (e) => {
     const response = await axios.patch("/user/profile/edit", formData);
 
     if (response.data.success) {
-      if (successText) {
-        successText.textContent =
-          response.data.message || "Profile updated successfully";
-      }
+      // if (successText) {
+      //   successText.textContent =
+      //     response.data.message || "Profile updated successfully";
+      // }
 
-      successMsg?.classList.add("show-success");
       actionBtns?.classList.add("profile-action-hide");
-
+      // successMsg?.classList.add("show-success");
+      userToast(response.data.message || "Profile updated successfully");
       setTimeout(() => {
         window.location.href = "/user/profile";
       }, 1000);

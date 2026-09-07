@@ -1,4 +1,5 @@
 .page-header {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,6 +34,7 @@
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
+  white-space: nowrap;
   transition: 0.2s;
 }
 
@@ -42,6 +44,7 @@
 }
 
 .edit-card {
+  width: 100%;
   padding: 30px;
   border: 1px solid #eee;
   border-radius: 20px;
@@ -88,6 +91,10 @@
   font-size: 12px;
 }
 
+.photo-info {
+  min-width: 0;
+}
+
 .photo-info h3 {
   margin-bottom: 5px;
   color: #4e5566;
@@ -130,11 +137,12 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
 
 .form-group {
+  min-width: 0;
   margin: 0;
 }
 
@@ -176,6 +184,7 @@
 
 .email-wrapper {
   position: relative;
+  width: 100%;
 }
 
 .email-input {
@@ -223,6 +232,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .security-icon {
@@ -231,6 +241,7 @@
   justify-content: center;
   width: 38px;
   height: 38px;
+  flex-shrink: 0;
   border-radius: 9px;
   background: #eceef1;
   color: #4e5566;
@@ -256,6 +267,7 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .secondary-action-btn:hover {
@@ -273,6 +285,7 @@
 }
 
 .google-auth-msg > i {
+  flex-shrink: 0;
   color: #4e5566;
   font-size: 18px;
 }
@@ -435,6 +448,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   padding: 0;
   border: none;
   border-radius: 7px;
@@ -552,9 +566,122 @@
   font-size: 12px;
 }
 
-@media (max-width: 850px) {
+@media (max-width: 1000px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .edit-card {
+    padding: 26px;
+  }
+}
+
+@media (max-width: 850px) {
+  .profile-photo-section {
+    gap: 18px;
+  }
+
+  .profile-img {
+    width: 90px;
+    height: 90px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .page-eyebrow {
+    font-size: 10px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .back-btn {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+
+  .edit-card {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .profile-photo-section {
+    align-items: center;
+  }
+
+  .profile-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .photo-info h3 {
+    font-size: 15px;
+  }
+
+  .photo-info p {
+    font-size: 11px;
+  }
+
+  .change-photo-link {
+    font-size: 12px;
+  }
+
+  .section-divider {
+    margin: 22px 0;
+  }
+
+  .section-heading {
+    margin-bottom: 16px;
+  }
+
+  .section-heading h3 {
+    font-size: 17px;
+  }
+
+  .section-heading p {
+    font-size: 11px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .security-row {
+    gap: 15px;
+  }
+
+  .secondary-action-btn {
+    padding: 9px 12px;
+  }
+
+  .crop-modal,
+  .email-modal,
+  .pwd-modal-overlay {
+    padding: 14px;
+  }
+
+  .crop-modal-content,
+  .email-modal-content,
+  .pwd-modal-box {
+    width: 100%;
+    max-width: 100%;
+    padding: 22px;
+    border-radius: 13px;
+  }
+
+  .crop-wrapper {
+    height: 320px;
   }
 }
 
@@ -571,17 +698,20 @@
   }
 
   .edit-card {
-    padding: 22px;
+    padding: 20px;
   }
 
   .profile-photo-section {
-    flex-direction: column;
     align-items: flex-start;
   }
 
   .security-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .security-info {
+    width: 100%;
   }
 
   .secondary-action-btn {
@@ -600,5 +730,138 @@
 
   .crop-wrapper {
     height: 300px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-title {
+    font-size: 18px;
+  }
+
+  .edit-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .profile-photo-section {
+    gap: 14px;
+  }
+
+  .profile-img {
+    width: 68px;
+    height: 68px;
+  }
+
+  .photo-edit-btn {
+    width: 27px;
+    height: 27px;
+    border-width: 2px;
+  }
+
+  .photo-edit-btn i {
+    font-size: 10px;
+  }
+
+  .photo-info h3 {
+    font-size: 14px;
+  }
+
+  .photo-info p {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .change-photo-link {
+    font-size: 11px;
+  }
+
+  .section-divider {
+    margin: 20px 0;
+  }
+
+  .section-heading h3 {
+    font-size: 16px;
+  }
+
+  .section-heading p {
+    font-size: 10px;
+  }
+
+  .form-group label {
+    font-size: 11px;
+  }
+
+  .form-group input {
+    height: 42px;
+    font-size: 12px;
+  }
+
+  .security-row {
+    padding: 13px;
+  }
+
+  .security-info {
+    gap: 10px;
+  }
+
+  .security-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .security-info h4 {
+    font-size: 12px;
+  }
+
+  .security-info p {
+    font-size: 10px;
+  }
+
+  .google-auth-msg {
+    padding: 13px;
+  }
+
+  .google-auth-msg strong {
+    font-size: 12px;
+  }
+
+  .google-auth-msg p {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .form-actions {
+    margin-top: 22px;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    min-width: 0;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .email-modal-content,
+  .pwd-modal-box,
+  .crop-modal-content {
+    padding: 18px;
+  }
+
+  .email-modal-content h3,
+  .pwd-modal-box h3,
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .modal-description {
+    font-size: 11px;
+  }
+
+  .crop-wrapper {
+    height: 260px;
+  }
+
+  .success-icon {
+    font-size: 36px;
   }
 }

@@ -1,23 +1,50 @@
-/* PAGE HEADER */
-
 .page-header {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
   margin-bottom: 25px;
 }
 
 .page-title {
   font-size: 24px;
   font-weight: 700;
+  color: #4e5566;
 }
 
-/* PROFILE BANNER */
+.edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  background: #4e5566;
+  color: #fff;
+
+  text-decoration: none;
+
+  padding: 10px 18px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  white-space: nowrap;
+
+  transition: 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #333;
+}
 
 .profile-banner {
+  width: 100%;
+
   background: #fff;
   border: 1px solid #eee;
   border-radius: 20px;
+
   padding: 30px;
   margin-bottom: 25px;
 }
@@ -26,11 +53,16 @@
   display: flex;
   align-items: center;
   gap: 22px;
+
+  min-width: 0;
 }
 
 .profile-banner img {
   width: 105px;
   height: 105px;
+
+  flex-shrink: 0;
+
   border-radius: 50%;
   object-fit: cover;
 }
@@ -38,6 +70,7 @@
 .profile-user {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .welcome-text {
@@ -50,42 +83,28 @@
   font-size: 26px;
   margin-bottom: 8px;
   color: #4e5566;
+
+  word-break: break-word;
 }
 
 .profile-user p {
   font-size: 14px;
   color: #666;
+
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
-
-/* BUTTON */
-
-.edit-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  background: #4e5566;
-  color: #fff;
-  text-decoration: none;
-
-  padding: 10px 18px;
-  border-radius: 8px;
-
-  font-size: 14px;
-  transition: 0.2s ease;
-}
-
-.edit-btn:hover {
-  background: #333;
-}
-
-/* DETAILS CARD */
 
 .account-details-card {
+  width: 100%;
+
   background: #fff;
   border: 1px solid #eee;
   border-radius: 20px;
+
   padding: 30px;
+
+  margin-bottom: 25px;
 }
 
 .section-title {
@@ -97,26 +116,30 @@
   color: #4e5566;
 }
 
-/* GRID */
-
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
 
 .info-item {
+  min-width: 0;
+
   background: #fafafa;
   border: 1px solid #f2f2f2;
   border-radius: 14px;
+
   padding: 22px;
 }
 
 .info-item span {
   display: block;
+
   font-size: 12px;
   color: #888;
+
   margin-bottom: 10px;
+
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -126,262 +149,454 @@
   color: #4e5566;
   font-weight: 600;
   line-height: 1.5;
+
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
+.referral-card {
+  width: 100%;
 
-.referral-card{
-  margin-top:25px;
-  padding:30px;
-  border:1px solid #eee;
-  border-radius:20px;
-  background:#fff;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 20px;
+
+  padding: 30px;
 }
 
-.referral-header{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:30px;
-  margin-bottom:26px;
+.referral-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 25px;
+
+  margin-bottom: 30px;
 }
 
-.referral-eyebrow{
-  display:block;
-  margin-bottom:7px;
-  color:#888;
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:.08em;
-  text-transform:uppercase;
+.referral-eyebrow {
+  display: block;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+
+  color: #888;
+
+  margin-bottom: 8px;
 }
 
-.referral-header h3{
-  margin:0 0 7px;
-  color:#4e5566;
-  font-size:22px;
-  font-weight:600;
+.referral-header h3 {
+  font-size: 22px;
+  color: #4e5566;
+
+  margin-bottom: 8px;
 }
 
-.referral-header p{
-  max-width:650px;
-  margin:0;
-  color:#777;
-  font-size:13px;
-  line-height:1.6;
+.referral-header p {
+  max-width: 650px;
+
+  font-size: 13px;
+  line-height: 1.7;
+
+  color: #666;
 }
 
-.referral-reward-badge{
-  flex-shrink:0;
-  padding:8px 14px;
-  border-radius:999px;
-  background:#f0fdf4;
-  color:#15803d;
-  font-size:12px;
-  font-weight:600;
+.referral-reward-badge {
+  flex-shrink: 0;
+
+  padding: 10px 16px;
+
+  border-radius: 999px;
+
+  background: #f5f6f8;
+  color: #4e5566;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  white-space: nowrap;
 }
 
-.referral-main{
-  display:grid;
-  grid-template-columns:1.4fr 1fr;
-  gap:24px;
-  margin-bottom:24px;
+.referral-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(180px, 1fr);
+
+  gap: 25px;
+
+  padding-bottom: 25px;
+
+  border-bottom: 1px solid #eee;
 }
 
-.referral-code-section{
-  padding:20px;
-  border:1px solid #f0f0f0;
-  border-radius:14px;
-  background:#fafafa;
+.referral-code-section {
+  min-width: 0;
 }
 
-.referral-label{
-  display:block;
-  margin-bottom:10px;
-  color:#888;
-  font-size:11px;
-  font-weight:600;
-  letter-spacing:.05em;
-  text-transform:uppercase;
+.referral-label {
+  display: block;
+
+  font-size: 12px;
+  color: #888;
+
+  margin-bottom: 9px;
+
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.referral-code-box{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:15px;
+.referral-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 50px;
+
+  padding: 5px 6px 5px 16px;
+
+  background: #fafafa;
+
+  border: 1px solid #eee;
+  border-radius: 10px;
+
+  gap: 10px;
 }
 
-.referral-code-box strong{
-  color:#333;
-  font-size:21px;
-  font-weight:700;
-  letter-spacing:.08em;
+.referral-code-box strong {
+  font-size: 16px;
+
+  color: #4e5566;
+
+  letter-spacing: 1px;
+
+  word-break: break-all;
 }
 
-.copy-referral-btn{
-  height:38px;
-  padding:0 14px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  border:1px solid #dfe1e6;
-  border-radius:8px;
-  background:#fff;
-  color:#4e5566;
-  font-family:inherit;
-  font-size:12px;
-  font-weight:600;
-  cursor:pointer;
-  transition:.2s ease;
+.copy-referral-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  height: 38px;
+
+  padding: 0 13px;
+
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #4e5566;
+  color: #fff;
+
+  cursor: pointer;
+
+  font-size: 12px;
+
+  transition: 0.2s ease;
 }
 
-.copy-referral-btn:hover{
-  border-color:#4e5566;
-  background:#f5f6f8;
+.copy-referral-btn:hover {
+  background: #333;
 }
 
-.referral-note{
-  margin:9px 0 0;
-  color:#999;
-  font-size:11px;
+.referral-note {
+  font-size: 11px;
+
+  color: #999;
+
+  margin-top: 8px;
 }
 
-.referral-benefits{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
+.referral-benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
 }
 
-.referral-benefit{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  padding:20px;
-  border:1px solid #f0f0f0;
-  border-radius:14px;
-  background:#fafafa;
+.referral-benefit {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: #fafafa;
+
+  border: 1px solid #f2f2f2;
+  border-radius: 12px;
+
+  padding: 18px;
 }
 
-.referral-benefit span{
-  margin-bottom:8px;
-  color:#888;
-  font-size:11px;
-  font-weight:500;
-  text-transform:uppercase;
-  letter-spacing:.04em;
+.referral-benefit span {
+  font-size: 11px;
+  color: #888;
+
+  margin-bottom: 7px;
 }
 
-.referral-benefit strong{
-  color:#4e5566;
-  font-size:24px;
-  font-weight:700;
+.referral-benefit strong {
+  font-size: 20px;
+  color: #4e5566;
 }
 
-.referral-stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  border-top:1px solid #eee;
+.referral-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 15px;
+
+  padding-top: 25px;
 }
 
-.referral-stat{
-  padding:22px 20px 0;
-  text-align:center;
+.referral-stat {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
 }
 
-.referral-stat:not(:last-child){
-  border-right:1px solid #eee;
+.referral-stat span {
+  font-size: 11px;
+  color: #888;
 }
 
-.referral-stat span{
-  display:block;
-  margin-bottom:7px;
-  color:#888;
-  font-size:12px;
+.referral-stat strong {
+  font-size: 18px;
+  color: #4e5566;
 }
 
-.referral-stat strong{
-  color:#4e5566;
-  font-size:20px;
-  font-weight:700;
-}
-
-@media(max-width:950px){
-  .referral-main{
-    grid-template-columns:1fr;
-  }
-}
-
-@media(max-width:768px){
-  .referral-header{
-    flex-direction:column;
-    gap:14px;
-  }
-
-  .referral-benefits{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .referral-stats{
-    grid-template-columns:1fr;
-  }
-
-  .referral-stat{
-    padding:16px 0;
-    text-align:left;
-  }
-
-  .referral-stat:not(:last-child){
-    border-right:none;
-    border-bottom:1px solid #eee;
-  }
-}
-
-@media(max-width:520px){
-  .referral-card{
-    padding:22px;
-  }
-
-  .referral-code-box{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-
-  .copy-referral-btn{
-    width:100%;
-  }
-
-  .referral-benefits{
-    grid-template-columns:1fr;
-  }
-}
-/* RESPONSIVE */
-
-@media (max-width: 950px) {
-
+@media (max-width: 1000px) {
   .info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .referral-main {
     grid-template-columns: 1fr;
   }
-
 }
 
 @media (max-width: 768px) {
-
   .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    align-items: center;
+    margin-bottom: 18px;
   }
 
-  .profile-banner-left {
-    flex-direction: column;
-    align-items: flex-start;
+  .page-title {
+    font-size: 20px;
   }
 
   .edit-btn {
-    width: 100%;
-    justify-content: center;
+    padding: 9px 13px;
+    font-size: 12px;
   }
 
+  .profile-banner {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .profile-banner-left {
+    gap: 16px;
+  }
+
+  .profile-banner img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-user h3 {
+    font-size: 21px;
+  }
+
+  .profile-user p {
+    font-size: 12px;
+  }
+
+  .account-details-card {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .section-title {
+    margin-bottom: 18px;
+  }
+
+  .section-title h3 {
+    font-size: 18px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .info-item {
+    padding: 17px;
+  }
+
+  .referral-card {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .referral-header {
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 22px;
+  }
+
+  .referral-header h3 {
+    font-size: 19px;
+  }
+
+  .referral-reward-badge {
+    align-self: flex-start;
+  }
+
+  .referral-stats {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-header {
+    gap: 8px;
+  }
+
+  .page-title {
+    font-size: 17px;
+  }
+
+  .edit-btn {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .edit-btn i {
+    font-size: 11px;
+  }
+
+  .profile-banner {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .profile-banner-left {
+    gap: 12px;
+  }
+
+  .profile-banner img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .profile-user h3 {
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+
+  .welcome-text {
+    font-size: 9px;
+    margin-bottom: 3px;
+  }
+
+  .profile-user p {
+    font-size: 9px;
+  }
+
+  .account-details-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .section-title {
+    margin-bottom: 15px;
+  }
+
+  .section-title h3 {
+    font-size: 16px;
+  }
+
+  .info-item {
+    padding: 14px;
+  }
+
+  .info-item span {
+    font-size: 10px;
+  }
+
+  .info-item h4 {
+    font-size: 13px;
+  }
+
+  .referral-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .referral-eyebrow {
+    font-size: 9px;
+  }
+
+  .referral-header h3 {
+    font-size: 16px;
+  }
+
+  .referral-header p {
+    font-size: 10px;
+  }
+
+  .referral-main {
+    gap: 16px;
+  }
+
+  .referral-code-box {
+    padding-left: 10px;
+  }
+
+  .referral-code-box strong {
+    font-size: 12px;
+  }
+
+  .copy-referral-btn {
+    padding: 0 9px;
+  }
+
+  .copy-referral-btn span {
+    display: none;
+  }
+
+  .referral-benefits {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .referral-benefit {
+    padding: 12px;
+  }
+
+  .referral-benefit span {
+    font-size: 10px;
+  }
+
+  .referral-benefit strong {
+    font-size: 15px;
+  }
+
+  .referral-stats {
+    gap: 13px;
+  }
+
+  .referral-stat span {
+    font-size: 10px;
+  }
+
+  .referral-stat strong {
+    font-size: 16px;
+  }
 }
