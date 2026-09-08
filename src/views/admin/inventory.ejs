@@ -373,67 +373,124 @@
           </tbody>
 
         </table>
+<% if (totalPages > 1) { %>
 
-        <% if (totalPages > 1) { %>
+<div class="pagination">
 
-        <div class="pagination">
+  <p class="results-text">
+    Showing <%= skip + 1 %>
+    to <%= Math.min(Number(currentPage) * limit, productCount) %>
+    of <%= productCount %> results
+  </p>
 
-          <p class="results-text">
+  <% if (Number(currentPage) > 1) { %>
 
-            Showing <%= skip + 1 %>
-            to <%= Math.min(currentPage * limit, productCount) %>
-            of <%= productCount %> results
+    <a
+      href="/admin/inventory?page=<%= Number(currentPage) - 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= encodeURIComponent(sort || '') %>&category=<%= encodeURIComponent(category || '') %>&stock=<%= encodeURIComponent(stock || '') %>"
+      class="nav-btn"
+    >
+      Prev
+    </a>
 
-          </p>
+  <% } else { %>
 
-          <% if(currentPage > 1){ %>
+    <span class="nav-btn disabled">
+      Prev
+    </span>
 
-            <a
-              href="/admin/inventory?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&stock=<%= stock %>"
-              class="nav-btn"
-            >
-              Prev
-            </a>
+  <% } %>
 
-          <% } else { %>
+  <% if (totalPages <= 7) { %>
 
-            <span class="nav-btn disabled">
-              Prev
-            </span>
+    <% for (let i = 1; i <= totalPages; i++) { %>
 
-          <% } %>
+      <a
+        href="/admin/inventory?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= encodeURIComponent(sort || '') %>&category=<%= encodeURIComponent(category || '') %>&stock=<%= encodeURIComponent(stock || '') %>"
+        class="page-btn <%= Number(currentPage) === i ? 'active' : '' %>"
+      >
+        <%= i %>
+      </a>
 
-          <% for(let i = 1; i <= totalPages; i++){ %>
+    <% } %>
 
-            <a
-              href="/admin/inventory?page=<%= i %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&stock=<%= stock %>"
-              class="page-btn <%= currentPage === i ? 'active' : '' %>"
-            >
-              <%= i %>
-            </a>
+  <% } else { %>
 
-          <% } %>
+    <a
+      href="/admin/inventory?page=1&search=<%= encodeURIComponent(search || '') %>&sort=<%= encodeURIComponent(sort || '') %>&category=<%= encodeURIComponent(category || '') %>&stock=<%= encodeURIComponent(stock || '') %>"
+      class="page-btn <%= Number(currentPage) === 1 ? 'active' : '' %>"
+    >
+      1
+    </a>
 
-          <% if(currentPage < totalPages){ %>
+    <%
+      const page = Number(currentPage);
+      let startPage;
+      let endPage;
 
-            <a
-              class="nav-btn"
-              href="/admin/inventory?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>&category=<%= category %>&stock=<%= stock %>"
-            >
-              Next
-            </a>
+      if (page <= 4) {
+        startPage = 2;
+        endPage = 5;
+      } else if (page >= totalPages - 3) {
+        startPage = totalPages - 4;
+        endPage = totalPages - 1;
+      } else {
+        startPage = page - 1;
+        endPage = page + 1;
+      }
+    %>
 
-          <% } else { %>
+    <% if (startPage > 2) { %>
 
-            <span class="nav-btn disabled">
-              Next
-            </span>
+      <span class="pagination-dots">...</span>
 
-          <% } %>
+    <% } %>
 
-        </div>
+    <% for (let i = startPage; i <= endPage; i++) { %>
 
-        <% } %>
+      <a
+        href="/admin/inventory?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= encodeURIComponent(sort || '') %>&category=<%= encodeURIComponent(category || '') %>&stock=<%= encodeURIComponent(stock || '') %>"
+        class="page-btn <%= page === i ? 'active' : '' %>"
+      >
+        <%= i %>
+      </a>
+
+    <% } %>
+
+    <% if (endPage < totalPages - 1) { %>
+
+      <span class="pagination-dots">...</span>
+
+    <% } %>
+
+    <a
+      href="/admin/inventory?page=<%= totalPages %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= encodeURIComponent(sort || '') %>&category=<%= encodeURIComponent(category || '') %>&stock=<%= encodeURIComponent(stock || '') %>"
+      class="page-btn <%= page === totalPages ? 'active' : '' %>"
+    >
+      <%= totalPages %>
+    </a>
+
+  <% } %>
+
+  <% if (Number(currentPage) < totalPages) { %>
+
+    <a
+      href="/admin/inventory?page=<%= Number(currentPage) + 1 %>&search=<%= encodeURIComponent(search || '') %>&sort=<%= encodeURIComponent(sort || '') %>&category=<%= encodeURIComponent(category || '') %>&stock=<%= encodeURIComponent(stock || '') %>"
+      class="nav-btn"
+    >
+      Next
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Next
+    </span>
+
+  <% } %>
+
+</div>
+
+<% } %>
 
       </div>
 

@@ -252,7 +252,20 @@ td:first-child {
 }
 
 /* STATUS */
-
+.prod-name {
+  font-weight: 600;
+  color: #111827;
+}
+.pagination-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+}
 .status {
   padding: 5px 10px;
   border-radius: 6px;

@@ -130,7 +130,6 @@ document.addEventListener("keydown", (event) => {
     closePickupAddressDialog();
   }
 });
-
 pickupForm?.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -139,52 +138,130 @@ pickupForm?.addEventListener("submit", (event) => {
   let valid = true;
 
   const fullName = pickupForm.fullName.value.trim();
-
   const phone = pickupForm.phone.value.trim();
-
   const line1 = pickupForm.line1.value.trim();
-
   const line2 = pickupForm.line2.value.trim();
-
   const city = pickupForm.city.value.trim();
-
   const state = pickupForm.state.value.trim();
-
   const pincode = pickupForm.pincode.value.trim();
 
+  const nameRegex =
+    /^[A-Za-z]+(?:[.'-]?[A-Za-z]+)*(?:\s+[A-Za-z]+(?:[.'-]?[A-Za-z]+)*)*$/;
+
+  const locationRegex =
+    /^[A-Za-z]+(?:[.'-]?[A-Za-z]+)*(?:\s+[A-Za-z]+(?:[.'-]?[A-Za-z]+)*)*$/;
+
+  const phoneRegex = /^[6-9]\d{9}$/;
+  const pincodeRegex = /^[1-9]\d{5}$/;
+  const addressRegex = /[A-Za-z0-9]/;
+
   if (fullName.length < 3) {
-    showPickupError("pickupFullNameError", "Minimum 3 characters required");
-
+    showPickupError(
+      "pickupFullNameError",
+      "Name must be at least 3 characters"
+    );
+    valid = false;
+  } else if (fullName.length > 50) {
+    showPickupError(
+      "pickupFullNameError",
+      "Name cannot exceed 50 characters"
+    );
+    valid = false;
+  } else if (!nameRegex.test(fullName)) {
+    showPickupError(
+      "pickupFullNameError",
+      "Enter a valid name using letters and spaces only"
+    );
     valid = false;
   }
 
-  if (!/^[6-9]\d{9}$/.test(phone)) {
-    showPickupError("pickupPhoneError", "Invalid phone number");
-
+  if (!phoneRegex.test(phone)) {
+    showPickupError(
+      "pickupPhoneError",
+      "Enter a valid 10-digit Indian mobile number"
+    );
     valid = false;
   }
 
-  if (line1.length < 3) {
-    showPickupError("pickupLine1Error", "Address is required");
+  if (line1.length < 5) {
+    showPickupError(
+      "pickupLine1Error",
+      "Address must be at least 5 characters"
+    );
+    valid = false;
+  } else if (line1.length > 150) {
+    showPickupError(
+      "pickupLine1Error",
+      "Address cannot exceed 150 characters"
+    );
+    valid = false;
+  } else if (!addressRegex.test(line1)) {
+    showPickupError(
+      "pickupLine1Error",
+      "Enter a valid address"
+    );
+    valid = false;
+  }
 
+  if (line2.length > 100) {
+    showPickupError(
+      "pickupLine2Error",
+      "Landmark cannot exceed 100 characters"
+    );
+    valid = false;
+  } else if (line2 !== "" && !addressRegex.test(line2)) {
+    showPickupError(
+      "pickupLine2Error",
+      "Enter a valid landmark"
+    );
     valid = false;
   }
 
   if (city.length < 2) {
-    showPickupError("pickupCityError", "City is required");
-
+    showPickupError(
+      "pickupCityError",
+      "City must be at least 2 characters"
+    );
+    valid = false;
+  } else if (city.length > 50) {
+    showPickupError(
+      "pickupCityError",
+      "City cannot exceed 50 characters"
+    );
+    valid = false;
+  } else if (!locationRegex.test(city)) {
+    showPickupError(
+      "pickupCityError",
+      "Enter a valid city name"
+    );
     valid = false;
   }
 
   if (state.length < 2) {
-    showPickupError("pickupStateError", "State is required");
-
+    showPickupError(
+      "pickupStateError",
+      "State must be at least 2 characters"
+    );
+    valid = false;
+  } else if (state.length > 50) {
+    showPickupError(
+      "pickupStateError",
+      "State cannot exceed 50 characters"
+    );
+    valid = false;
+  } else if (!locationRegex.test(state)) {
+    showPickupError(
+      "pickupStateError",
+      "Enter a valid state name"
+    );
     valid = false;
   }
 
-  if (!/^\d{6}$/.test(pincode)) {
-    showPickupError("pickupPincodeError", "Invalid pincode");
-
+  if (!pincodeRegex.test(pincode)) {
+    showPickupError(
+      "pickupPincodeError",
+      "Enter a valid 6-digit pincode"
+    );
     valid = false;
   }
 
@@ -217,62 +294,61 @@ pickupForm?.addEventListener("submit", (event) => {
   const tempCard = document.createElement("label");
 
   tempCard.className = "checkout-address active";
-
   tempCard.id = "temporaryPickupCard";
 
   tempCard.innerHTML = `
-      <input
-        type="radio"
-        name="pickupAddress"
-        value="temporary"
-        checked
-        class="hidden pickup-address-radio"
-      >
+    <input
+      type="radio"
+      name="pickupAddress"
+      value="temporary"
+      checked
+      class="hidden pickup-address-radio"
+    >
 
-      <span class="address-badge">
-        Temporary Pickup
-      </span>
+    <span class="address-badge">
+      Temporary Pickup
+    </span>
 
-      <h3 class="address-name">
-        ${fullName}
-      </h3>
+    <h3 class="address-name">
+      ${fullName}
+    </h3>
 
-      <div class="address-body">
-        <p class="address-text">
-          ${line1}
-        </p>
-
-        ${
-          line2
-            ? `
-              <p class="address-text">
-                ${line2}
-              </p>
-            `
-            : ""
-        }
-
-        <p class="address-text">
-          ${city}, ${state}
-        </p>
-
-        <p class="address-text">
-          ${pincode}
-        </p>
-      </div>
-
-      <p class="address-phone">
-        +91 ${phone}
+    <div class="address-body">
+      <p class="address-text">
+        ${line1}
       </p>
-    `;
+
+      ${
+        line2
+          ? `
+            <p class="address-text">
+              ${line2}
+            </p>
+          `
+          : ""
+      }
+
+      <p class="address-text">
+        ${city}, ${state}
+      </p>
+
+      <p class="address-text">
+        ${pincode}
+      </p>
+    </div>
+
+    <p class="address-phone">
+      +91 ${phone}
+    </p>
+  `;
 
   pickupSelector?.prepend(tempCard);
 
   pickupTypeInput.value = "new";
-
   pickupAddressIdInput.value = "";
-
-  pickupAddressDataInput.value = JSON.stringify(temporaryPickupAddress);
+  pickupAddressDataInput.value = JSON.stringify(
+    temporaryPickupAddress
+  );
 
   bindPickupCards();
 
@@ -282,7 +358,6 @@ pickupForm?.addEventListener("submit", (event) => {
 
   userToast("Pickup address selected.");
 });
-
 function getPickupAddressFromCard(activeCard) {
   const radio = activeCard.querySelector(".pickup-address-radio");
 

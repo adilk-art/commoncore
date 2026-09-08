@@ -501,7 +501,16 @@ th:last-child {
   opacity: 0.5;
   pointer-events: none;
 }
-
+.pagination-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+}
 /* ERROR */
 .error {
   display: block;

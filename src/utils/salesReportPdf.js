@@ -122,7 +122,7 @@ export const generateSalesReportPdf = ({
     .fontSize(9)
     .text(`Period: ${formatDate(startDate)} - ${formatDate(endDate)}`);
 
-  doc.text(`Filter: ${String(filter).toUpperCase()}`);
+  // doc.text(`Filter: ${String(filter).toUpperCase()}`);
 
   doc.moveDown();
 

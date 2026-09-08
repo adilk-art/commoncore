@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/admin/logout-modal.css">
   <link rel="stylesheet" href="/css/admin/layout.css">
   <link rel="stylesheet" href="/css/admin/users.css">
+  <link rel="stylesheet" href="/css/admin/toast.css">
 </head>
 
 <body>
@@ -152,17 +153,18 @@
         </td>
 
         <!-- ACTION -->
-        <td>
-          <form method="POST" action="/admin/users/toggle-block/<%= user._id %>">
-            <button
-            type="button" 
-            class="btn <%= user.isBlocked ? 'unblock' : 'block' %>"
-            onclick="openModal('<%=user._id%>',<%=user.isBlocked%>)"
-            >
-              <%= user.isBlocked ? "Unblock" : "Block" %>
-            </button>
-          </form>
-        </td>
+<td>
+  <form method="POST" action="/admin/users/toggle-block/<%= user._id %>">
+    <button
+      type="button"
+      class="btn <%= user.isBlocked ? 'unblock' : 'block' %>"
+      onclick="openModal('<%= user._id %>', <%= user.isBlocked %>)"
+      title="<%= user.isBlocked ? 'Unblock User' : 'Block User' %>"
+    >
+      <i class="fa-solid <%= user.isBlocked ? 'fa-eye' : 'fa-eye-slash' %>"></i>
+    </button>
+  </form>
+</td>
 
       </tr>
     <% }) %>
@@ -171,64 +173,150 @@
             <form id="blockForm" method="POST">     <!-- dummy form to submit data form frontend -->
             </form>
 
-            <div id="confirmModal" class="modal">
-            <div class="modal-box">
-                <h3 id="modalTitle">Confirm Action</h3>
-                <p id="modalText"></p>
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-modal-box">
 
-                <div class="modal-actions">
-                <button onclick="closeModal()" class="cancel-btn">Cancel</button>
-                <button onclick="confirmAction()" class="confirm-btn">Yes</button>
-                </div>
-            </div>
-            </div>
+    <h3 class="confirm-modal-title" id="modalTitle">
+      Confirm Action
+    </h3>
 
+    <p class="confirm-modal-message" id="modalText"></p>
+
+    <div class="confirm-modal-actions">
+
+      <button
+        type="button"
+        onclick="closeModal()"
+        class="confirm-modal-cancel"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        onclick="confirmAction()"
+        class="confirm-modal-confirm"
+      >
+        Yes
+      </button>
+
+    </div>
+
+  </div>
+</div>
           
             
             <!-- PREV -->
-            <div class="pagination">
-              <p class="results-text">
-              Showing 
-              <%= (currentPage - 1) * limit + 1 %> 
-              to 
-              <%= Math.min(currentPage * limit, totalUsers) %> 
-              of 
-              <%= totalUsers %> 
-              results
-              </p>
-            <% if (currentPage > 1) { %>
-                <a 
-                href="/admin/users?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%=sort%>" 
-                class="nav-btn"
-                >
-                Prev
-                </a>
-            <% } else { %>
-                <span class="nav-btn disabled">Prev</span>
-            <% } %>
+ <% if (totalPages > 1) { %>
 
-            <!-- PAGE NUMBERS -->
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <a 
-                href="/admin/users?page=<%= i %>&search=<%= search %>&sort=<%=sort%>" 
-                class="page-btn <%= currentPage === i ? 'active' : '' %>"
-                >
-                <%= i %>
-                </a>
-            <% } %>
+  <div class="pagination">
 
-            <!-- NEXT -->
-            <% if (currentPage < totalPages) { %>
-                <a 
-                href="/admin/users?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%=sort%>" 
-                class="nav-btn"
-                >
-                Next
-                </a>
-            <% } else { %>
-                <span class="nav-btn disabled">Next</span>
-            <% } %>
-            </div>
+    <p class="results-text">
+      Showing
+      <%= totalUsers > 0 ? (Number(currentPage) - 1) * limit + 1 : 0 %>
+      to
+      <%= Math.min(Number(currentPage) * limit, totalUsers) %>
+      of
+      <%= totalUsers %>
+      results
+    </p>
+
+    <%
+      const page = Number(currentPage);
+
+      const queryString = [
+        `search=${encodeURIComponent(search || "")}`,
+        `sort=${encodeURIComponent(sort || "latest")}`
+      ].join("&");
+    %>
+
+    <% if (page > 1) { %>
+      <a
+        class="nav-btn"
+        href="/admin/users?page=<%= page - 1 %>&<%= queryString %>"
+      >
+        Prev
+      </a>
+    <% } else { %>
+      <span class="nav-btn disabled">Prev</span>
+    <% } %>
+
+    <% if (totalPages <= 7) { %>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a
+          class="page-btn <%= page === i ? 'active' : '' %>"
+          href="/admin/users?page=<%= i %>&<%= queryString %>"
+        >
+          <%= i %>
+        </a>
+      <% } %>
+
+    <% } else { %>
+
+      <a
+        class="page-btn <%= page === 1 ? 'active' : '' %>"
+        href="/admin/users?page=1&<%= queryString %>"
+      >
+        1
+      </a>
+
+      <%
+        let startPage;
+        let endPage;
+
+        if (page <= 4) {
+          startPage = 2;
+          endPage = 5;
+        } else if (page >= totalPages - 3) {
+          startPage = totalPages - 4;
+          endPage = totalPages - 1;
+        } else {
+          startPage = page - 1;
+          endPage = page + 1;
+        }
+      %>
+
+      <% if (startPage > 2) { %>
+        <span class="pagination-dots">...</span>
+      <% } %>
+
+      <% for (let i = startPage; i <= endPage; i++) { %>
+        <a
+          class="page-btn <%= page === i ? 'active' : '' %>"
+          href="/admin/users?page=<%= i %>&<%= queryString %>"
+        >
+          <%= i %>
+        </a>
+      <% } %>
+
+      <% if (endPage < totalPages - 1) { %>
+        <span class="pagination-dots">...</span>
+      <% } %>
+
+      <a
+        class="page-btn <%= page === totalPages ? 'active' : '' %>"
+        href="/admin/users?page=<%= totalPages %>&<%= queryString %>"
+      >
+        <%= totalPages %>
+      </a>
+
+    <% } %>
+
+    <% if (page < totalPages) { %>
+      <a
+        class="nav-btn"
+        href="/admin/users?page=<%= page + 1 %>&<%= queryString %>"
+      >
+        Next
+      </a>
+    <% } else { %>
+      <span class="nav-btn disabled">Next</span>
+    <% } %>
+
+  </div>
+
+<% } %>
 
              
         </div>
@@ -241,6 +329,8 @@
 
   <script src="/js/admin/logout.js"></script>
   <script src="/js/admin/users.js"></script>
+  <script src="/js/utils/toast.js"></script>
+
 
 </body>
 </html>

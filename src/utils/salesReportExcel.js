@@ -64,7 +64,7 @@ export const generateSalesReportExcel = async ({
 
   worksheet.mergeCells("A3:J3");
 
-  worksheet.getCell("A3").value = `Filter: ${String(filter).toUpperCase()}`;
+  // worksheet.getCell("A3").value = `Filter: ${String(filter).toUpperCase()}`;
 
   worksheet.getCell("A3").alignment = {
     horizontal: "center",

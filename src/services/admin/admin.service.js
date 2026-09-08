@@ -1,7 +1,7 @@
 import {blockUserToggle,getAllUsers,countActiveUsers,countBlockedUsers,countUsers  } from "../../repositories/admin.repository.js";
 
 export const getAllUsersService = async ({ search, page, sort }) => {
-  const limit = 5;
+  const limit = 6;
 
   const result = await getAllUsers({
     search,

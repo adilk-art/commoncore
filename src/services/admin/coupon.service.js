@@ -14,7 +14,7 @@ import { couponSchema } from "../../validators/coupon.validation.js";
 
 
 
-const COUPONS_PER_PAGE = 8;
+const COUPONS_PER_PAGE = 6;
 
 const escapeRegex = (value = "") => {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

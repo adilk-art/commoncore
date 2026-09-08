@@ -273,20 +273,45 @@
                 <td class="order-status-cell">
 
                   <% if (!order.itemsStatusMixed) { %>
+<div class="status-text status-<%= order.itemsSingleStatus.toLowerCase().replace(/\s+/g, '-') %>">
 
-                    <div class="status-text status-<%= order.itemsSingleStatus.toLowerCase().replace(/\s+/g, '-') %>">
-                      <%= order.itemsSingleStatus %>
-                    </div>
+  <span class="status-dot"></span>
+
+  <span>
+    <%= order.itemsSingleStatus %>
+  </span>
+
+</div>
 
                   <% } else { %>
 
-                    <div class="status-summary-list">
-                      <% order.itemsStatusSummaryLines.forEach(line => { %>
-                        <div class="status-summary-line">
-                          <%= line %>
-                        </div>
-                      <% }) %>
-                    </div>
+<div class="status-summary-list">
+
+  <% order.itemsStatusSummaryLines.forEach(line => { %>
+
+    <%
+      const lineStatus = String(line)
+        .replace(/^\d+\s*/, "")
+        .trim();
+
+      const lineStatusClass = lineStatus
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+    %>
+
+    <div class="status-summary-line status-<%= lineStatusClass %>">
+
+      <span class="status-dot"></span>
+
+      <span>
+        <%= line %>
+      </span>
+
+    </div>
+
+  <% }) %>
+
+</div>
 
                   <% } %>
 
@@ -336,64 +361,132 @@
 
         </table>
 
-      <% if (totalPages > 1) { %>
+ <% if (totalPages > 1) { %>
 
-<div class="pagination">
+  <div class="pagination">
 
-  <p class="results-text">
+    <p class="results-text">
+      Showing <%= skip + 1 %>
+      to <%= Math.min(currentPage * limit, orderCount) %>
+      of <%= orderCount %> results
+    </p>
 
-    Showing <%= skip + 1 %>
-    to <%= Math.min(currentPage * limit, orderCount) %>
-    of <%= orderCount %> results
+    <% if (currentPage > 1) { %>
 
-  </p>
+      <a
+        href="/admin/orders?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&payment=<%= encodeURIComponent(payment || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+        class="nav-btn"
+      >
+        Prev
+      </a>
 
-  <% if(currentPage > 1){ %>
+    <% } else { %>
 
-    <a
-      href="/admin/orders?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>&payment=<%= payment %>&sort=<%= sort %>"
-      class="nav-btn"
-    >
-      Prev
-    </a>
+      <span class="nav-btn disabled">
+        Prev
+      </span>
 
-  <% } else { %>
+    <% } %>
 
-    <span class="nav-btn disabled">
-      Prev
-    </span>
 
-  <% } %>
+    <% if (totalPages <= 7) { %>
 
-  <% for(let i = 1; i <= totalPages; i++){ %>
+      <% for (let i = 1; i <= totalPages; i++) { %>
 
-    <a
-      href="/admin/orders?page=<%= i %>&search=<%= search %>&status=<%= status %>&payment=<%= payment %>&sort=<%= sort %>"
-      class="page-btn <%= currentPage === i ? 'active' : '' %>"
-    >
-      <%= i %>
-    </a>
+        <a
+          href="/admin/orders?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&payment=<%= encodeURIComponent(payment || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+          class="page-btn <%= Number(currentPage) === i ? 'active' : '' %>"
+        >
+          <%= i %>
+        </a>
 
-  <% } %>
+      <% } %>
 
-  <% if(currentPage < totalPages){ %>
 
-    <a
-      href="/admin/orders?page=<%= currentPage + 1 %>&search=<%= search %>&status=<%= status %>&payment=<%= payment %>&sort=<%= sort %>"
-      class="nav-btn"
-    >
-      Next
-    </a>
+    <% } else { %>
 
-  <% } else { %>
+      <a
+        href="/admin/orders?page=1&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&payment=<%= encodeURIComponent(payment || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+        class="page-btn <%= Number(currentPage) === 1 ? 'active' : '' %>"
+      >
+        1
+      </a>
 
-    <span class="nav-btn disabled">
-      Next
-    </span>
 
-  <% } %>
+      <% if (currentPage > 4) { %>
 
-</div>
+        <span class="pagination-dots">
+          ...
+        </span>
+
+      <% } %>
+
+
+      <%
+        let startPage = Math.max(2, Number(currentPage) - 1);
+        let endPage = Math.min(totalPages - 1, Number(currentPage) + 1);
+
+        if (Number(currentPage) <= 4) {
+          startPage = 2;
+          endPage = 5;
+        }
+
+        if (Number(currentPage) >= totalPages - 3) {
+          startPage = totalPages - 4;
+          endPage = totalPages - 1;
+        }
+      %>
+
+
+      <% for (let i = startPage; i <= endPage; i++) { %>
+
+        <a
+          href="/admin/orders?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&payment=<%= encodeURIComponent(payment || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+          class="page-btn <%= Number(currentPage) === i ? 'active' : '' %>"
+        >
+          <%= i %>
+        </a>
+
+      <% } %>
+
+
+      <% if (currentPage < totalPages - 3) { %>
+
+        <span class="pagination-dots">
+          ...
+        </span>
+
+      <% } %>
+
+
+      <a
+        href="/admin/orders?page=<%= totalPages %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&payment=<%= encodeURIComponent(payment || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+        class="page-btn <%= Number(currentPage) === totalPages ? 'active' : '' %>"
+      >
+        <%= totalPages %>
+      </a>
+
+    <% } %>
+
+
+    <% if (currentPage < totalPages) { %>
+
+      <a
+        href="/admin/orders?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&payment=<%= encodeURIComponent(payment || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+        class="nav-btn"
+      >
+        Next
+      </a>
+
+    <% } else { %>
+
+      <span class="nav-btn disabled">
+        Next
+      </span>
+
+    <% } %>
+
+  </div>
 
 <% } %>
     </div>

@@ -654,95 +654,148 @@
 
           </table>
 
-          <% if (totalPages > 1) { %>
+   <% if (totalPages > 1) { %>
 
-            <div class="pagination">
+  <div class="pagination">
 
-              <p class="results-text">
+    <p class="results-text">
+      Showing
+      <%= couponCount > 0 ? skip + 1 : 0 %>
+      to
+      <%= Math.min(Number(currentPage) * limit, couponCount) %>
+      of
+      <%= couponCount %>
+      results
+    </p>
 
-                Showing
+    <%
+      const page = Number(currentPage);
 
-                <%= couponCount > 0
-                  ? skip + 1
-                  : 0 %>
+      const queryString = [
+        `search=${encodeURIComponent(search || "")}`,
+        `status=${encodeURIComponent(status || "all")}`,
+        `discount=${encodeURIComponent(discount || "all")}`,
+        `usage=${encodeURIComponent(usage || "all")}`,
+        `sort=${encodeURIComponent(sort || "latest")}`
+      ].join("&");
+    %>
 
-                to
+    <% if (page > 1) { %>
 
-                <%= Math.min(
-                  currentPage * limit,
-                  couponCount
-                ) %>
+      <a
+        class="nav-btn"
+        href="/admin/coupons?page=<%= page - 1 %>&<%= queryString %>"
+      >
+        Prev
+      </a>
 
-                of
+    <% } else { %>
 
-                <%= couponCount %>
+      <span class="nav-btn disabled">
+        Prev
+      </span>
 
-                results
+    <% } %>
 
-              </p>
 
-              <% const queryString = [
-                `search=${encodeURIComponent(search || "")}`,
-                `status=${status}`,
-                `discount=${discount}`,
-                `usage=${usage}`,
-                `sort=${sort}`
-              ].join("&"); %>
+    <% if (totalPages <= 7) { %>
 
-              <% if (currentPage > 1) { %>
+      <% for (let i = 1; i <= totalPages; i++) { %>
 
-                <a
-                  class="nav-btn"
-                  href="/admin/coupons?page=<%= currentPage - 1 %>&<%= queryString %>"
-                >
-                  Prev
-                </a>
+        <a
+          class="page-btn <%= page === i ? 'active' : '' %>"
+          href="/admin/coupons?page=<%= i %>&<%= queryString %>"
+        >
+          <%= i %>
+        </a>
 
-              <% } else { %>
+      <% } %>
 
-                <span class="nav-btn disabled">
-                  Prev
-                </span>
+    <% } else { %>
 
-              <% } %>
+      <a
+        class="page-btn <%= page === 1 ? 'active' : '' %>"
+        href="/admin/coupons?page=1&<%= queryString %>"
+      >
+        1
+      </a>
 
-              <% for (
-                let i = 1;
-                i <= totalPages;
-                i++
-              ) { %>
+      <%
+        let startPage;
+        let endPage;
 
-                <a
-                  class="page-btn <%= currentPage === i ? 'active' : '' %>"
-                  href="/admin/coupons?page=<%= i %>&<%= queryString %>"
-                >
-                  <%= i %>
-                </a>
+        if (page <= 4) {
+          startPage = 2;
+          endPage = 5;
+        } else if (page >= totalPages - 3) {
+          startPage = totalPages - 4;
+          endPage = totalPages - 1;
+        } else {
+          startPage = page - 1;
+          endPage = page + 1;
+        }
+      %>
 
-              <% } %>
+      <% if (startPage > 2) { %>
 
-              <% if (
-                currentPage < totalPages
-              ) { %>
+        <span class="pagination-dots">
+          ...
+        </span>
 
-                <a
-                  class="nav-btn"
-                  href="/admin/coupons?page=<%= currentPage + 1 %>&<%= queryString %>"
-                >
-                  Next
-                </a>
+      <% } %>
 
-              <% } else { %>
 
-                <span class="nav-btn disabled">
-                  Next
-                </span>
+      <% for (let i = startPage; i <= endPage; i++) { %>
 
-              <% } %>
+        <a
+          class="page-btn <%= page === i ? 'active' : '' %>"
+          href="/admin/coupons?page=<%= i %>&<%= queryString %>"
+        >
+          <%= i %>
+        </a>
 
-            </div>
+      <% } %>
 
-          <% } %>
+
+      <% if (endPage < totalPages - 1) { %>
+
+        <span class="pagination-dots">
+          ...
+        </span>
+
+      <% } %>
+
+
+      <a
+        class="page-btn <%= page === totalPages ? 'active' : '' %>"
+        href="/admin/coupons?page=<%= totalPages %>&<%= queryString %>"
+      >
+        <%= totalPages %>
+      </a>
+
+    <% } %>
+
+
+    <% if (page < totalPages) { %>
+
+      <a
+        class="nav-btn"
+        href="/admin/coupons?page=<%= page + 1 %>&<%= queryString %>"
+      >
+        Next
+      </a>
+
+    <% } else { %>
+
+      <span class="nav-btn disabled">
+        Next
+      </span>
+
+    <% } %>
+
+  </div>
+
+<% } %>
 
         </div>
 

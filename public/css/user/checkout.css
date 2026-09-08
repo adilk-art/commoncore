@@ -559,7 +559,10 @@
   display:none;
   align-items:center;
   justify-content:center;
+  padding:20px;
   background:rgba(0,0,0,.45);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 }
 
 .checkout-address-modal.active{
@@ -569,9 +572,31 @@
 .checkout-address-modal-content{
   width:100%;
   max-width:520px;
+  max-height:calc(100vh - 40px);
+  max-height:calc(100dvh - 40px);
   padding:24px;
   border-radius:12px;
   background:#fff;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+
+.checkout-address-modal-content::-webkit-scrollbar{
+  width:5px;
+}
+
+.checkout-address-modal-content::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.checkout-address-modal-content::-webkit-scrollbar-thumb{
+  background:#d1d5db;
+  border-radius:10px;
+}
+
+.checkout-address-modal-content::-webkit-scrollbar-thumb:hover{
+  background:#9ca3af;
 }
 
 .checkout-address-modal-content h3{
@@ -913,6 +938,7 @@
 }
 
 @media(max-width:900px){
+
   .checkout-layout{
     grid-template-columns:1fr;
   }
@@ -927,6 +953,7 @@
 }
 
 @media(max-width:640px){
+
   .checkout-page{
     padding:18px;
   }
@@ -958,9 +985,26 @@
   .checkout-remove-item-btn{
     width:100%;
   }
+
+  .checkout-address-modal{
+    align-items:flex-start;
+    padding:12px;
+    overflow-y:auto;
+  }
+
+  .checkout-address-modal-content{
+    width:100%;
+    max-width:520px;
+    max-height:calc(100vh - 24px);
+    max-height:calc(100dvh - 24px);
+    padding:21px 18px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
 }
 
 @media(max-width:480px){
+
   .qualified-coupon{
     grid-template-columns:minmax(0,1fr);
   }
@@ -969,5 +1013,53 @@
     min-width:0;
     padding-left:0;
     text-align:left;
+  }
+}
+
+@media(max-width:520px){
+
+  .checkout-address-modal{
+    align-items:flex-start;
+    padding:10px;
+  }
+
+  .checkout-address-modal-content{
+    max-height:calc(100vh - 20px);
+    max-height:calc(100dvh - 20px);
+    padding:18px 15px;
+    border-radius:12px;
+  }
+
+  .checkout-address-modal-content form{
+    gap:11px;
+  }
+
+  .checkout-address-modal-content input[type="text"]{
+    height:40px;
+    padding:0 12px;
+    font-size:12px;
+  }
+
+  .checkout-address-form-actions{
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .checkout-address-form-actions .primary-btn,
+  .checkout-address-form-actions .secondary-btn{
+    width:100%;
+  }
+}
+
+@media(max-width:380px){
+
+  .checkout-address-modal{
+    padding:8px;
+  }
+
+  .checkout-address-modal-content{
+    max-height:calc(100vh - 16px);
+    max-height:calc(100dvh - 16px);
+    padding:16px 13px;
   }
 }

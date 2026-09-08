@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("addressForm");
   const modal = document.getElementById("addressModal");
@@ -11,6 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form || !modal) return;
 
+  const nameRegex =
+    /^[A-Za-z]+(?:[.'-]?[A-Za-z]+)*(?:\s+[A-Za-z]+(?:[.'-]?[A-Za-z]+)*)*$/;
+
+  const locationRegex =
+    /^[A-Za-z]+(?:[.'-]?[A-Za-z]+)*(?:\s+[A-Za-z]+(?:[.'-]?[A-Za-z]+)*)*$/;
+
+  const addressRegex = /[A-Za-z0-9]/;
+
   function clearErrors() {
     form.querySelectorAll(".error-msg").forEach((el) => {
       el.textContent = "";
@@ -22,17 +31,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function showError(id, message) {
-    const el = document.getElementById(id);
+  function showError(field, message) {
+    const errorEl = document.getElementById(`${field}Error`);
+    const input = form.elements[field];
 
-    if (!el) return;
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.style.display = "block";
+    }
 
-    el.textContent = message;
-    el.style.display = "block";
-
-    const fieldName = id.replace("Error", "");
-
-    form.elements[fieldName]?.classList.add("input-error");
+    if (input) {
+      input.classList.add("input-error");
+    }
   }
 
   function openAddModal() {
@@ -40,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clearErrors();
 
     addressId.value = "";
+
     modalTitle.textContent = "Add New Address";
     saveBtn.textContent = "Save Address";
 
@@ -79,14 +90,17 @@ document.addEventListener("DOMContentLoaded", () => {
       clearErrors();
 
       addressId.value = btn.dataset.id;
-      form.fullName.value = btn.dataset.fullname;
-      form.phone.value = btn.dataset.phone;
-      form.line1.value = btn.dataset.line1;
+
+      form.fullName.value = btn.dataset.fullname || "";
+      form.phone.value = btn.dataset.phone || "";
+      form.line1.value = btn.dataset.line1 || "";
       form.line2.value = btn.dataset.line2 || "";
-      form.city.value = btn.dataset.city;
-      form.state.value = btn.dataset.state;
-      form.pincode.value = btn.dataset.pincode;
-      form.isDefault.checked = btn.dataset.default === "true";
+      form.city.value = btn.dataset.city || "";
+      form.state.value = btn.dataset.state || "";
+      form.pincode.value = btn.dataset.pincode || "";
+
+      form.isDefault.checked =
+        btn.dataset.default === "true";
 
       modalTitle.textContent = "Edit Address";
       saveBtn.textContent = "Update Address";
@@ -105,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       input.classList.remove("input-error");
 
       const error = document.getElementById(
-        `${input.name}Error`,
+        `${input.name}Error`
       );
 
       if (error) {
@@ -115,11 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (saveBtn.disabled) return;
-
+  function validateForm() {
     clearErrors();
 
     const fullName = form.fullName.value.trim();
@@ -134,70 +144,146 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (fullName.length < 3) {
       showError(
-        "fullNameError",
-        "Minimum 3 characters required",
+        "fullName",
+        "Name must be at least 3 characters"
       );
-
+      valid = false;
+    } else if (fullName.length > 50) {
+      showError(
+        "fullName",
+        "Name cannot exceed 50 characters"
+      );
+      valid = false;
+    } else if (!nameRegex.test(fullName)) {
+      showError(
+        "fullName",
+        "Enter a valid name using letters and spaces only"
+      );
       valid = false;
     }
 
     if (!/^[6-9]\d{9}$/.test(phone)) {
       showError(
-        "phoneError",
-        "Enter a valid 10-digit phone number",
+        "phone",
+        "Enter a valid 10-digit Indian mobile number"
       );
-
       valid = false;
     }
 
-    if (line1.length < 3) {
+    if (line1.length < 5) {
       showError(
-        "line1Error",
-        "Address is required",
+        "line1",
+        "Address must be at least 5 characters"
       );
+      valid = false;
+    } else if (line1.length > 150) {
+      showError(
+        "line1",
+        "Address cannot exceed 150 characters"
+      );
+      valid = false;
+    } else if (!addressRegex.test(line1)) {
+      showError(
+        "line1",
+        "Enter a valid address"
+      );
+      valid = false;
+    }
 
+    if (line2.length > 100) {
+      showError(
+        "line2",
+        "Landmark cannot exceed 100 characters"
+      );
+      valid = false;
+    } else if (
+      line2 !== "" &&
+      !addressRegex.test(line2)
+    ) {
+      showError(
+        "line2",
+        "Enter a valid landmark"
+      );
       valid = false;
     }
 
     if (city.length < 2) {
       showError(
-        "cityError",
-        "City is required",
+        "city",
+        "City must be at least 2 characters"
       );
-
+      valid = false;
+    } else if (city.length > 50) {
+      showError(
+        "city",
+        "City cannot exceed 50 characters"
+      );
+      valid = false;
+    } else if (!locationRegex.test(city)) {
+      showError(
+        "city",
+        "Enter a valid city name"
+      );
       valid = false;
     }
 
     if (state.length < 2) {
       showError(
-        "stateError",
-        "State is required",
+        "state",
+        "State must be at least 2 characters"
       );
-
       valid = false;
-    }
-
-    if (!/^\d{6}$/.test(pincode)) {
+    } else if (state.length > 50) {
       showError(
-        "pincodeError",
-        "Enter a valid 6-digit pincode",
+        "state",
+        "State cannot exceed 50 characters"
       );
-
+      valid = false;
+    } else if (!locationRegex.test(state)) {
+      showError(
+        "state",
+        "Enter a valid state name"
+      );
       valid = false;
     }
 
-    if (!valid) return;
+    if (!/^[1-9]\d{5}$/.test(pincode)) {
+      showError(
+        "pincode",
+        "Enter a valid 6-digit pincode"
+      );
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (saveBtn.disabled) return;
+
+    const valid = validateForm();
+
+    if (!valid) {
+      utils.showToast(
+        "Please correct the highlighted fields",
+        "error"
+      );
+
+      return;
+    }
 
     const id = addressId.value;
 
     const data = {
-      fullName,
-      phone,
-      line1,
-      line2,
-      city,
-      state,
-      pincode,
+      fullName: form.fullName.value.trim(),
+      phone: form.phone.value.trim(),
+      line1: form.line1.value.trim(),
+      line2: form.line2.value.trim(),
+      city: form.city.value.trim(),
+      state: form.state.value.trim(),
+      pincode: form.pincode.value.trim(),
       isDefault: form.isDefault.checked,
     };
 
@@ -214,22 +300,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (id) {
         await axios.patch(
           `/user/address/update/${id}`,
-          data,
+          data
         );
 
         utils.showToast(
           "Address updated successfully",
-          "success",
+          "success"
         );
       } else {
         await axios.post(
           "/user/address/add",
-          data,
+          data
         );
 
         utils.showToast(
           "Address added successfully",
-          "success",
+          "success"
         );
       }
 
@@ -237,35 +323,25 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "/user/address";
       }, 800);
     } catch (err) {
-      const errors = err.response?.data?.errors;
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
 
-      if (Array.isArray(errors) && errors.length) {
-        errors.forEach((error) => {
-          const field = error.path?.[0];
+      clearErrors();
 
-          if (field) {
-            showError(
-              `${field}Error`,
-              error.message,
-            );
-          }
-        });
+      const backendMessage =
+        err.response?.data?.message;
 
+      if (backendMessage) {
         utils.showToast(
-          errors[0]?.message ||
-            "Please check the entered details",
-          "error",
+          backendMessage,
+          "error"
         );
       } else {
         utils.showToast(
-          err.response?.data?.message ||
-            "Unable to save address",
-          "error",
+          "Unable to save address",
+          "error"
         );
       }
-
-      saveBtn.disabled = false;
-      saveBtn.textContent = originalText;
     }
   });
 });
@@ -313,12 +389,12 @@ async function confirmDelete() {
 
   try {
     await axios.delete(
-      `/user/address/delete/${deleteId}`,
+      `/user/address/delete/${deleteId}`
     );
 
     utils.showToast(
       "Address deleted successfully",
-      "success",
+      "success"
     );
 
     setTimeout(() => {
@@ -328,7 +404,7 @@ async function confirmDelete() {
     utils.showToast(
       err.response?.data?.message ||
         "Error deleting address",
-      "error",
+      "error"
     );
 
     btn.disabled = false;
@@ -356,12 +432,12 @@ async function setDefault(addressId, btn) {
 
   try {
     await axios.patch(
-      `/user/address/default/${addressId}`,
+      `/user/address/default/${addressId}`
     );
 
     utils.showToast(
       "Default address updated",
-      "success",
+      "success"
     );
 
     setTimeout(() => {
@@ -371,7 +447,7 @@ async function setDefault(addressId, btn) {
     utils.showToast(
       err.response?.data?.message ||
         "Error setting default address",
-      "error",
+      "error"
     );
 
     btn.disabled = false;
@@ -383,3 +459,4 @@ window.openDeleteModal = openDeleteModal;
 window.closeDeleteModal = closeDeleteModal;
 window.confirmDelete = confirmDelete;
 window.setDefault = setDefault;
+

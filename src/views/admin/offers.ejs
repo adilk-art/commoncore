@@ -520,79 +520,148 @@
 
           </table>
 
-          <% if (totalPages > 1) { %>
+<% if (totalPages > 1) { %>
 
-            <div class="pagination">
+  <div class="pagination">
 
-              <p class="results-text">
+    <p class="results-text">
+      Showing
+      <%= offerCount > 0 ? skip + 1 : 0 %>
+      to
+      <%= Math.min(Number(currentPage) * limit, offerCount) %>
+      of
+      <%= offerCount %>
+      results
+    </p>
 
-                Showing
+    <%
+      const page = Number(currentPage);
 
-                <%= offerCount > 0 ? skip + 1 : 0 %>
+      const queryString = [
+        `search=${encodeURIComponent(search || "")}`,
+        `status=${encodeURIComponent(status || "all")}`,
+        `targetScope=${encodeURIComponent(targetScope || "all")}`,
+        `discount=${encodeURIComponent(discount || "all")}`,
+        `sort=${encodeURIComponent(sort || "latest")}`
+      ].join("&");
+    %>
 
-                to
+    <% if (page > 1) { %>
 
-                <%= Math.min(
-                  currentPage * limit,
-                  offerCount
-                ) %>
+      <a
+        class="nav-btn"
+        href="/admin/offers?page=<%= page - 1 %>&<%= queryString %>"
+      >
+        Prev
+      </a>
 
-                of
+    <% } else { %>
 
-                <%= offerCount %>
+      <span class="nav-btn disabled">
+        Prev
+      </span>
 
-                results
+    <% } %>
 
-              </p>
 
-              <% if (currentPage > 1) { %>
+    <% if (totalPages <= 7) { %>
 
-                <a
-                  class="nav-btn"
-                  href="/admin/offers?page=<%= currentPage - 1 %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>&targetScope=<%= targetScope %>&discount=<%= discount %>&sort=<%= sort %>"
-                >
-                  Prev
-                </a>
+      <% for (let i = 1; i <= totalPages; i++) { %>
 
-              <% } else { %>
+        <a
+          class="page-btn <%= page === i ? 'active' : '' %>"
+          href="/admin/offers?page=<%= i %>&<%= queryString %>"
+        >
+          <%= i %>
+        </a>
 
-                <span class="nav-btn disabled">
-                  Prev
-                </span>
+      <% } %>
 
-              <% } %>
+    <% } else { %>
 
-              <% for (let i = 1; i <= totalPages; i++) { %>
+      <a
+        class="page-btn <%= page === 1 ? 'active' : '' %>"
+        href="/admin/offers?page=1&<%= queryString %>"
+      >
+        1
+      </a>
 
-                <a
-                  class="page-btn <%= currentPage === i ? 'active' : '' %>"
-                  href="/admin/offers?page=<%= i %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>&targetScope=<%= targetScope %>&discount=<%= discount %>&sort=<%= sort %>"
-                >
-                  <%= i %>
-                </a>
+      <%
+        let startPage;
+        let endPage;
 
-              <% } %>
+        if (page <= 4) {
+          startPage = 2;
+          endPage = 5;
+        } else if (page >= totalPages - 3) {
+          startPage = totalPages - 4;
+          endPage = totalPages - 1;
+        } else {
+          startPage = page - 1;
+          endPage = page + 1;
+        }
+      %>
 
-              <% if (currentPage < totalPages) { %>
+      <% if (startPage > 2) { %>
 
-                <a
-                  class="nav-btn"
-                  href="/admin/offers?page=<%= currentPage + 1 %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>&targetScope=<%= targetScope %>&discount=<%= discount %>&sort=<%= sort %>"
-                >
-                  Next
-                </a>
+        <span class="pagination-dots">
+          ...
+        </span>
 
-              <% } else { %>
+      <% } %>
 
-                <span class="nav-btn disabled">
-                  Next
-                </span>
 
-              <% } %>
+      <% for (let i = startPage; i <= endPage; i++) { %>
 
-            </div>
+        <a
+          class="page-btn <%= page === i ? 'active' : '' %>"
+          href="/admin/offers?page=<%= i %>&<%= queryString %>"
+        >
+          <%= i %>
+        </a>
 
-          <% } %>
+      <% } %>
+
+
+      <% if (endPage < totalPages - 1) { %>
+
+        <span class="pagination-dots">
+          ...
+        </span>
+
+      <% } %>
+
+
+      <a
+        class="page-btn <%= page === totalPages ? 'active' : '' %>"
+        href="/admin/offers?page=<%= totalPages %>&<%= queryString %>"
+      >
+        <%= totalPages %>
+      </a>
+
+    <% } %>
+
+
+    <% if (page < totalPages) { %>
+
+      <a
+        class="nav-btn"
+        href="/admin/offers?page=<%= page + 1 %>&<%= queryString %>"
+      >
+        Next
+      </a>
+
+    <% } else { %>
+
+      <span class="nav-btn disabled">
+        Next
+      </span>
+
+    <% } %>
+
+  </div>
+
+<% } %>
 
         </div>
 

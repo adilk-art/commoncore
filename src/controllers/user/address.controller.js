@@ -1,3 +1,4 @@
+
 import {
   addAddressService,
   getAddressesService,
@@ -6,24 +7,26 @@ import {
   updateAddressService,
 } from "../../services/user/address.service.js";
 
-import { getAddressById } from "../../repositories/address.repository.js";
-import { success } from "zod";
-
-const getAddressPage = async (req, res) => {
-  const addresses = await getAddressesService(req.session.userId);
-  res.render("user/address", { addresses });
-};
-
-const addAddress = async (req, res) => {
+const getAddressPage = async (req, res, next) => {
   try {
-    await addAddressService(req.session.userId, req.body);
-    res.redirect("/user/address");
+    const addresses = await getAddressesService(req.session.userId);
+    res.render("user/address", { addresses });
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
-const deleteAddress = async (req, res) => {
+const addAddress = async (req, res, next) => {
+  try {
+    await addAddressService(req.session.userId, req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+const deleteAddress = async (req, res, next) => {
   try {
     await deleteAddressService(req.params.id);
     res.json({ success: true });
@@ -41,12 +44,17 @@ const setDefaultAddress = async (req, res, next) => {
   }
 };
 
-
 const updateAddress = async (req, res, next) => {
   try {
-    await updateAddressService(req.params.id, req.session.userId, req.body);
+    await updateAddressService(
+      req.params.id,
+      req.session.userId,
+      req.body
+    );
+
     res.json({ success: true });
   } catch (err) {
+    console.error(err);
     next(err);
   }
 };
@@ -58,3 +66,4 @@ export default {
   setDefaultAddress,
   updateAddress,
 };
+

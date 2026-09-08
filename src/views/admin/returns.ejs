@@ -317,66 +317,124 @@
 
         </table>
 
-        <% if (totalPages > 1) { %>
+<% if (totalPages > 1) { %>
 
-        <div class="pagination">
+<div class="pagination">
 
-          <p class="results-text">
+  <p class="results-text">
+    Showing <%= skip + 1 %>
+    to <%= Math.min(currentPage * limit, returnCount) %>
+    of <%= returnCount %> results
+  </p>
 
-            Showing <%= skip + 1 %>
-            to <%= Math.min(currentPage * limit, returnCount) %>
-            of <%= returnCount %> results
+  <% if (currentPage > 1) { %>
 
-          </p>
+    <a
+      href="/admin/returns?page=<%= Number(currentPage) - 1 %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+      class="nav-btn"
+    >
+      Prev
+    </a>
 
-          <% if(currentPage > 1){ %>
+  <% } else { %>
 
-            <a
-              href="/admin/returns?page=<%= currentPage - 1 %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>"
-              class="nav-btn"
-            >
-              Prev
-            </a>
+    <span class="nav-btn disabled">
+      Prev
+    </span>
 
-          <% } else { %>
+  <% } %>
 
-            <span class="nav-btn disabled">
-              Prev
-            </span>
+  <% if (totalPages <= 7) { %>
 
-          <% } %>
+    <% for (let i = 1; i <= totalPages; i++) { %>
 
-          <% for(let i = 1; i <= totalPages; i++){ %>
+      <a
+        href="/admin/returns?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+        class="page-btn <%= Number(currentPage) === i ? 'active' : '' %>"
+      >
+        <%= i %>
+      </a>
 
-            <a
-              href="/admin/returns?page=<%= i %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>"
-              class="page-btn <%= currentPage === i ? 'active' : '' %>"
-            >
-              <%= i %>
-            </a>
+    <% } %>
 
-          <% } %>
+  <% } else { %>
 
-          <% if(currentPage < totalPages){ %>
+    <a
+      href="/admin/returns?page=1&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+      class="page-btn <%= Number(currentPage) === 1 ? 'active' : '' %>"
+    >
+      1
+    </a>
 
-            <a
-              href="/admin/returns?page=<%= currentPage + 1 %>&search=<%= search %>&status=<%= status %>&sort=<%= sort %>"
-              class="nav-btn"
-            >
-              Next
-            </a>
+    <%
+      const page = Number(currentPage);
+      let startPage;
+      let endPage;
 
-          <% } else { %>
+      if (page <= 4) {
+        startPage = 2;
+        endPage = 5;
+      } else if (page >= totalPages - 3) {
+        startPage = totalPages - 4;
+        endPage = totalPages - 1;
+      } else {
+        startPage = page - 1;
+        endPage = page + 1;
+      }
+    %>
 
-            <span class="nav-btn disabled">
-              Next
-            </span>
+    <% if (startPage > 2) { %>
 
-          <% } %>
+      <span class="pagination-dots">...</span>
 
-        </div>
+    <% } %>
 
-        <% } %>
+    <% for (let i = startPage; i <= endPage; i++) { %>
+
+      <a
+        href="/admin/returns?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+        class="page-btn <%= page === i ? 'active' : '' %>"
+      >
+        <%= i %>
+      </a>
+
+    <% } %>
+
+    <% if (endPage < totalPages - 1) { %>
+
+      <span class="pagination-dots">...</span>
+
+    <% } %>
+
+    <a
+      href="/admin/returns?page=<%= totalPages %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+      class="page-btn <%= page === totalPages ? 'active' : '' %>"
+    >
+      <%= totalPages %>
+    </a>
+
+  <% } %>
+
+  <% if (currentPage < totalPages) { %>
+
+    <a
+      href="/admin/returns?page=<%= Number(currentPage) + 1 %>&search=<%= encodeURIComponent(search || '') %>&status=<%= encodeURIComponent(status || '') %>&sort=<%= encodeURIComponent(sort || '') %>"
+      class="nav-btn"
+    >
+      Next
+    </a>
+
+  <% } else { %>
+
+    <span class="nav-btn disabled">
+      Next
+    </span>
+
+  <% } %>
+
+</div>
+
+<% } %>
 
       </div>
 
