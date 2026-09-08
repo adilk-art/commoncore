@@ -4,32 +4,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
-.address-page-header > div {
+.address-heading {
   min-width: 0;
 }
 
-.address-eyebrow {
-  margin-bottom: 5px;
-  color: #9ca3af;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-}
-
-.address-page-title {
-  margin: 0;
-  color: #222;
-  font-size: 26px;
-  font-weight: 650;
-}
-
-.address-page-subtitle {
+.page-subtitle {
   margin-top: 5px;
   color: #888;
   font-size: 13px;
+  line-height: 1.4;
 }
 
 .add-address-btn,
@@ -159,9 +145,9 @@
 }
 
 .address-phone i {
+  flex-shrink: 0;
   color: #888;
   font-size: 11px;
-  flex-shrink: 0;
 }
 
 .address-actions {
@@ -373,10 +359,10 @@
   width: 100%;
   height: 39px;
   padding: 0 11px;
+  box-sizing: border-box;
   background: #fff;
   border: 1px solid #d8d8d8;
   border-radius: 7px;
-  box-sizing: border-box;
   color: #333;
   font-size: 13px;
   outline: none;
@@ -577,7 +563,7 @@
 }
 
 .confirm-delete-btn:hover:not(:disabled) {
-  background: #b91c1c;
+  background: #b91c1b;
 }
 
 .confirm-delete-btn:disabled {
@@ -620,14 +606,6 @@
 }
 
 @media (max-width: 850px) {
-  .address-page-title {
-    font-size: 23px;
-  }
-
-  .address-page-subtitle {
-    font-size: 12px;
-  }
-
   .address-list {
     gap: 14px;
   }
@@ -642,14 +620,15 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 14px;
+    margin-bottom: 20px;
   }
 
-  .address-page-title {
-    font-size: 21px;
+  .address-heading {
+    width: 100%;
   }
 
   .address-page-subtitle {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .add-address-btn {
@@ -728,16 +707,8 @@
 }
 
 @media (max-width: 520px) {
-  .address-page-title {
-    font-size: 18px;
-  }
-
   .address-page-subtitle {
-    font-size: 10px;
-  }
-
-  .address-eyebrow {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .add-address-btn {
@@ -889,9 +860,5 @@
 
   .address-action i {
     font-size: 9px;
-  }
-
-  .address-page-title {
-    font-size: 17px;
   }
 }

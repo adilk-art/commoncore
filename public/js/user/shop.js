@@ -371,7 +371,86 @@ function updatePreview() {
       selectedVariant.images?.[0]?.url || "/images/no-image.png";
   }
 
-  showSelectedProductPricing();
+  const variantOriginalPrice = Number(selectedVariant.price || 0);
+
+  let variantFinalPrice = variantOriginalPrice;
+  let variantHasOffer = false;
+
+  if (selectedProductPricing?.hasOffer) {
+    const productOriginalPrice = Number(
+      selectedProductPricing.originalPrice || 0
+    );
+
+    const productFinalPrice = Number(
+      selectedProductPricing.finalPrice || 0
+    );
+
+    const productDiscount = productOriginalPrice - productFinalPrice;
+
+    if (productDiscount > 0) {
+      variantFinalPrice = Math.max(
+        0,
+        variantOriginalPrice - productDiscount
+      );
+
+      variantHasOffer = true;
+    }
+  }
+
+  if (previewPrice) {
+    previewPrice.textContent = formatPrice(variantFinalPrice);
+  }
+
+  if (originalPrice) {
+    if (variantHasOffer && variantFinalPrice < variantOriginalPrice) {
+      originalPrice.hidden = false;
+      originalPrice.textContent = `₹${formatPrice(
+        variantOriginalPrice
+      )}`;
+    } else {
+      originalPrice.hidden = true;
+      originalPrice.textContent = "";
+    }
+  }
+
+  if (offerPills) {
+    offerPills.hidden = !variantHasOffer;
+  }
+
+  if (variantHasOffer) {
+    const discountAmount =
+      variantOriginalPrice - variantFinalPrice;
+
+    if (discountPill) {
+      if (
+        selectedProductPricing.discountType === "PERCENTAGE"
+      ) {
+        const percentage =
+          variantOriginalPrice > 0
+            ? (discountAmount / variantOriginalPrice) * 100
+            : 0;
+
+        discountPill.textContent = `${Math.round(percentage)}% OFF`;
+      } else {
+        discountPill.textContent = `₹${formatPrice(
+          discountAmount
+        )} OFF`;
+      }
+    }
+
+    if (offerNamePill) {
+      offerNamePill.textContent =
+        selectedProductPricing.offerTitle || "Offer applied";
+    }
+  } else {
+    if (discountPill) {
+      discountPill.textContent = "";
+    }
+
+    if (offerNamePill) {
+      offerNamePill.textContent = "";
+    }
+  }
 
   const stock = Number(selectedVariant.stock) || 0;
 
@@ -381,7 +460,9 @@ function updatePreview() {
     if (stock <= 0) {
       stockText.textContent = "Out of stock";
     } else if (stock <= 10) {
-      stockText.textContent = `Only ${stock} item${stock === 1 ? "" : "s"} left`;
+      stockText.textContent = `Only ${stock} item${
+        stock === 1 ? "" : "s"
+      } left`;
     } else {
       stockText.textContent = "In stock";
     }

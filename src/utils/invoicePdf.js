@@ -5,22 +5,23 @@ const PAGE_BOTTOM = 780;
 
 const COL = {
   product: 50,
-  productWidth: 285,
+  productWidth: 270,
 
-  qty: 365,
+  qty: 330,
+  qtyWidth: 40,
 
-  amount: 440,
-  amountWidth: 105,
+  amount: 390,
+  amountWidth: 100,
+
+  status: 500,
+  statusWidth: 45,
 };
 
 const formatMoney = (value) =>
-  Number(value || 0).toLocaleString(
-    "en-IN",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    },
-  );
+  Number(value || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const drawLine = (
   doc,
@@ -47,11 +48,7 @@ const drawSectionTitle = (
     .font("Helvetica-Bold")
     .fontSize(10)
     .fillColor("#111827")
-    .text(
-      title,
-      x,
-      y,
-    );
+    .text(title, x, y);
 };
 
 const getItemAmounts = (item) => {
@@ -74,20 +71,16 @@ const getItemAmounts = (item) => {
 
   const offerDiscount =
     Math.max(
-      originalAmount -
-      offerAmount,
+      originalAmount - offerAmount,
       0,
     );
 
   const couponDiscount =
-    Number(
-      item.couponDiscountAmount,
-    ) || 0;
+    Number(item.couponDiscountAmount) || 0;
 
   const finalAmount =
     Math.max(
-      offerAmount -
-      couponDiscount,
+      offerAmount - couponDiscount,
       0,
     );
 
@@ -99,35 +92,6 @@ const getItemAmounts = (item) => {
     couponDiscount,
     finalAmount,
   };
-};
-
-const getItemDiscountText = (
-  item,
-) => {
-  const {
-    offerDiscount,
-    couponDiscount,
-  } = getItemAmounts(item);
-
-  const parts = [];
-
-  if (offerDiscount > 0) {
-    parts.push(
-      `Offer -Rs. ${formatMoney(
-        offerDiscount,
-      )}`,
-    );
-  }
-
-  if (couponDiscount > 0) {
-    parts.push(
-      `Coupon -Rs. ${formatMoney(
-        couponDiscount,
-      )}`,
-    );
-  }
-
-  return parts.join("  ·  ");
 };
 
 const drawItemsHeader = (
@@ -149,6 +113,10 @@ const drawItemsHeader = (
     "QTY",
     COL.qty,
     y,
+    {
+      width: COL.qtyWidth,
+      align: "center",
+    },
   );
 
   doc.text(
@@ -156,8 +124,17 @@ const drawItemsHeader = (
     COL.amount,
     y,
     {
-      width:
-        COL.amountWidth,
+      width: COL.amountWidth,
+      align: "right",
+    },
+  );
+
+  doc.text(
+    "STATUS",
+    COL.status,
+    y,
+    {
+      width: COL.statusWidth,
       align: "right",
     },
   );
@@ -170,72 +147,68 @@ const drawItemsHeader = (
   return y + 25;
 };
 
-const measureItemHeight = (
-  item,
-) => {
-  const hasDiscount =
-    Boolean(
-      getItemDiscountText(item),
-    );
+const getItemStatus = (item) => {
+  if (item.status === "Cancelled") {
+    return "Cancelled";
+  }
 
-  const adjusted =
-    item.status === "Cancelled" ||
-    REFUNDED_STATUSES.has(
-      item.status,
-    );
+  if (REFUNDED_STATUSES.has(item.status)) {
+    return "Returned";
+  }
 
-  if (
-    hasDiscount &&
-    adjusted
-  ) {
-    return 60;
+  return item.status || "Placed";
+};
+
+const getStatusColor = (status) => {
+  if (status === "Cancelled") {
+    return "#b91c1c";
   }
 
   if (
-    hasDiscount ||
-    adjusted
+    status === "Returned" ||
+    REFUNDED_STATUSES.has(status)
+  ) {
+    return "#7c3aed";
+  }
+
+  if (
+    status === "Delivered"
+  ) {
+    return "#15803d";
+  }
+
+  if (
+    status === "Shipped" ||
+    status === "Out for Delivery"
+  ) {
+    return "#2563eb";
+  }
+
+  if (
+    status === "Pending" ||
+    status === "Placed" ||
+    status === "Processing"
+  ) {
+    return "#b45309";
+  }
+
+  return "#4b5563";
+};
+
+const measureItemHeight = (
+  item,
+) => {
+  const status =
+    getItemStatus(item);
+
+  if (
+    status === "Cancelled" ||
+    status === "Returned"
   ) {
     return 50;
   }
 
   return 40;
-};
-
-const drawStrikeThrough = (
-  doc,
-  text,
-  x,
-  y,
-  width,
-) => {
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(9.5);
-
-  const textWidth =
-    Math.min(
-      doc.widthOfString(text),
-      width,
-    );
-
-  const right =
-    x + width;
-
-  const start =
-    right - textWidth;
-
-  doc
-    .strokeColor("#9ca3af")
-    .lineWidth(0.8)
-    .moveTo(
-      start,
-      y + 5,
-    )
-    .lineTo(
-      right,
-      y + 5,
-    )
-    .stroke();
 };
 
 const drawItem = (
@@ -246,32 +219,24 @@ const drawItem = (
   const {
     quantity,
     finalAmount,
-  } =
-    getItemAmounts(item);
+  } = getItemAmounts(item);
 
-  const discountText =
-    getItemDiscountText(item);
+  const status =
+    getItemStatus(item);
 
-  const isCancelled =
-    item.status === "Cancelled";
-
-  const isReturned =
-    REFUNDED_STATUSES.has(
-      item.status,
-    ) &&
-    !isCancelled;
+  const statusColor =
+    getStatusColor(status);
 
   doc
     .font("Helvetica-Bold")
     .fontSize(9.5)
     .fillColor("#111827")
     .text(
-      item.productName,
+      item.productName || "Product",
       COL.product,
       y,
       {
-        width:
-          COL.productWidth,
+        width: COL.productWidth,
       },
     );
 
@@ -280,57 +245,13 @@ const drawItem = (
     .fontSize(8.5)
     .fillColor("#6b7280")
     .text(
-      `${item.color} / ${item.size}`,
+      `${item.color || ""} / ${item.size || ""}`,
       COL.product,
       y + 14,
       {
-        width:
-          COL.productWidth,
+        width: COL.productWidth,
       },
     );
-
-  let metaY =
-    y + 28;
-
-  if (discountText) {
-    doc
-      .font("Helvetica")
-      .fontSize(7.5)
-      .fillColor("#15803d")
-      .text(
-        discountText,
-        COL.product,
-        metaY,
-        {
-          width:
-            COL.productWidth,
-        },
-      );
-
-    metaY += 12;
-  }
-
-  if (isCancelled) {
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(7.5)
-      .fillColor("#b91c1c")
-      .text(
-        "Cancelled",
-        COL.product,
-        metaY,
-      );
-  } else if (isReturned) {
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(7.5)
-      .fillColor("#7c3aed")
-      .text(
-        item.status,
-        COL.product,
-        metaY,
-      );
-  }
 
   doc
     .font("Helvetica")
@@ -340,66 +261,44 @@ const drawItem = (
       String(quantity),
       COL.qty,
       y,
+      {
+        width: COL.qtyWidth,
+        align: "center",
+      },
     );
-
-  const amountText =
-    `Rs. ${formatMoney(
-      finalAmount,
-    )}`;
 
   doc
     .font("Helvetica-Bold")
     .fontSize(9.5)
     .fillColor(
-      isCancelled ||
-      isReturned
+      status === "Cancelled" ||
+      status === "Returned"
         ? "#9ca3af"
         : "#111827",
     )
     .text(
-      amountText,
+      `Rs. ${formatMoney(finalAmount)}`,
       COL.amount,
       y,
       {
-        width:
-          COL.amountWidth,
+        width: COL.amountWidth,
         align: "right",
       },
     );
 
-  if (
-    isCancelled ||
-    isReturned
-  ) {
-    drawStrikeThrough(
-      doc,
-      amountText,
-      COL.amount,
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(7.5)
+    .fillColor(statusColor)
+    .text(
+      status,
+      COL.status,
       y,
-      COL.amountWidth,
+      {
+        width: COL.statusWidth,
+        align: "right",
+      },
     );
-
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(7)
-      .fillColor(
-        isCancelled
-          ? "#b91c1c"
-          : "#7c3aed",
-      )
-      .text(
-        isCancelled
-          ? "Cancelled"
-          : item.status,
-        COL.amount,
-        y + 15,
-        {
-          width:
-            COL.amountWidth,
-          align: "right",
-        },
-      );
-  }
 
   const rowHeight =
     measureItemHeight(item);
@@ -477,6 +376,32 @@ const ensureSpace = (
     doc.addPage();
     doc.y = 50;
   }
+};
+
+const formatPaymentMethod = (
+  method,
+) => {
+  if (
+    method ===
+    "CashOnDelivery"
+  ) {
+    return "Cash on Delivery";
+  }
+
+  if (method === "Razorpay") {
+    return "Razorpay";
+  }
+
+  if (method === "Wallet") {
+    return "Wallet";
+  }
+
+  return String(
+    method || "Not specified",
+  ).replace(
+    /([a-z])([A-Z])/g,
+    "$1 $2",
+  );
 };
 
 export const generateInvoicePdf = ({
@@ -566,27 +491,23 @@ export const generateInvoicePdf = ({
   doc.y += 20;
 
   const paymentMethod =
-    order.paymentMethod ===
-    "CashOnDelivery"
-      ? "Cash On Delivery"
-      : order.paymentMethod.replace(
-          /([a-z])([A-Z])/g,
-          "$1 $2",
-        );
+    formatPaymentMethod(
+      order.paymentMethod,
+    );
 
   const detailsY =
     doc.y;
 
   drawSectionTitle(
     doc,
-    "ORDER DETAILS",
+    "ORDER INFORMATION",
     50,
     detailsY,
   );
 
   drawSectionTitle(
     doc,
-    "BILL TO",
+    "DELIVERY ADDRESS",
     315,
     detailsY,
   );
@@ -607,7 +528,7 @@ export const generateInvoicePdf = ({
         50,
         leftY,
         {
-          width: 70,
+          width: 75,
         },
       );
 
@@ -617,10 +538,10 @@ export const generateInvoicePdf = ({
       .fillColor("#111827")
       .text(
         value,
-        125,
+        130,
         leftY,
         {
-          width: 155,
+          width: 150,
         },
       );
 
@@ -642,24 +563,28 @@ export const generateInvoicePdf = ({
   );
 
   drawOrderMeta(
-    "Status",
-    order.orderStatus,
+    "Payment",
+    paymentMethod,
   );
 
   drawOrderMeta(
-    "Payment",
-    `${paymentMethod} / ${order.paymentStatus}`,
+    "Status",
+    order.paymentStatus ||
+      "Pending",
   );
 
   let billY =
     detailsY + 22;
+
+  const address =
+    order.shippingAddress || {};
 
   doc
     .font("Helvetica-Bold")
     .fontSize(9.5)
     .fillColor("#111827")
     .text(
-      order.shippingAddress.fullName,
+      address.fullName || "",
       315,
       billY,
       {
@@ -674,22 +599,9 @@ export const generateInvoicePdf = ({
     .fontSize(9)
     .fillColor("#4b5563");
 
-  doc.text(
-    order.shippingAddress.line1,
-    315,
-    billY,
-    {
-      width: 230,
-    },
-  );
-
-  billY += 14;
-
-  if (
-    order.shippingAddress.line2
-  ) {
+  if (address.line1) {
     doc.text(
-      order.shippingAddress.line2,
+      address.line1,
       315,
       billY,
       {
@@ -700,27 +612,48 @@ export const generateInvoicePdf = ({
     billY += 14;
   }
 
-  doc.text(
-    `${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}`,
-    315,
-    billY,
-    {
-      width: 230,
-    },
-  );
+  if (address.line2) {
+    doc.text(
+      address.line2,
+      315,
+      billY,
+      {
+        width: 230,
+      },
+    );
 
-  billY += 14;
+    billY += 14;
+  }
 
-  doc.text(
-    `+91 ${order.shippingAddress.phone}`,
-    315,
-    billY,
-    {
-      width: 230,
-    },
-  );
+  if (
+    address.city ||
+    address.state ||
+    address.pincode
+  ) {
+    doc.text(
+      `${address.city || ""}, ${address.state || ""} - ${address.pincode || ""}`,
+      315,
+      billY,
+      {
+        width: 230,
+      },
+    );
 
-  billY += 14;
+    billY += 14;
+  }
+
+  if (address.phone) {
+    doc.text(
+      `+91 ${address.phone}`,
+      315,
+      billY,
+      {
+        width: 230,
+      },
+    );
+
+    billY += 14;
+  }
 
   doc.y =
     Math.max(
@@ -737,7 +670,7 @@ export const generateInvoicePdf = ({
 
   drawSectionTitle(
     doc,
-    "ITEMS",
+    "ORDERED ITEMS",
   );
 
   doc.y += 12;
@@ -781,13 +714,13 @@ export const generateInvoicePdf = ({
   ensureSpace(
     doc,
     hasAdjustments
-      ? 250
-      : 180,
+      ? 220
+      : 160,
   );
 
   drawSectionTitle(
     doc,
-    "ORDER SUMMARY",
+    "PAYMENT SUMMARY",
     320,
     doc.y,
   );
@@ -795,10 +728,24 @@ export const generateInvoicePdf = ({
   let summaryY =
     doc.y + 20;
 
+  const discountedSubtotal =
+    Math.max(
+      Number(
+        originalSubtotal || 0,
+      ) -
+        Number(
+          offerDiscountTotal || 0,
+        ) -
+        Number(
+          couponDiscountTotal || 0,
+        ),
+      0,
+    );
+
   summaryY =
     drawSummaryRow(
       doc,
-      "Original subtotal",
+      "Items",
       `Rs. ${formatMoney(
         originalSubtotal,
       )}`,
@@ -849,6 +796,16 @@ export const generateInvoicePdf = ({
         },
       );
   }
+
+  summaryY =
+    drawSummaryRow(
+      doc,
+      "Subtotal",
+      `Rs. ${formatMoney(
+        discountedSubtotal,
+      )}`,
+      summaryY,
+    );
 
   summaryY =
     drawSummaryRow(
@@ -904,33 +861,30 @@ export const generateInvoicePdf = ({
   if (hasAdjustments) {
     summaryY += 16;
 
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(9.5)
-      .fillColor("#111827")
-      .text(
-        fullyCancelled
-          ? "CANCELLATION"
-          : "ORDER ADJUSTMENTS",
-        320,
-        summaryY,
-      );
+    drawSectionTitle(
+      doc,
+      "ORDER ADJUSTMENT",
+      320,
+      summaryY,
+    );
 
     summaryY += 20;
 
-    if (
+    const totalRefund =
       Number(
-        cancelledAmount,
-      ) > 0
-    ) {
+        cancelledAmount || 0,
+      ) +
+      Number(
+        returnedAmount || 0,
+      );
+
+    if (totalRefund > 0) {
       summaryY =
         drawSummaryRow(
           doc,
-          fullyCancelled
-            ? "Cancelled amount"
-            : "Cancelled items",
+          "Refunded",
           `-Rs. ${formatMoney(
-            cancelledAmount,
+            totalRefund,
           )}`,
           summaryY,
           {
@@ -940,50 +894,43 @@ export const generateInvoicePdf = ({
         );
     }
 
-    if (
-      Number(
-        returnedAmount,
-      ) > 0
-    ) {
-      summaryY =
-        drawSummaryRow(
-          doc,
-          "Returned items",
-          `-Rs. ${formatMoney(
-            returnedAmount,
-          )}`,
-          summaryY,
-          {
-            color:
-              "#b91c1c",
-          },
-        );
-    }
+    if (fullyCancelled) {
+      drawLine(
+        doc,
+        summaryY + 1,
+        320,
+        545,
+      );
 
-    if (!fullyCancelled) {
-      summaryY =
-        drawSummaryRow(
-          doc,
-          "Current subtotal",
-          `Rs. ${formatMoney(
-            currentSubtotal,
-          )}`,
-          summaryY,
-        );
+      summaryY += 12;
 
       summaryY =
         drawSummaryRow(
           doc,
-          "GST included",
-          `Rs. ${formatMoney(
-            currentGstAmount,
-          )}`,
+          "FINAL ORDER VALUE",
+          "Rs. 0.00",
           summaryY,
           {
-            color:
-              "#6b7280",
+            bold: true,
+            fontSize: 10.5,
           },
         );
+    } else {
+      if (
+        Number(
+          currentSubtotal,
+        ) > 0
+      ) {
+        summaryY =
+          drawSummaryRow(
+            doc,
+            "Updated subtotal",
+            `Rs. ${formatMoney(
+              currentSubtotal,
+            )}`,
+            summaryY,
+          );
+      }
 
       summaryY =
         drawSummaryRow(
@@ -998,43 +945,41 @@ export const generateInvoicePdf = ({
               )}`,
           summaryY,
         );
-    }
 
-    drawLine(
-      doc,
-      summaryY + 1,
-      320,
-      545,
-    );
-
-    summaryY += 12;
-
-    summaryY =
-      drawSummaryRow(
+      drawLine(
         doc,
-        "CURRENT ORDER VALUE",
-        fullyCancelled
-          ? "Rs. 0.00"
-          : `Rs. ${formatMoney(
-              currentTotal,
-            )}`,
-        summaryY,
-        {
-          bold: true,
-          fontSize: 10.5,
-        },
+        summaryY + 1,
+        320,
+        545,
       );
+
+      summaryY += 12;
+
+      summaryY =
+        drawSummaryRow(
+          doc,
+          "CURRENT ORDER VALUE",
+          `Rs. ${formatMoney(
+            currentTotal,
+          )}`,
+          summaryY,
+          {
+            bold: true,
+            fontSize: 10.5,
+          },
+        );
+    }
   }
 
   doc.y =
-    summaryY + 12;
+    summaryY + 14;
 
   doc
     .font("Helvetica")
     .fontSize(8)
     .fillColor("#6b7280")
     .text(
-      "All prices are inclusive of GST.",
+      "All prices include GST.",
       320,
       doc.y,
       {

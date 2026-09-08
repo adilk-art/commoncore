@@ -40,12 +40,13 @@
 
       <div class="page-header">
 
-        <h2 class="page-title">
-          MY ORDERS
-        </h2>
+        <h2 class="page-title">MY ORDERS</h2>
+
+        <p class="page-subtitle">
+          Track and manage your orders
+        </p>
 
       </div>
-
 
       <form
         class="search-bar"
@@ -72,7 +73,6 @@
         </button>
 
       </form>
-
 
       <% if (!orders || orders.length === 0) { %>
 
@@ -112,7 +112,6 @@
 
       <% } else { %>
 
-
         <div class="orders-list">
 
           <% orders.forEach((order) => { %>
@@ -148,7 +147,6 @@
                 .replace(/\s+/g, "-");
             %>
 
-
             <div class="order-row">
 
               <div class="product-image">
@@ -159,7 +157,6 @@
                 >
 
               </div>
-
 
               <div>
 
@@ -172,7 +169,6 @@
                 </h4>
 
               </div>
-
 
               <div>
 
@@ -196,7 +192,6 @@
 
               </div>
 
-
               <div>
 
                 <span class="column-title">
@@ -210,7 +205,6 @@
 
               </div>
 
-
               <div>
 
                 <span class="column-title">
@@ -222,7 +216,6 @@
                 </h4>
 
               </div>
-
 
               <div>
 
@@ -238,31 +231,35 @@
 
               </div>
 
-
               <div class="order-status-cell">
 
                 <span class="column-title">
                   STATUS
                 </span>
 
-
                 <% if (isPaymentPending || isPaymentExpired) { %>
 
-                  <div
-                    class="status-text status-<%= statusClass %>"
-                  >
-                    <%= statusValue %>
-                  </div>
+                  <div class="status-text status-<%= statusClass %>">
 
+                    <span class="status-dot"></span>
+
+                    <span>
+                      <%= statusValue %>
+                    </span>
+
+                  </div>
 
                 <% } else if (!order.itemsStatusMixed) { %>
 
-                  <div
-                    class="status-text status-<%= statusClass %>"
-                  >
-                    <%= statusValue %>
-                  </div>
+                  <div class="status-text status-<%= statusClass %>">
 
+                    <span class="status-dot"></span>
+
+                    <span>
+                      <%= statusValue %>
+                    </span>
+
+                  </div>
 
                 <% } else { %>
 
@@ -270,8 +267,24 @@
 
                     <% order.itemsStatusSummaryLines.forEach((line) => { %>
 
-                      <div class="status-summary-line">
-                        <%= line %>
+                      <%
+                        const lineStatus = String(line)
+                          .replace(/^\d+\s*/, "")
+                          .trim();
+
+                        const lineStatusClass = lineStatus
+                          .toLowerCase()
+                          .replace(/\s+/g, "-");
+                      %>
+
+                      <div class="status-summary-line status-<%= lineStatusClass %>">
+
+                        <span class="status-dot"></span>
+
+                        <span>
+                          <%= line %>
+                        </span>
+
                       </div>
 
                     <% }) %>
@@ -282,24 +295,23 @@
 
               </div>
 
+              <div>
 
-<div>
+                <a
+                  href="/user/order/<%= order._id %>"
+                  class="
+                    view-btn
+                    <%= isPaymentPending || isPaymentExpired
+                      ? 'view-btn--payment'
+                      : '' %>
+                  "
+                >
+                  <%= isPaymentPending || isPaymentExpired
+                    ? "Checkout Again"
+                    : "View Details" %>
+                </a>
 
-  <a
-    href="/user/order/<%= order._id %>"
-    class="
-      view-btn
-      <%= isPaymentPending || isPaymentExpired
-        ? 'view-btn--payment'
-        : '' %>
-    "
-  >
-    <%= isPaymentPending || isPaymentExpired
-      ? "Checkout Again"
-      : "View Details" %>
-  </a>
-
-</div>
+              </div>
 
             </div>
 
@@ -308,7 +320,6 @@
         </div>
 
       <% } %>
-
 
       <% if (totalPages > 1) { %>
 
@@ -332,7 +343,6 @@
     </div>
 
   </div>
-
 
   <script src="/js/user/logout.js"></script>
   <script src="/js/utils/toast.js"></script>

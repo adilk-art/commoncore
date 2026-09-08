@@ -27,16 +27,3 @@ input[disabled] {
   cursor: default;
 }
 
-h1, h2, h3, h4, h5, h6,
-p, span, div, section,
-li, ul, ol, img,
-label, td, th, tr, table {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-input,
-textarea {
-  user-select: text;
-  -webkit-user-select: text;
-}

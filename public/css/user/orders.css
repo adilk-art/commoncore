@@ -1,24 +1,29 @@
 .page-header {
+  display: block;
   margin-bottom: 20px;
 }
 
 .page-title {
+  display: block;
+  margin: 0;
   font-size: 24px;
   font-weight: 700;
 }
 
-/* ==========================================
-   SEARCH
-========================================== */
+.page-subtitle {
+  display: block;
+  margin: 5px 0 0;
+  color: #888;
+  font-size: 13px;
+  line-height: 1.4;
+}
 
 .search-bar {
   height: 52px;
   display: flex;
   align-items: center;
-
   padding: 0 18px;
   margin-bottom: 24px;
-
   background: #fff;
   border: 1px solid #e8edf5;
   border-radius: 14px;
@@ -30,28 +35,22 @@
 
 .search-bar input {
   flex: 1;
-
   padding: 0 12px;
-
   border: none;
   outline: none;
   background: transparent;
-
   font-size: 15px;
 }
 
 .clear-search {
   width: 32px;
   height: 32px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border: none;
   border-radius: 50%;
   background: transparent;
-
   cursor: pointer;
 }
 
@@ -63,10 +62,6 @@
   visibility: hidden;
 }
 
-/* ==========================================
-   ORDERS
-========================================== */
-
 .orders-list {
   display: flex;
   flex-direction: column;
@@ -75,7 +70,6 @@
 
 .order-row {
   display: grid;
-
   grid-template-columns:
     90px
     1.5fr
@@ -85,12 +79,9 @@
     1.2fr
     120px
     140px;
-
   align-items: center;
   gap: 18px;
-
   padding: 20px;
-
   background: #fff;
   border: 1px solid #e8edf5;
   border-radius: 18px;
@@ -99,21 +90,16 @@
 .product-image img {
   width: 82px;
   height: 98px;
-
   display: block;
   object-fit: cover;
-
   border-radius: 10px;
   background: #f5f5f5;
 }
 
 .column-title {
   display: block;
-
   margin-bottom: 8px;
-
   color: #94a3b8;
-
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
@@ -126,165 +112,192 @@
 
 .product-name {
   color: #374151;
-
   font-size: 16px;
   line-height: 1.45;
 }
-
-/* ==========================================
-   ORDER STATUS
-========================================== */
 
 .order-status-cell {
   min-width: 0;
 }
 
 .status-text {
-  width: fit-content;
-  min-height: 30px;
-
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-
-  padding: 5px 11px;
-
-  border: 1px solid transparent;
-  border-radius: 999px;
-
-  font-size: 12px;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
-  text-align: center;
   white-space: nowrap;
 }
 
-/* Payment statuses */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  display: inline-block;
+  border-radius: 50%;
+  background: #94a3b8;
+}
 
-.status-payment-pending {
-  color: #92400e;
-  background: #fef3c7;
-  border-color: #fde68a;
+.status-payment-pending,
+.status-pending {
+  color: #d97706;
+}
+
+.status-payment-pending .status-dot,
+.status-pending .status-dot {
+  background: #f59e0b;
 }
 
 .status-payment-failed {
-  color: #b91c1c;
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.status-payment-failed .status-dot {
+  background: #ef4444;
 }
 
 .status-payment-expired {
   color: #6b7280;
-  background: #f3f4f6;
-  border-color: #d1d5db;
 }
 
-/* Order/item statuses */
+.status-payment-expired .status-dot {
+  background: #6b7280;
+}
 
 .status-placed {
-  color: #4338ca;
-  background: #eef2ff;
-  border-color: #c7d2fe;
+  color: #4f46e5;
+}
+
+.status-placed .status-dot {
+  background: #6366f1;
 }
 
 .status-processing {
-  color: #c2410c;
-  background: #fff7ed;
-  border-color: #fed7aa;
+  color: #ea580c;
+}
+
+.status-processing .status-dot {
+  background: #f97316;
 }
 
 .status-shipped {
-  color: #1d4ed8;
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+.status-shipped .status-dot {
+  background: #3b82f6;
 }
 
 .status-delivered {
-  color: #15803d;
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  color: #16a34a;
+}
+
+.status-delivered .status-dot {
+  background: #22c55e;
 }
 
 .status-cancelled {
-  color: #b91c1c;
-  background: #fef2f2;
-  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.status-cancelled .status-dot {
+  background: #ef4444;
+}
+
+.status-return-requested {
+  color: #d97706;
+}
+
+.status-return-requested .status-dot {
+  background: #f59e0b;
+}
+
+.status-return-accepted {
+  color: #7c3aed;
+}
+
+.status-return-accepted .status-dot {
+  background: #8b5cf6;
 }
 
 .status-returned {
-  color: #6d28d9;
-  background: #f5f3ff;
-  border-color: #ddd6fe;
+  color: #7c3aed;
 }
 
-.status-partially-delivered,
-.status-partially-shipped,
-.status-partially-cancelled {
-  border-style: dashed;
+.status-returned .status-dot {
+  background: #8b5cf6;
+}
+
+.status-refunded {
+  color: #7c3aed;
+}
+
+.status-refunded .status-dot {
+  background: #8b5cf6;
 }
 
 .status-partially-delivered {
-  color: #15803d;
-  background: #f0fdf4;
-  border-color: #86efac;
+  color: #16a34a;
+}
+
+.status-partially-delivered .status-dot {
+  background: #22c55e;
 }
 
 .status-partially-shipped {
-  color: #1d4ed8;
-  background: #eff6ff;
-  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+.status-partially-shipped .status-dot {
+  background: #3b82f6;
 }
 
 .status-partially-cancelled {
-  color: #b91c1c;
-  background: #fef2f2;
-  border-color: #fca5a5;
+  color: #dc2626;
 }
-.status-payment-expired {
-  color: #6b7280;
-  background: #f3f4f6;
-  border-color: #d1d5db;
+
+.status-partially-cancelled .status-dot {
+  background: #ef4444;
 }
-/* Mixed item status summary */
 
 .status-summary-list {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 5px;
+  gap: 7px;
 }
 
 .status-summary-line {
-  color: #374151;
-
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
+  white-space: nowrap;
 }
 
-/* ==========================================
-   BUTTON
-========================================== */
+.status-summary-line .status-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+}
 
 .view-btn {
   height: 48px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 0 12px;
-
   color: #fff;
   background: #4e5566;
-
   border-radius: 10px;
-
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   text-decoration: none;
-
   transition: 0.2s ease;
 }
 
@@ -303,22 +316,15 @@
   background: #000;
 }
 
-/* ==========================================
-   EMPTY STATE
-========================================== */
-
 .empty-orders {
   display: flex;
   justify-content: center;
-
   padding: 60px 0;
 }
 
 .empty-box {
   padding: 40px;
-
   text-align: center;
-
   background: #fff;
   border: 1px solid #eee;
   border-radius: 16px;
@@ -337,32 +343,23 @@
   color: #666;
 }
 
-/* ==========================================
-   PAGINATION
-========================================== */
-
 .pagination {
   display: flex;
   justify-content: center;
   gap: 10px;
-
   margin-top: 30px;
 }
 
 .pagination a {
   width: 42px;
   height: 42px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   color: #4e5566;
   background: #fff;
-
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-
   text-decoration: none;
 }
 
@@ -371,10 +368,6 @@
   background: #4e5566;
   border-color: #4e5566;
 }
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
 
 @media (max-width: 1400px) {
   .order-row {

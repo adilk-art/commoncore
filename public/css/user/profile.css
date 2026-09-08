@@ -7,12 +7,25 @@
   margin-bottom: 25px;
 }
 
+.page-header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .page-title {
+  margin: 0;
   font-size: 24px;
   font-weight: 700;
   color: #4e5566;
 }
 
+.page-subtitle {
+  margin: 5px 0 0;
+  color: #888;
+  font-size: 13px;
+  line-height: 1.4;
+}
 .edit-btn {
   display: flex;
   align-items: center;
