@@ -1,5 +1,9 @@
 export const notFound = (req, res) => {
-  return res.status(404).render("errors/404.ejs");
+  if (req.originalUrl.startsWith("/admin")) {
+    return res.status(404).render("errors/admin-404");
+  }
+
+  return res.status(404).render("errors/404");
 };
 
 export const errorHandler = (err, req, res, next) => {

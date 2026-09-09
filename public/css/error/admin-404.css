@@ -1,0 +1,149 @@
+* {
+  box-sizing: border-box;
+  }
+
+body {
+margin: 0;
+min-height: 100vh;
+font-family: Arial, Helvetica, sans-serif;
+background: #f5f6f8;
+color: #1f2937;
+}
+
+.admin-error-page {
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 40px 24px;
+}
+
+.admin-error-card {
+width: 100%;
+max-width: 560px;
+background: #ffffff;
+border: 1px solid #e5e7eb;
+border-radius: 12px;
+padding: 48px 44px;
+text-align: center;
+box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+
+.admin-error-icon {
+width: 64px;
+height: 64px;
+margin: 0 auto 22px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 10px;
+background: #f3f4f6;
+color: #6b7280;
+font-size: 27px;
+}
+
+.admin-error-label {
+display: inline-block;
+margin-bottom: 12px;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 0.08em;
+color: #6b7280;
+}
+
+.admin-error-card h1 {
+margin: 0 0 12px;
+font-size: 30px;
+line-height: 1.2;
+font-weight: 700;
+color: #111827;
+}
+
+.admin-error-card p {
+max-width: 430px;
+margin: 0 auto;
+font-size: 14px;
+line-height: 1.7;
+color: #6b7280;
+}
+
+.admin-error-actions {
+margin-top: 30px;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 12px;
+}
+
+.admin-btn {
+min-height: 42px;
+padding: 0 18px;
+border-radius: 7px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+font-size: 13px;
+font-weight: 600;
+text-decoration: none;
+cursor: pointer;
+transition: 0.2s ease;
+font-family: inherit;
+}
+
+.admin-btn i {
+font-size: 12px;
+}
+
+.admin-btn-primary {
+border: 1px solid #111827;
+background: #111827;
+color: #ffffff;
+}
+
+.admin-btn-primary:hover {
+background: #374151;
+border-color: #374151;
+}
+
+.admin-btn-secondary {
+border: 1px solid #d1d5db;
+background: #ffffff;
+color: #374151;
+}
+
+.admin-btn-secondary:hover {
+background: #f9fafb;
+border-color: #9ca3af;
+}
+
+.admin-error-footer {
+margin-top: 34px;
+padding-top: 20px;
+border-top: 1px solid #f0f0f0;
+font-size: 11px;
+color: #9ca3af;
+}
+
+@media (max-width: 600px) {
+.admin-error-page {
+padding: 24px 16px;
+}
+
+.admin-error-card {
+padding: 40px 24px;
+border-radius: 10px;
+}
+
+.admin-error-card h1 {
+font-size: 26px;
+}
+
+.admin-error-actions {
+flex-direction: column;
+}
+
+.admin-btn {
+width: 100%;
+}
+}

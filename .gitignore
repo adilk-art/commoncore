@@ -3,4 +3,16 @@ node_modules/
 
 # Environment variables
 .env
-.env.*
+.env.local
+.env.production
+.env.development
+.env.test
+!.env.example
+
+# Logs
+npm-debug.log*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

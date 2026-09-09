@@ -1,9 +1,9 @@
 import "./config/env.js";
 import express from "express";
 
-import session from "express-session";
 import passport from "passport";
 import "./config/passport.js";
+
 import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 import userRoutes from "./routes/user.routes.js";
 import indexRoutes from "./routes/index.routes.js";
@@ -12,12 +12,17 @@ import localsMiddleware from "./middlewares/locals.middleware.js";
 import { adminSession, userSession } from "./config/session.js";
 import { cartCountMiddleware } from "./middlewares/cartCount.middleware.js";
 import { wishlistCountMiddleware } from "./middlewares/wishlistCount.middleware.js";
+
 const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.set("view engine", "ejs");
 app.set("views", "./src/views");
+
 app.use(express.static("public"));
 
 app.use((req, res, next) => {
@@ -40,9 +45,11 @@ app.use((req, res, next) => {
   res.locals.requestPath = req.originalUrl.split("?")[0];
   next();
 });
+
 app.use("/", indexRoutes);
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);
+
 app.use(notFound);
 app.use(errorHandler);
 
