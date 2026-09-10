@@ -1,3 +1,4 @@
+import "./env.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import {
@@ -9,7 +10,7 @@ import {
 import { createUniqueReferralCodeService } from "../services/user/referral.service.js";
 
 import { createUserWalletService } from "../services/user/wallet.service.js";
-
+console.log("GOOGLE CALLBACK:", process.env.GOOGLE_CALLBACK_URL)
 passport.use(
   new GoogleStrategy( //google identifying our app with our app details
     {
