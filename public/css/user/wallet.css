@@ -1,3 +1,4 @@
+
 .page-header {
   width: 100%;
   display: flex;
@@ -26,6 +27,7 @@
   font-size: 13px;
   line-height: 1.4;
 }
+
 .wallet-balance-card {
   width: 100%;
   min-width: 0;
@@ -258,20 +260,24 @@
 }
 
 .pagination {
+  width: 100%;
   margin-top: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 .page-btn {
   width: 40px;
   height: 40px;
+  flex: 0 0 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 8px;
@@ -280,7 +286,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
 }
 
 .page-btn:hover {
@@ -291,6 +297,17 @@
   background: #4e5566;
   color: #fff;
   border-color: #4e5566;
+}
+
+.pagination-dots {
+  width: 20px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .modal-overlay {
@@ -640,6 +657,25 @@
   .result-modal {
     padding: 28px 22px;
   }
+
+  .pagination {
+    gap: 7px;
+    margin-top: 22px;
+    padding: 0 4px;
+  }
+
+  .page-btn {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    font-size: 13px;
+  }
+
+  .pagination-dots {
+    width: 16px;
+    height: 36px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -744,12 +780,20 @@
   .pagination {
     gap: 6px;
     margin-top: 20px;
+    padding: 0 2px;
   }
 
   .page-btn {
     width: 34px;
     height: 34px;
+    flex: 0 0 34px;
     font-size: 12px;
+  }
+
+  .pagination-dots {
+    width: 14px;
+    height: 34px;
+    font-size: 11px;
   }
 
   .wallet-modal {
@@ -835,4 +879,23 @@
   .result-modal {
     margin: 5px;
   }
+
+  .pagination {
+    gap: 5px;
+    margin-top: 18px;
+  }
+
+  .page-btn {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    font-size: 11px;
+  }
+
+  .pagination-dots {
+    width: 12px;
+    height: 32px;
+    font-size: 10px;
+  }
 }
+

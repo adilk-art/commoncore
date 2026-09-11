@@ -321,24 +321,71 @@
 
       <% } %>
 
-      <% if (totalPages > 1) { %>
+<% if (totalPages > 1) { %>
+  <div class="pagination">
 
-        <div class="pagination">
+    <% if (Number(currentPage) > 1) { %>
+      <a
+        href="/user/orders?page=<%= Number(currentPage) - 1 %>&search=<%= encodeURIComponent(search || '') %>"
+        class="page-btn"
+      >
+        <i class="fa-solid fa-angle-left"></i>
+      </a>
+    <% } %>
 
-          <% for (let i = 1; i <= totalPages; i++) { %>
+    <a
+      href="/user/orders?page=1&search=<%= encodeURIComponent(search || '') %>"
+      class="page-btn <%= Number(currentPage) === 1 ? 'active' : '' %>"
+    >
+      1
+    </a>
 
-            <a
-              href="/user/orders?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>"
-              class="<%= Number(currentPage) === i ? 'active' : '' %>"
-            >
-              <%= i %>
-            </a>
+    <% if (Number(currentPage) > 3) { %>
+      <span class="pagination-dots">...</span>
+    <% } %>
 
-          <% } %>
+    <%
+      const startPage = Math.max(2, Number(currentPage) - 1);
+      const endPage = Math.min(totalPages - 1, Number(currentPage) + 1);
+    %>
 
-        </div>
-
+    <% for (let i = startPage; i <= endPage; i++) { %>
+      <% if (i > 1 && i < totalPages) { %>
+        <a
+          href="/user/orders?page=<%= i %>&search=<%= encodeURIComponent(search || '') %>"
+          class="page-btn <%= Number(currentPage) === i ? 'active' : '' %>"
+        >
+          <%= i %>
+        </a>
       <% } %>
+    <% } %>
+
+    <% if (Number(currentPage) < totalPages - 2) { %>
+      <span class="pagination-dots">...</span>
+    <% } %>
+
+    <% if (totalPages > 1) { %>
+      <a
+        href="/user/orders?page=<%= totalPages %>&search=<%= encodeURIComponent(search || '') %>"
+        class="page-btn <%= Number(currentPage) === totalPages ? 'active' : '' %>"
+      >
+        <%= totalPages %>
+      </a>
+    <% } %>
+
+    <% if (Number(currentPage) < totalPages) { %>
+      <a
+        href="/user/orders?page=<%= Number(currentPage) + 1 %>&search=<%= encodeURIComponent(search || '') %>"
+        class="page-btn"
+      >
+        <i class="fa-solid fa-angle-right"></i>
+      </a>
+    <% } %>
+
+  </div>
+<% } %>
+
+
 
     </div>
 

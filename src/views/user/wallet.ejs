@@ -299,57 +299,111 @@
       </div>
 
 
-      <% if (pagination.totalPages > 1) { %>
 
-        <div class="pagination">
+<% if (pagination.totalPages > 1) { %>
 
-          <% if (pagination.hasPrev) { %>
+  <div class="pagination">
 
-            <a
-              href="/user/wallet?page=<%= pagination.currentPage - 1 %>"
-              class="page-btn"
-            >
-              <i class="fa-solid fa-angle-left"></i>
-            </a>
+    <% if (pagination.hasPrev) { %>
 
-          <% } %>
+      <a
+        href="/user/wallet?page=<%= pagination.currentPage - 1 %>"
+        class="page-btn"
+        aria-label="Previous page"
+      >
+        <i class="fa-solid fa-angle-left"></i>
+      </a>
 
-
-          <% for (
-            let i = 1;
-            i <= pagination.totalPages;
-            i++
-          ) { %>
-
-            <a
-              href="/user/wallet?page=<%= i %>"
-              class="
-                page-btn
-                <%= pagination.currentPage === i
-                  ? 'active'
-                  : '' %>
-              "
-            >
-              <%= i %>
-            </a>
-
-          <% } %>
+    <% } %>
 
 
-          <% if (pagination.hasNext) { %>
+    <a
+      href="/user/wallet?page=1"
+      class="page-btn <%= pagination.currentPage === 1 ? 'active' : '' %>"
+    >
+      1
+    </a>
 
-            <a
-              href="/user/wallet?page=<%= pagination.currentPage + 1 %>"
-              class="page-btn"
-            >
-              <i class="fa-solid fa-angle-right"></i>
-            </a>
 
-          <% } %>
+    <% if (pagination.currentPage > 3) { %>
 
-        </div>
+      <span class="pagination-dots">
+        ...
+      </span>
+
+    <% } %>
+
+
+    <%
+      const startPage = Math.max(
+        2,
+        pagination.currentPage - 1
+      );
+
+      const endPage = Math.min(
+        pagination.totalPages - 1,
+        pagination.currentPage + 1
+      );
+    %>
+
+
+    <% for (
+      let i = startPage;
+      i <= endPage;
+      i++
+    ) { %>
+
+      <% if (i > 1 && i < pagination.totalPages) { %>
+
+        <a
+          href="/user/wallet?page=<%= i %>"
+          class="page-btn <%= pagination.currentPage === i ? 'active' : '' %>"
+        >
+          <%= i %>
+        </a>
 
       <% } %>
+
+    <% } %>
+
+
+    <% if (
+      pagination.currentPage <
+      pagination.totalPages - 2
+    ) { %>
+
+      <span class="pagination-dots">
+        ...
+      </span>
+
+    <% } %>
+
+
+    <a
+      href="/user/wallet?page=<%= pagination.totalPages %>"
+      class="page-btn <%= pagination.currentPage === pagination.totalPages ? 'active' : '' %>"
+    >
+      <%= pagination.totalPages %>
+    </a>
+
+
+    <% if (pagination.hasNext) { %>
+
+      <a
+        href="/user/wallet?page=<%= pagination.currentPage + 1 %>"
+        class="page-btn"
+        aria-label="Next page"
+      >
+        <i class="fa-solid fa-angle-right"></i>
+      </a>
+
+    <% } %>
+
+  </div>
+
+<% } %>
+
+
 
     </div>
 
