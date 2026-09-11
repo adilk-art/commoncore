@@ -10,7 +10,6 @@ import {
 import { createUniqueReferralCodeService } from "../services/user/referral.service.js";
 
 import { createUserWalletService } from "../services/user/wallet.service.js";
-console.log("GOOGLE CALLBACK:", process.env.GOOGLE_CALLBACK_URL)
 passport.use(
   new GoogleStrategy( //google identifying our app with our app details
     {
